@@ -21,7 +21,7 @@ pageBackgroundColor = (rgb 229 229 208)
 
 view : Model -> Browser.Document Msg
 view model =
-    {title = "Put a title here"
+    {title = "Sonic Onion"
     , body =
         [toUnstyled
              (div [ ]
@@ -73,14 +73,12 @@ makeTitle = div
                       ,display (inlineBlock)
                       ]]
                       [text "Title 1"]
-                 ,div[css[fontFamilies ["Tangerine, serif"]
-                         ,fontSize (px 40)
-                         ,fontStyle italic
-                         ,color (rgb 247 54 105)
-                         ,display inlineBlock
-                         ]
-                     ]
-                      [text "Title 2"]]]
+                 ,div[css[]]
+                     [
+                      button [onClick (PlaySound)]
+                      [text "Play"]
+                          ]
+                 ]]
                 
 
 pagebutton : PageName -> Model -> Html Msg

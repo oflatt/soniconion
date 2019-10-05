@@ -10,6 +10,7 @@ type Msg = MouseOver PageName
          | PageChange String
          | UrlChanged Url.Url
          | WindowResize Int Int
+         | PlaySound
 
 urlToPageName url =
     if url.path == "/" then
