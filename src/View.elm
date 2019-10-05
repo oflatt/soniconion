@@ -9,7 +9,8 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 import Html.Attributes exposing (id)
-
+import Svg
+import Svg.Attributes
 
 
 
@@ -36,7 +37,7 @@ view model =
                   ,(pagebutton "Game" model)
                       
                   
-                  ,(makePage "Home" (text "hello") model)
+                  ,(makePage "Home" (drawProgram model) model)
                       
                   
                   , (makePage "Listings" (listing "./assets/placeholder.png"
@@ -46,9 +47,26 @@ view model =
     }
       
 
+drawProgram model =
+    fromUnstyled
+    (Svg.svg
+        [ Svg.Attributes.width "120"
+        , Svg.Attributes.height "120"
+        , Svg.Attributes.viewBox "0 0 120 120"
+        ]
+        [ Svg.rect
+              [ Svg.Attributes.x "10"
+              , Svg.Attributes.y "10"
+              , Svg.Attributes.width "100"
+              , Svg.Attributes.height "100"
+              , Svg.Attributes.rx "15"
+              , Svg.Attributes.ry "15"
+              ]
+              []])
+            
 makePage pageName content model =
-    if pageName == model.currentPage then
-        div [css[display block
+                if pageName == model.currentPage then
+                    div [css[display block
                 ,backgroundColor pageColor]]
             [content]
     else
@@ -56,8 +74,7 @@ makePage pageName content model =
       
 makeTitle = div
             [css [
-              backgroundColor (rgb 165 220 255)
-             ,height (px 90)
+             height (px 90)
              ,width (pct 100)
                 ]
                ]
