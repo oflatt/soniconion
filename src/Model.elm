@@ -29,10 +29,15 @@ type Input = Output Id
            | Const Constant
 
 type alias Onion = List Function
-type alias Function = List Expr
-type alias Expr = {id: Id
-                  ,inputs: List Input
-                  ,funcName: String}
+type alias Function = List Call
+
+type alias Wave = {inputs: (Input, Input)
+                  ,waveType: String}
+type alias Play = {input: Input}
+type Expr = WaveE Wave
+          | PlayE Play
+type alias Call = {id: Id,
+                   expr: Expr}
     
 type alias Model = {currentPage: PageName
                    ,highlightedButton: PageName
@@ -54,9 +59,11 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
+sine = (Call 1 (WaveE (Wave (Const 1, Const 440) "sine")))
 
-initialProgram = [[(Expr 1 [Const 1, Const 440] "sine")
-                  ,(Expr 2 [Output 1] "play")
+-- play is assumed to be at the end
+initialProgram : Onion
+initialProgram = [[sine
                   ]
                  ] 
  
