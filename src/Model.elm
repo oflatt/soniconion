@@ -60,11 +60,12 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowHeight : Int}
 
 sine = (Call 1 (WaveE (Wave (Const 1, Const 440) "sine")))
-
+play = (Call 2 (PlayE (Play (Output 1))))
+       
 -- play is assumed to be at the end
 initialProgram : Onion
 initialProgram = [[sine
-                  ]
+                  ,play]
                  ] 
  
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
