@@ -1,6 +1,7 @@
 port module Update exposing (update)
 
 import Model exposing (..)
+import OnionToJson exposing (onionToJson)
 
 import Url
 import Url.Builder
@@ -8,8 +9,11 @@ import Browser
 import Browser.Events
 import Browser.Dom
 import Browser.Navigation as Nav
+import Json.Encode as Encode
 
 port testprint : Int -> Cmd msg
+
+port runSound : Encode.Value -> Cmd msg
 
 -- UPDATE
 
@@ -36,6 +40,9 @@ changeByName model pageName =
          
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
+                       PlaySound ->
+                           (model
+                           ,runSound (onionToJson model.program))
                        WindowResize newWidth newHeight ->
                            ({model | windowWidth = newWidth,
                                                   windowHeight = newHeight},

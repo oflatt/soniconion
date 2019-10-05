@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Model exposing (..)
+import DrawProgram exposing (drawProgram)
 
 import Browser
 import Css exposing (..)
@@ -20,7 +21,7 @@ pageBackgroundColor = (rgb 229 229 208)
 
 view : Model -> Browser.Document Msg
 view model =
-    {title = "Put a title here"
+    {title = "Sonic Onion"
     , body =
         [toUnstyled
              (div [ ]
@@ -45,23 +46,6 @@ view model =
                   ])]
     }
       
-
-drawProgram model =
-    fromUnstyled
-    (Svg.svg
-        [ Svg.Attributes.width "120"
-        , Svg.Attributes.height "120"
-        , Svg.Attributes.viewBox "0 0 120 120"
-        ]
-        [ Svg.rect
-              [ Svg.Attributes.x "10"
-              , Svg.Attributes.y "10"
-              , Svg.Attributes.width "100"
-              , Svg.Attributes.height "100"
-              , Svg.Attributes.rx "15"
-              , Svg.Attributes.ry "15"
-              ]
-              []])
             
 makePage pageName content model =
                 if pageName == model.currentPage then
@@ -89,14 +73,12 @@ makeTitle = div
                       ,display (inlineBlock)
                       ]]
                       [text "Title 1"]
-                 ,div[css[fontFamilies ["Tangerine, serif"]
-                         ,fontSize (px 40)
-                         ,fontStyle italic
-                         ,color (rgb 247 54 105)
-                         ,display inlineBlock
-                         ]
-                     ]
-                      [text "Title 2"]]]
+                 ,div[css[]]
+                     [
+                      button [onClick (PlaySound)]
+                      [text "Play"]
+                          ]
+                 ]]
                 
 
 pagebutton : PageName -> Model -> Html Msg
