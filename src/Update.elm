@@ -59,7 +59,7 @@ update msg model = case msg of
                        
                        MouseOver pageName ->
                            ({model | highlightedButton = pageName},
-                                testprint (2))
+                                testprint (model))
                        MouseLeave pageName -> if pageName == model.highlightedButton
                                               then ({model | highlightedButton = "none"}, Cmd.none)
                                               else (model, Cmd.none)

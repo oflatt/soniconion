@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Model exposing (..)
+import DrawProgram exposing (drawProgram)
 
 import Browser
 import Css exposing (..)
@@ -45,23 +46,6 @@ view model =
                   ])]
     }
       
-
-drawProgram model =
-    fromUnstyled
-    (Svg.svg
-        [ Svg.Attributes.width "120"
-        , Svg.Attributes.height "120"
-        , Svg.Attributes.viewBox "0 0 120 120"
-        ]
-        [ Svg.rect
-              [ Svg.Attributes.x "10"
-              , Svg.Attributes.y "10"
-              , Svg.Attributes.width "100"
-              , Svg.Attributes.height "100"
-              , Svg.Attributes.rx "15"
-              , Svg.Attributes.ry "15"
-              ]
-              []])
             
 makePage pageName content model =
                 if pageName == model.currentPage then
