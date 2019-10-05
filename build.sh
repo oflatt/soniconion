@@ -16,5 +16,3 @@ find src -maxdepth 1 -name '*.js' -exec cp {} docs/ \;
 
 echo "--------- elm make and output main.js in docs folder"
 elm make src/Main.elm --output=docs/main.js
-
-sleep 200
