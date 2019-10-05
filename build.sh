@@ -1,3 +1,6 @@
+#!/bin/bash
+
+mkdir -p docs/
 
 # clear the docs folder
 echo "--------- clearing docs"
