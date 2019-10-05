@@ -11,18 +11,25 @@ import Svg
 import Svg.Attributes
 
 
+createViewboxDimensions modelWidth modelHeight = 
+    let
+        width = String.fromInt (modelWidth // 5)
+        height = String.fromInt (modelHeight // 5)
+    in 
+        width ++ " " ++ height
+
 drawProgram model =
     fromUnstyled
     (Svg.svg
-        [ Svg.Attributes.width "120"
-        , Svg.Attributes.height "120"
-        , Svg.Attributes.viewBox "0 0 120 120"
+        [ Svg.Attributes.width(String.fromInt model.windowWidth) -- define the width of the svg
+        , Svg.Attributes.height(String.fromInt model.windowHeight) -- define the height of the svg
+        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
         ]
         [ Svg.rect
               [ Svg.Attributes.x "10"
               , Svg.Attributes.y "10"
-              , Svg.Attributes.width "100"
-              , Svg.Attributes.height "100"
+              , Svg.Attributes.width(String.fromInt (model.windowWidth // 20))
+              , Svg.Attributes.height(String.fromInt (model.windowHeight // 20))
               , Svg.Attributes.rx "15"
               , Svg.Attributes.ry "15"
               ]
