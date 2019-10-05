@@ -32,9 +32,8 @@ view model =
                   
                   ,(makeTitle)
                   
-                  , (pagebutton "Home" model)
+                  ,(pagebutton "Home" model)
                   ,(pagebutton "Listings" model)
-                  ,(pagebutton "Game" model)
                       
                   
                   ,(makePage "Home" (drawProgram model) model)
