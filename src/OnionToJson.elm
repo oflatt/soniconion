@@ -19,10 +19,26 @@ twoNotesList = Encode.list Encode.object [
                
                ]
 
+twoNotesList2 = Encode.list Encode.object [
+                
+                     [ ("type", Encode.string "note")
+                     , ("duration", Encode.string "1")
+                     , ("frequency", Encode.string "F5")
+                     ]
+                
+               ,
+                     [ ("type", Encode.string "note")
+                     , ("duration", Encode.string "3")
+                     , ("frequency", Encode.string "D5")
+                     ]
+                
+               
+               ]
+
 testTogether = Encode.object [
                 ("type", Encode.string "together")
                     ,("notes",
-                      twoNotesList
+                      twoNotesList2
                      )
                     ]
 

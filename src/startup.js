@@ -1,28 +1,3 @@
-//import defaultExport from "Tone.js"
-
-var synth = null;
-
-function process_notes() {
-	synth = new Tone.Synth().toMaster();
-
-	function triggerSynth(time) {
-		synth.triggerAttackRelease('C2', '8n', time);
-	}
-
-	Tone.Transport.schedule(triggerSynth, 0);
-	Tone.Transport.schedule(triggerSynth, '0:2');
-	Tone.Transport.schedule(triggerSynth, '0:2:2.5');
-
-	Tone.Transport.loopEnd = '1m';
-	Tone.Transport.loop = true;
-
-	Tone.Transport.start();
-
-	//if(notes.type == "note") {
-		//
-	//}
-};
-
 var app = Elm.Main.init({
     node: document.getElementById('elm'),
     flags: {innerWindowWidth : window.innerWidth,
@@ -34,31 +9,42 @@ var app = Elm.Main.init({
 
 app.ports.testprint.subscribe(function(data) {
 	console.log("got msg");
-
-	//var synth = new Tone.Synth().toMaster();
-
-	process_notes();
-	//function triggerSynth(time) {
-	//	synth.triggerAttackRelease('C2', '8n', time);
-	//}
-
-	//Tone.Transport.schedule(triggerSynth, 0);
-	//Tone.Transport.schedule(triggerSynth, '0:2');
-	//Tone.Transport.schedule(triggerSynth, '0:2:2.5');
-
-	//Tone.Transport.loopEnd = '1m';
-	//Tone.Transport.loop = true;
-
-	//Tone.Transport.start();
 });
 
-function tone_init() {
-	//synth = new Tone.Synth().toMaster();
-	console.log('init');
-}
-tone_init();
+function process_notes(data, time) {
+	var end_time = time;
+	if(data.type == "note") {
+		var synth = new Tone.Synth().toMaster();
+		Tone.Transport.schedule(
+				function(s_time) {
+					console.log(data.frequency, data.duration, s_time);
+					synth.triggerAttackRelease(data.frequency, data.duration, s_time);},
+				time);
+		end_time += parseInt(data.duration);
+	}
+	else if(data.type == "inorder") {
+		for(note in data.notes) {
+			end_time = process_notes(data.notes[note], end_time);
+		}
+	}
+	else if(data.type == "together") {
+		for(note in data.notes) {
+			var elapsed = process_notes(data.notes[note], time);
+			if(end_time < elapsed) {
+				end_time = elapsed;
+			}
+		}
+	}
 
+	return end_time;
+};
 
-//app.ports.notes.subscribe(function(data) {
-//});
+app.ports.runSound.subscribe(function(msg) {
+	//console.log(msg);
+
+	Tone.Transport.stop();
+	Tone.Transport.cancel();
+	process_notes(msg, 0);
+	Tone.Transport.start("+0", "0");
+});
 
