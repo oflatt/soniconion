@@ -18,8 +18,9 @@ import Browser
 
 import Html.Events exposing (onInput)
 
+paddingSize = 20
 
-shape1 =
+mainShape =
  {- svg
     [ viewBox "0 0 400 400"
     , width "400"
@@ -55,53 +56,62 @@ shape1 =
         [ Svg.text "Main"
         ]
         ]
-shape2 =
-        {-svg
-          [ viewBox "0 0 400 400"
-          , width "400"
-          , height "400"
-          ]-}
-          [ circle
-            [ cx "50"
-            , cy "280"
+
+-- shape for functionName objects
+functionNameshape: Int -> (Svg msg)
+functionNameshape yPos =
+  Svg.node "g"
+      [
+       transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
+      ]
+      {-svg
+      [ viewBox "0 0 400 400"
+      , width "400"
+      , height "400"
+      ]-}
+      [ circle
+            [ cx "20"
+            , cy "20"
             , r "20"
             , fill "red"
             , stroke "red"
             , strokeWidth "3"
             ]
-          []
-          , rect
-              [ x "30"
-              , y "280"
-              , width "200"
-              , height "80"
-              , fill "red"
-              , stroke "red"
-              , strokeWidth "2"
-            ]
-          []
-        ]
-shape3 =
-    [ circle
-        [ cx "50"
-        , cy "165"
-        , r "20"
-        , fill "orange"
-        , stroke "orange"
-      , strokeWidth "3"
-        ]
-      []
+            []
       , rect
-        [ x "30"
-        , y "165"
-        , width "200"
-        , height "80"
-        , fill "orange"
-        , stroke "orange"
-        , strokeWidth "2"
+            [ x "0"
+            , y "20"
+            , width "200"
+            , height "80"
+            , fill "red"
+            , stroke "red"
+            , strokeWidth "2"
+            ]
+            []
+      ]
+      
+methodNameShape =
+    [ circle
+          [ cx "50"
+          , cy "165"
+          , r "20"
+          , fill "orange"
+          , stroke "orange"
+          , strokeWidth "3"
+          ]
+          []
+    , rect
+          [ x "30"
+          , y "165"
+          , width "200"
+          , height "80"
+          , fill "orange"
+          , stroke "orange"
+          , strokeWidth "2"
         ]
       []
     ]
+    
 lineVertical=
   [line
     [x1  "260"
@@ -133,6 +143,43 @@ createViewboxDimensions modelWidth modelHeight =
     in
         width ++ " " ++ height
 
+-- function for drawing waves
+drawWave: Wave -> Int -> (Svg msg)
+drawWave wave counter =
+  functionNameshape (counter * 200)
+
+-- function for drawing play
+drawPlay: Play -> Int -> (Svg msg)
+drawPlay play counter =
+  functionNameshape (counter * 200)
+
+-- function for drawing Expression objects
+drawExpression: Expr -> Int -> (Svg msg)
+drawExpression expr counter =
+  case expr of
+    WaveE wave -> drawWave wave counter
+    PlayE play -> drawPlay play counter
+
+
+-- function for draw call objects
+drawCall: Call -> Int -> (Svg msg)
+drawCall call counter = 
+  drawExpression call.expr counter
+
+-- function for drawin function objects
+drawFunc: Function -> Int -> List (Svg msg)
+drawFunc func counter = 
+  case func of
+    [] -> []
+    (call::calls) -> (drawCall call counter)::(drawFunc calls (counter + 1))
+
+-- function for drawing the onion
+drawOnion: Onion -> List (Svg msg)
+drawOnion onion = 
+  case onion of
+    [] -> []
+    (func::funcs) -> (drawFunc func 0) ++ (drawOnion funcs)
+
 drawProgram : Model -> Int -> Int -> Html Msg
 drawProgram model width height =
     fromUnstyled
@@ -142,4 +189,5 @@ drawProgram model width height =
         , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions width height) -- define the viewbox
         , display "inline-block"
         ]
-         (shape1++shape2++shape3++lineVertical++lineHorizontal))
+         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
+         (drawOnion model.program))
