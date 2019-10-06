@@ -9,6 +9,8 @@ import Tuple
 import List
 
 
+type alias Error = String
+
 callHash : Function -> Dict Id Call -> Dict Id Call
 callHash func dict =
     case func of
@@ -19,75 +21,93 @@ callHash func dict =
     
 -- assume the last element is the play
 
-inputToJson : Input -> Dict Id Call -> Encode.Value
+inputToJson : Input -> Dict Id Call -> Result Error Encode.Value
 inputToJson input callDict =
     case input of
         -- TODO handle error of node missing 
         Output id ->
             case Dict.get id callDict of
-                Just call -> callToJson call callDict
-                Nothing -> Encode.object [] -- Very bad
-        Const c -> Encode.string (String.fromFloat c)
+                Just call -> (callToJson call callDict)
+                Nothing -> Err ("Invalid key in dict")
+        Const c -> Ok (Encode.string (String.fromFloat c))
+        Hole -> Err("Incomplete program")
 
-inputsToJson : (Input, Input) -> Dict Id Call -> (Encode.Value, Encode.Value)
+inputsToJson : (Input, Input) -> Dict Id Call -> (Result Error Encode.Value, Result Error Encode.Value)
 inputsToJson inputs callDict =
-    (inputToJson (Tuple.first inputs) callDict
-    ,inputToJson (Tuple.second inputs) callDict)
+        ((inputToJson (Tuple.first inputs) callDict)
+        ,(inputToJson (Tuple.second inputs) callDict))
 
+waveToJson : Wave -> Dict Id Call -> Result Error Encode.Value
 waveToJson wave callDict =
-    let inputsJson =
+    let inputsJsonRes =
             inputsToJson wave.inputs callDict
     in
-        Encode.object [
-             ("type", Encode.string "note")
-            ,("wave", Encode.string wave.waveType)
-            ,("duration", (Tuple.first inputsJson))
-            ,("frequency", (Tuple.second inputsJson))
-             ]
+        Result.map2
+            (\inputJson1 inputJson2 ->
+                Encode.object [
+                     ("type", Encode.string "note")
+                    ,("wave", Encode.string wave.waveType)
+                    ,("duration", inputJson1)
+                    ,("frequency", inputJson2)
+             ])
+            (Tuple.first inputsJsonRes)
+            (Tuple.second inputsJsonRes)
 
 
-playToJson : Play -> Dict Id Call -> Encode.Value
+playToJson : Play -> Dict Id Call -> Result Error Encode.Value
 playToJson play callDict =
     -- TODO error in const case
     case play.input of
-        Const c -> Encode.object []
-        Output o -> inputToJson play.input callDict
+        Const c -> Err "Play got a const"
+        Hole -> Err "Incomplete program - Play requires a value"
+        Output o -> (inputToJson play.input callDict)
 
-exprToJson : Expr -> Dict Id Call -> Encode.Value
+exprToJson : Expr -> Dict Id Call -> Result Error Encode.Value
 exprToJson expr callDict =
     case expr of
         WaveE wave -> waveToJson wave callDict
         PlayE play -> playToJson play callDict
             
-callToJson : Call -> Dict Id Call -> Encode.Value
+callToJson : Call -> Dict Id Call -> Result Error Encode.Value
 callToJson call callDict =
     exprToJson call.expr callDict
         
 
-functionToJson : Function -> Encode.Value
+functionToJson : Function -> Result Error Encode.Value
 functionToJson function =
     let callDict =
             callHash function Dict.empty
     in
-        -- Assume play is the last element
         case (Utils.last function) of
             Just playCall -> callToJson playCall callDict
-            Nothing -> Encode.object []
+            Nothing -> Err "Last element missing"
     
-        
-onionToJsonList : Onion -> List Encode.Value
+
+                       -- TODO multiple functions
+onionToJsonList : Onion -> Result Error Encode.Value
 onionToJsonList onion =
     case onion of
-        [] -> []
-        -- TODO: parse other functions and make them available
-        (f::fs) -> [functionToJson f]
+        [] -> Err "Empty program"
+        (f::fs) -> functionToJson f
+            
         
 onionToJson : Onion -> Encode.Value
 onionToJson onion =
-    Encode.object [
-         ("type", Encode.string "inorder")
-        , ("notes", Encode.list identity (onionToJsonList onion))
-        ]
+    let json =
+            onionToJsonList onion
+    in
+        let printignore =
+                case json of
+                    Err e -> log "Compile error: " e
+                    Ok o -> "Dummy"
+        in
+            case json of
+                Err e -> Encode.object [] -- do nothing since it errored
+                Ok o ->
+                    Encode.object [
+                         ("type", Encode.string "inorder")
+                        , ("notes", Encode.list identity [o])
+                        ]
 
 
  --      Test Json

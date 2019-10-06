@@ -27,6 +27,7 @@ type alias Constant = Float
 -- id of function output or a constant
 type Input = Output Id
            | Const Constant
+           | Hole
 
 type alias Onion = List Function
 type alias Function = List Call
@@ -36,6 +37,7 @@ type alias Wave = {inputs: (Input, Input)
 type alias Play = {input: Input}
 type Expr = WaveE Wave
           | PlayE Play
+          
 type alias Call = {id: Id,
                    expr: Expr}
     
