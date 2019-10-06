@@ -2,10 +2,11 @@ module View exposing (view)
 
 import Model exposing (..)
 import DrawProgram exposing (drawProgram)
+import DrawToolbar exposing (drawToolBar)
 
 import Browser
 import Css exposing (..)
-import Html
+
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
@@ -18,6 +19,11 @@ import Svg.Attributes
 pageColor = (rgb 247 247 222)
 pageBackgroundColor = (rgb 229 229 208)
 
+scrollbarWidth = 40
+titleHeight = 90
+buttonHeight = 50
+toolbarProportion = 0.25
+               
 
 view : Model -> Browser.Document Msg
 view model =
@@ -37,7 +43,7 @@ view model =
                   ,(pagebutton "Listings" model)
                       
                   
-                  ,(makePage "Home" (drawProgram model) model)
+                  ,(makePage "Home" (programPage model) model)
                       
                   
                   , (makePage "Listings" (listing "./assets/placeholder.png"
@@ -57,7 +63,7 @@ makePage pageName content model =
       
 makeTitle = div
             [css [
-             height (px 90)
+             height (px titleHeight)
              ,width (pct 100)
                 ]
                ]
@@ -72,8 +78,11 @@ makeTitle = div
                       ,top (px 10)
                       ,display (inlineBlock)
                       ]]
-                      [text "Title 1"]
-                 ,div[css[]]
+                      [text "Title"]
+                 ,div[css[
+                       display (inlineBlock)
+                      ]
+                     ]
                      [
                       button [onClick (PlaySound)]
                       [text "Play"]
@@ -94,7 +103,7 @@ pagebutton pageName model =
         ,onMouseLeave (MouseLeave pageName)
         ,css
              [width (pct 20)
-             ,height (px 50)
+             ,height (px buttonHeight)
              ,marginTop (px 10)
              ,marginRight (px 10)
              ,borderTopLeftRadius (px 8)
@@ -126,3 +135,20 @@ listing imgName title model =
                   ,height (pct 50)
                   ]][]
          ,text title]
+
+
+programPage : Model -> Html Msg
+programPage model =
+    let toolbarWidth =
+            Basics.round (toolbarProportion * (toFloat model.windowWidth))
+    in
+        div [css[display (inlineBlock)]]
+            [(drawToolBar
+                  model
+                  toolbarWidth
+                  ((model.windowHeight-titleHeight)-buttonHeight))
+            ,(drawProgram
+                  model
+                  (model.windowWidth-scrollbarWidth-toolbarWidth)
+                  ((model.windowHeight-titleHeight)-buttonHeight))
+            ]

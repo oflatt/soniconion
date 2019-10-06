@@ -1,20 +1,21 @@
 module DrawProgram exposing (drawProgram)
 
 import Browser
---import Css exposing (..)
-import Html
+
+import Model exposing (..)
+
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 import Html.Attributes exposing (id)
 import Svg
 import Svg.Attributes
-import Html exposing (Html)
+
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Browser
 import Browser
-import Html exposing (Html, Attribute, div, input, text)
+
 import Html.Events exposing (onInput)
 
 
@@ -132,11 +133,13 @@ createViewboxDimensions modelWidth modelHeight =
     in
         width ++ " " ++ height
 
-drawProgram model =
+drawProgram : Model -> Int -> Int -> Html Msg
+drawProgram model width height =
     fromUnstyled
     (Svg.svg
-        [ Svg.Attributes.width(String.fromInt model.windowWidth) -- define the width of the svg
-        , Svg.Attributes.height(String.fromInt model.windowHeight) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
+        [ Svg.Attributes.width(String.fromInt width) -- define the width of the svg
+        , Svg.Attributes.height(String.fromInt height) -- define the height of the svg
+        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions width height) -- define the viewbox
+        , display "inline-block"
         ]
          (shape1++shape2++shape3++lineVertical++lineHorizontal))
