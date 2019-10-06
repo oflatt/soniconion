@@ -1,7 +1,7 @@
 port module Update exposing (update)
 
 import Model exposing (..)
-import OnionToJson exposing (onionToJson, callToJson)
+import OnionToJson exposing (onionToJson)
 import Debug exposing (log)
 
 import Url
@@ -43,7 +43,7 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        PlaySound ->
                            (model
-                           ,runSound (callToJson sine))
+                           ,runSound (onionToJson model.program))
                        WindowResize newWidth newHeight ->
                            ({model | windowWidth = newWidth,
                                                   windowHeight = newHeight},

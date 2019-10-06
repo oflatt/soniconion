@@ -1,10 +1,12 @@
-module OnionToJson exposing (onionToJson, callToJson)
+module OnionToJson exposing (onionToJson)
 import Model exposing (..)
+import Utils
 
 import Debug exposing (log)
 import Json.Encode as Encode
 import Dict exposing (Dict)
 import Tuple
+import List
 
 callHash : Function -> Dict Id Call -> Dict Id Call
 callHash func dict =
@@ -16,19 +18,24 @@ callHash func dict =
     
 -- assume the last element is the play
 
-inputToJson input =
+inputToJson : Input -> Dict Id Call -> Encode.Value
+inputToJson input callDict =
     case input of
-        Output id -> Encode.int 2 -- dummy val
+        -- TODO handle error of node missing 
+        Output id ->
+            case Dict.get id callDict of
+                Just call -> callToJson call callDict
+                Nothing -> Encode.object [] -- Very bad
         Const c -> Encode.int c
 
-inputsToJson : (Input, Input) -> (Encode.Value, Encode.Value)
-inputsToJson inputs =
-    (inputToJson (Tuple.first inputs)
-    ,inputToJson (Tuple.second inputs))
+inputsToJson : (Input, Input) -> Dict Id Call -> (Encode.Value, Encode.Value)
+inputsToJson inputs callDict =
+    (inputToJson (Tuple.first inputs) callDict
+    ,inputToJson (Tuple.second inputs) callDict)
 
-waveToJson wave =
+waveToJson wave callDict =
     let inputsJson =
-            inputsToJson wave.inputs
+            inputsToJson wave.inputs callDict
     in
         Encode.object [
              ("type", Encode.string wave.waveType)
@@ -36,16 +43,45 @@ waveToJson wave =
             ,("frequency", (Tuple.second inputsJson))
              ]
 
-exprToJson : Expr -> Encode.Value
-exprToJson expr =
+playToJson play callDict =
+    -- TODO make less assumptions, check not literal ect
+    inputToJson play.input callDict
+
+exprToJson : Expr -> Dict Id Call -> Encode.Value
+exprToJson expr callDict =
     case expr of
-        WaveE wave -> waveToJson wave
-        PlayE play -> Encode.object []
+        WaveE wave -> waveToJson wave callDict
+        PlayE play -> playToJson play callDict
             
-callToJson : Call -> Encode.Value
-callToJson call =
-    exprToJson call.expr
-                       
+callToJson : Call -> Dict Id Call -> Encode.Value
+callToJson call callDict =
+    exprToJson call.expr callDict
+        
+
+functionToJson : Function -> Encode.Value
+functionToJson function =
+    let callDict =
+            callHash function Dict.empty
+    in
+        -- Assume play is the last element
+        case (Utils.last function) of
+            Just playCall -> callToJson playCall callDict
+            Nothing -> Encode.object []
+    
+        
+onionToJsonList : Onion -> List Encode.Value
+onionToJsonList onion =
+    case onion of
+        [] -> []
+        (f::fs) -> (functionToJson f) :: (onionToJsonList fs)
+        
+onionToJson : Onion -> Encode.Value
+onionToJson onion =
+    Encode.list identity (onionToJsonList onion)
+
+
+ --      Test Json
+        
 twoNotesList = Encode.list Encode.object [
                 
                      [ ("type", Encode.string "note")
@@ -67,8 +103,8 @@ testTogether = Encode.object [
                      )
                     ]
 
-onionToJson : Onion -> Encode.Value
-onionToJson onion =
+
+testJson =
     Encode.object [ ("type", Encode.string "inorder")
                   ,("notes", Encode.list identity [
                          Encode.object
