@@ -39,10 +39,12 @@ changeByName model pageName =
     in changeUrl model newurl pageName
 
 mouse_scale_x : Int -> Int
-mouse_scale_x mouse_x = (mouse_x // 5) - 15 
+mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
+--mouse_scale_x mouse_x = (mouse_x // 5) 
 
 mouse_scale_y : Int -> Int
-mouse_scale_y mouse_y = (mouse_y // 5) - 40
+mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
+--mouse_scale_y mouse_y = (mouse_y // 5)
          
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
@@ -50,11 +52,21 @@ update msg model = case msg of
                            ({model | drag = False}
                            ,Cmd.none)
                        MouseMoved pos ->
-                           ({model | testx = String.fromInt (mouse_scale_x pos.x)
-                            ,testy = String.fromInt (mouse_scale_y pos.y)}, (log (String.fromInt pos.x) Cmd.none))
-                       Move ->
-                           ({model | drag = True}
-                           ,(log "Mouse" Cmd.none))
+                           if model.start_x == -1 then
+                               ({model |
+                                   start_x = (mouse_scale_x pos.x),
+                                   start_y = (mouse_scale_y pos.y),
+                                   dx = 0,
+                                   dy = 0}
+                               , Cmd.none)
+                           else
+                               ({model |
+                                   dx = (mouse_scale_x pos.x) - model.start_x,
+                                   dy = (mouse_scale_y pos.y) - model.start_y}
+                               , Cmd.none)
+                       Move id ->
+                           ({model | drag = True, sel_id = id, start_x = -1, start_y = -1}
+                           ,(log (String.fromInt id) Cmd.none))
                        PlaySound ->
                            (model
                            ,runSound (onionToJson model.program))

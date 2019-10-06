@@ -1,140 +1,69 @@
 module DrawProgram exposing (drawProgram)
 
-import Browser
-
 import Model exposing (..)
+import SvgAssets
+
+
+import Browser
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
-import Html.Attributes exposing (id)
-import Svg
-import Svg.Attributes
+
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Browser
-import Browser
+
 
 import Html.Events exposing (onInput)
 
---- Sam import
 import Svg.Events
 
-shape1 =
- {- svg
-    [ viewBox "0 0 400 400"
-    , width "400"
-    , height "400"
-    ]-}
-    [rect
-        [ x "30"
-        , y "50"
-        , width "200"
-        , height "80"
-        , fill "green"
-        , stroke "green"
-        , strokeWidth "2"
-        , Svg.Events.onMouseDown (Move)
-        ]
-        []
-     , rect
-       [ x "30"
-        , y "30"
-        , width "80"
-        , height "30"
-        , fill "green"
-        , stroke "green"
-        , strokeWidth "2"
-        ]
-        []
-     , text_
-        [ x "70"
-        , y "40"
-        , fill "white"
-        , textAnchor "middle"
-        , dominantBaseline "central"
-        ]
-        [ Svg.text "Main"
-        ]
-        ]
-shape2 =
-        {-svg
-          [ viewBox "0 0 400 400"
-          , width "400"
-          , height "400"
-          ]-}
-          [ circle
-            [ cx "50"
-            , cy "280"
-            , r "20"
-            , fill "red"
-            , stroke "red"
-            , strokeWidth "3"
-            ]
-          []
-          , rect
-              [ x "30"
-              , y "280"
-              , width "200"
-              , height "80"
-              , fill "red"
-              , stroke "red"
-              , strokeWidth "2"
-            ]
-          []
-        ]
-shape3 =
-    [ circle
-        [ cx "50"
-        , cy "165"
-        , r "20"
-        , fill "orange"
-        , stroke "orange"
-      , strokeWidth "3"
-        ]
-      []
-      , rect
-        [ x "30"
-        , y "165"
-        , width "200"
-        , height "80"
-        , fill "orange"
-        , stroke "orange"
-        , strokeWidth "2"
-        ]
-      []
-    ]
-lineVertical=
-  [line
-    [x1  "260"
-    , y1  "400"
-    , x2  "260"
-    , y2  "460"
-    , stroke  "blue"
-    , strokeWidth  "5"
-    , strokeLinecap  "round"
-    ]
-  []
-  ]
-lineHorizontal =
-  [line
-    [x1  "200"
-    , y1  "400"
-    , x2  "240"
-    , y2  "400"
-    , stroke  "purple"
-    , strokeWidth  "5"
-    , strokeLinecap  "round"
-    ]
-    []
-    ]
-createViewboxDimensions modelWidth modelHeight =
-    let
-        width = String.fromInt (600)
-        height = String.fromInt (600)
-    in
-        width ++ " " ++ height
+import Debug exposing (log)
+              
+-- function for drawing builtIns
+drawBuiltIn: BuiltIn -> Int -> (Svg msg)
+drawBuiltIn builtIn counter =
+    SvgAssets.functionNameshape (counter * SvgAssets.blockSpacing)
+
+-- function for drawing play
+drawPlay: Play -> Int -> (Svg msg)
+drawPlay play counter =
+  SvgAssets.functionNameshape (counter * 200)
+
+-- function for drawing Expression objects
+drawExpression: Expr -> Int -> (Svg msg)
+drawExpression expr counter =
+  case expr of
+    BuiltInE builtIn -> drawBuiltIn builtIn counter
+    PlayE play -> drawPlay play counter
+
+--maphelp a = (log "" a)
+
+-- function for draw call objects
+drawCall: Call -> Int -> Model -> (Svg Msg)
+drawCall call counter model = 
+    if call.id == model.sel_id then
+        (Svg.g [
+            transform(("translate(" ++ (String.fromInt model.dx) ++ "," ++ (String.fromInt model.dy) ++ ")")),
+            Svg.Events.onMouseDown (Move call.id)] [(drawExpression call.expr counter)])
+    else
+        (Svg.g [
+            Svg.Events.onMouseDown (Move call.id)] [(drawExpression call.expr counter)])
+
+-- function for drawin function objects
+drawFunc: Function -> Int -> Model -> List (Svg Msg)
+drawFunc func counter model = 
+  case func of
+    [] -> []
+    (call::calls) -> (drawCall call counter model)::(drawFunc calls (counter + 1) model)
+
+-- function for drawing the onion
+drawOnion: Onion -> Model -> List (Svg Msg)
+drawOnion onion model = 
+  case onion of
+    [] -> []
+    (func::funcs) -> (drawFunc func 0 model) ++ (drawOnion funcs model)
 
 drawProgram : Model -> Int -> Int -> Html Msg
 drawProgram model width height =
@@ -142,10 +71,11 @@ drawProgram model width height =
     (Svg.svg
         [ Svg.Attributes.width(String.fromInt width) -- define the width of the svg
         , Svg.Attributes.height(String.fromInt height) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions width height) -- define the viewbox
+        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions SvgAssets.viewportWidth SvgAssets.viewportHeight) -- define the viewbox
         , display "inline-block"
         ]
-         (shape1++shape2++shape3++lineVertical++lineHorizontal))
+         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
+         (drawOnion model.program model))
 
 {-
 import Svg.Events

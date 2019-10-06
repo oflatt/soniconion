@@ -3,6 +3,7 @@ module Model exposing (..)
 import Url
 import Browser
 import Browser.Navigation as Nav
+import Dict exposing (Dict)
 
 import Json.Decode as Decode
 
@@ -24,7 +25,7 @@ type Msg = MouseOver PageName
          | UrlChanged Url.Url
          | WindowResize Int Int
          | PlaySound
-         | Move
+         | Move Int
          | MouseMoved MousePos
          | MouseRelease
 
@@ -43,15 +44,33 @@ type alias Constant = Float
 -- id of function output or a constant
 type Input = Output Id
            | Const Constant
+           | Hole
 
 type alias Onion = List Function
 type alias Function = List Call
 
-type alias Wave = {inputs: (Input, Input)
-                  ,waveType: String}
+type alias BuiltInSpec = (String, (List String))
+type alias BuiltInList = List BuiltInSpec
+    
+builtInFunctionList : BuiltInList
+builtInFunctionList = [("sine", ["duration", "frequency"])
+                      ,("sleep", [])
+                      ,("join", ["wave1", "wave2"])
+                      ]
+
+-- maps function names to a list of arg names
+builtInFunctions : Dict String (List String)
+builtInFunctions =
+    Dict.fromList builtInFunctionList
+        
+
+type alias BuiltIn = {inputs: List Input
+                     ,waveType: String}
+
 type alias Play = {input: Input}
-type Expr = WaveE Wave
+type Expr = BuiltInE BuiltIn
           | PlayE Play
+          
 type alias Call = {id: Id,
                    expr: Expr}
     
@@ -63,8 +82,11 @@ type alias Model = {currentPage: PageName
                    ,windowWidth : Int
                    ,windowHeight : Int
                    ,program : Onion
-                   ,testx : String
-                   ,testy : String
+                   ,start_x : Int
+                   ,start_y : Int
+                   ,dx : Int
+                   ,dy : Int
+                   ,sel_id : Int
                    ,drag : Bool}
 
 getindexurl url =
@@ -78,7 +100,7 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-sine = (Call 1 (WaveE (Wave (Const 1, Const 440) "sine")))
+sine = (Call 1 (BuiltInE (BuiltIn [Const 1, Const 440] "sine")))
 play = (Call 2 (PlayE (Play (Output 1))))
        
 -- play is assumed to be at the end
@@ -96,7 +118,10 @@ initialModel flags url key = ((Model
                                    flags.innerWindowWidth
                                    flags.innerWindowHeight
                                    initialProgram
-                                   "20"
-                                   "20"
+                                   0
+                                   0
+                                   0
+                                   0
+                                   -1
                                    False),
-                                  Cmd.none)
+                                   Cmd.none)
