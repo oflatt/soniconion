@@ -35,17 +35,23 @@ type alias Function = List Call
 
 type alias BuiltInSpec = (String, (List String))
 type alias BuiltInList = List BuiltInSpec
-    
+
+
+waveList =
+           [("sine", ["duration", "frequency"])
+           ,("sleep", [])]
+specialFunctionList = [("join", ["wave1", "wave2"])
+                   ]
 builtInFunctionList : BuiltInList
-builtInFunctionList = [("sine", ["duration", "frequency"])
-                      ,("sleep", [])
-                      ,("join", ["wave1", "wave2"])
-                      ]
+builtInFunctionList = waveList ++ specialFunctionList
+                      
 
 -- maps function names to a list of arg names
 builtInFunctions : Dict String (List String)
 builtInFunctions =
     Dict.fromList builtInFunctionList
+waveFunctions = Dict.fromList waveList
+specialFunctions = Dict.fromList builtInFunctionList
         
 
 type alias BuiltIn = {inputs: List Input
@@ -79,11 +85,15 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowHeight : Int}
 
 sine = (Call 1 (BuiltInE (BuiltIn [Const 1, Const 440] "sine")))
-play = (Call 2 (PlayE (Play (Output 1))))
+sine2 = (Call 2 (BuiltInE (BuiltIn [Const 2, Const 640] "sine")))
+join = (Call 3 (BuiltInE (BuiltIn [Output 1, Output 2] "join")))
+play = (Call 1092392 (PlayE (Play (Output 3))))
        
 -- play is assumed to be at the end
 initialProgram : Onion
 initialProgram = [[sine
+                  ,sine2
+                  ,join
                   ,play]
                  ] 
  
