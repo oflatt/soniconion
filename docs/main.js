@@ -8456,10 +8456,50 @@ var author$project$View$pagebutton = F2(
 					rtfeldman$elm_css$Html$Styled$text(pageName)
 				]));
 	});
-var author$project$SvgAssets$blockSpacing = 150;
-var author$project$SvgAssets$paddingSize = 20;
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
+var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var author$project$SvgAssets$drawDots = F3(
+	function (num, xpos, ypos) {
+		return (num <= 0) ? _List_Nil : A2(
+			elm$core$List$cons,
+			A2(
+				elm$svg$Svg$circle,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$r('10'),
+						elm$svg$Svg$Attributes$cx(
+						elm$core$String$fromInt(xpos)),
+						elm$svg$Svg$Attributes$cy(
+						elm$core$String$fromInt(ypos)),
+						elm$svg$Svg$Attributes$fill('black')
+					]),
+				_List_Nil),
+			A3(author$project$SvgAssets$drawDots, num - 1, xpos + 40, ypos));
+	});
+var author$project$SvgAssets$drawNames = function (l) {
+	return _List_Nil;
+};
+var author$project$SvgAssets$getArgCircles = F2(
+	function (argList, ypos) {
+		if (argList.$ === 'Infinite') {
+			var min = argList.a;
+			return A3(author$project$SvgAssets$drawDots, min, 20, ypos);
+		} else {
+			var l = argList.a;
+			return _Utils_ap(
+				author$project$SvgAssets$drawNames(l),
+				A3(
+					author$project$SvgAssets$drawDots,
+					elm$core$List$length(l),
+					20,
+					ypos));
+		}
+	});
+var author$project$SvgAssets$paddingSize = 20;
 var elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
 	return _VirtualDom_nodeNS(
 		_VirtualDom_noScript(tag));
@@ -8468,13 +8508,11 @@ var elm$svg$Svg$node = elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000
 var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
 var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
 var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
-var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
@@ -8482,8 +8520,8 @@ var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var author$project$SvgAssets$functionNameshape = F2(
-	function (name, yPos) {
+var author$project$SvgAssets$functionNameshape = F3(
+	function (name, yPos, argList) {
 		return A3(
 			elm$svg$Svg$node,
 			'g',
@@ -8492,63 +8530,71 @@ var author$project$SvgAssets$functionNameshape = F2(
 					elm$svg$Svg$Attributes$transform(
 					'translate(' + ('30,' + (elm$core$String$fromInt(author$project$SvgAssets$paddingSize + yPos) + ')')))
 				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							elm$svg$Svg$Attributes$cx('20'),
-							elm$svg$Svg$Attributes$cy('20'),
-							elm$svg$Svg$Attributes$r('20'),
-							elm$svg$Svg$Attributes$fill('red'),
-							elm$svg$Svg$Attributes$stroke('red'),
-							elm$svg$Svg$Attributes$strokeWidth('3')
-						]),
-					_List_Nil),
-					A2(
-					elm$svg$Svg$rect,
-					_List_fromArray(
-						[
-							elm$svg$Svg$Attributes$x('0'),
-							elm$svg$Svg$Attributes$y('20'),
-							elm$svg$Svg$Attributes$width('200'),
-							elm$svg$Svg$Attributes$height('80'),
-							elm$svg$Svg$Attributes$fill('red'),
-							elm$svg$Svg$Attributes$stroke('red'),
-							elm$svg$Svg$Attributes$strokeWidth('2')
-						]),
-					_List_Nil),
-					A2(
-					elm$svg$Svg$text_,
-					_List_fromArray(
-						[
-							elm$svg$Svg$Attributes$x('100'),
-							elm$svg$Svg$Attributes$y('40'),
-							elm$svg$Svg$Attributes$fill('white'),
-							elm$svg$Svg$Attributes$fontSize('25'),
-							elm$svg$Svg$Attributes$textAnchor('middle'),
-							elm$svg$Svg$Attributes$dominantBaseline('central')
-						]),
-					_List_fromArray(
-						[
-							elm$svg$Svg$text(name)
-						]))
-				]));
-	});
-var author$project$DrawProgram$drawBuiltIn = F2(
-	function (builtIn, counter) {
-		return A2(author$project$SvgAssets$functionNameshape, builtIn.waveType, counter * author$project$SvgAssets$blockSpacing);
+			_Utils_ap(
+				_List_fromArray(
+					[
+						A2(
+						elm$svg$Svg$rect,
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$x('0'),
+								elm$svg$Svg$Attributes$y('20'),
+								elm$svg$Svg$Attributes$width('200'),
+								elm$svg$Svg$Attributes$height('80'),
+								elm$svg$Svg$Attributes$fill('red'),
+								elm$svg$Svg$Attributes$stroke('red'),
+								elm$svg$Svg$Attributes$strokeWidth('2'),
+								elm$svg$Svg$Attributes$rx('10'),
+								elm$svg$Svg$Attributes$ry('10')
+							]),
+						_List_Nil),
+						A2(
+						elm$svg$Svg$text_,
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$x('100'),
+								elm$svg$Svg$Attributes$y('60'),
+								elm$svg$Svg$Attributes$fill('white'),
+								elm$svg$Svg$Attributes$fontSize('25'),
+								elm$svg$Svg$Attributes$textAnchor('middle'),
+								elm$svg$Svg$Attributes$dominantBaseline('central')
+							]),
+						_List_fromArray(
+							[
+								elm$svg$Svg$text(name)
+							]))
+					]),
+				A2(author$project$SvgAssets$getArgCircles, argList, 20)));
 	});
 var author$project$DrawProgram$drawPlay = F2(
 	function (play, counter) {
-		return A2(author$project$SvgAssets$functionNameshape, 'play', counter * 200);
+		return A3(
+			author$project$SvgAssets$functionNameshape,
+			'play',
+			counter * 200,
+			author$project$Model$Finite(_List_Nil));
+	});
+var author$project$Model$builtInFunctions = elm$core$Dict$fromList(author$project$Model$builtInFunctionList);
+var author$project$SvgAssets$blockSpacing = 150;
+var author$project$SvgAssets$drawBuiltIn = F2(
+	function (builtIn, counter) {
+		var get = A2(elm$core$Dict$get, builtIn, author$project$Model$builtInFunctions);
+		if (get.$ === 'Just') {
+			var names = get.a;
+			return A3(author$project$SvgAssets$functionNameshape, builtIn, counter * author$project$SvgAssets$blockSpacing, names);
+		} else {
+			return A3(
+				author$project$SvgAssets$functionNameshape,
+				builtIn,
+				counter * author$project$SvgAssets$blockSpacing,
+				author$project$Model$Finite(_List_Nil));
+		}
 	});
 var author$project$DrawProgram$drawExpression = F2(
 	function (expr, counter) {
 		if (expr.$ === 'BuiltInE') {
 			var builtIn = expr.a;
-			return A2(author$project$DrawProgram$drawBuiltIn, builtIn, counter);
+			return A2(author$project$SvgAssets$drawBuiltIn, builtIn.waveType, counter);
 		} else {
 			var play = expr.a;
 			return A2(author$project$DrawProgram$drawPlay, play, counter);
@@ -8617,7 +8663,7 @@ var author$project$DrawToolbar$builtInToSvg = F2(
 		var _n0 = builtInSpec;
 		var name = _n0.a;
 		var nameList = _n0.b;
-		return A2(author$project$SvgAssets$functionNameshape, name, yPos);
+		return A2(author$project$SvgAssets$drawBuiltIn, name, yPos);
 	});
 var author$project$DrawToolbar$allBuiltInFunctions = F4(
 	function (offset, twidth, theight, funcList) {

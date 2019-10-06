@@ -6,10 +6,23 @@ import Model exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
+import Dict
 
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+
+-- function for drawing builtIns
+drawBuiltIn: String -> Int -> (Svg msg)
+drawBuiltIn builtIn counter =
+    let get = Dict.get builtIn builtInFunctions
+    in
+        case get of
+            Just names ->
+                functionNameshape builtIn (counter * blockSpacing) names
+            Nothing ->
+                functionNameshape builtIn (counter * blockSpacing) (Finite [])
+
 
 blockSpacing = 150
 paddingSize = 20
@@ -53,48 +66,55 @@ mainShape =
         ]
         ]
 
+drawDots : Int -> Int -> Int -> List (Svg msg)
+drawDots num xpos ypos =
+    if num <= 0
+    then []
+    else
+        (circle [r "10"
+                , cx (String.fromInt xpos)
+                , cy (String.fromInt ypos)
+                , fill "black"] []) :: (drawDots (num - 1) (xpos + 40) ypos)
+            
+        
+drawNames l = []
+        
+getArgCircles argList ypos =
+    case argList of
+        Infinite min -> drawDots min 20 ypos
+        Finite l -> (drawNames l) ++ (drawDots (List.length l) 20 ypos)
+        
 -- shape for functionName objects
-functionNameshape: String -> Int -> (Svg msg)
-functionNameshape name yPos =
+functionNameshape: String -> Int -> ArgList -> (Svg msg)
+functionNameshape name yPos argList =
   Svg.node "g"
       [
        transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
       ]
-      {-svg
-      [ viewBox "0 0 400 400"
-      , width "400"
-      , height "400"
-      ]-}
-      [ circle
-            [ cx "20"
-            , cy "20"
-            , r "20"
-            , fill "red"
-            , stroke "red"
-            , strokeWidth "3"
-            ]
-            []
-      , rect
-            [ x "0"
-            , y "20"
-            , width "200"
-            , height "80"
-            , fill "red"
-            , stroke "red"
-            , strokeWidth "2"
-            ]
-            []
-       , text_
-          [ x "100"
-          , y "40"
-          , fill "white"
-          , fontSize "25"
-          , textAnchor "middle"
+       (  [
+          rect
+                [ x "0"
+                , y "20"
+                , width "200"
+                , height "80"
+                , fill "red"
+                , stroke "red"
+                , strokeWidth "2"
+                , rx "10"
+                , ry "10"
+                ]
+                []
+          , text_
+                [ x "100"
+                , y "60"
+                , fill "white"
+                , fontSize "25"
+                , textAnchor "middle"
           , dominantBaseline "central"
           ]
           [ Svg.text name
           ]
-          ]
+          ] ++ (getArgCircles argList 20) )
 
 
 

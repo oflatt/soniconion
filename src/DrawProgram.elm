@@ -9,7 +9,7 @@ import Browser
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
-
+import Dict
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -19,21 +19,17 @@ import Html.Events exposing (onInput)
 
 
               
--- function for drawing builtIns
-drawBuiltIn: BuiltIn -> Int -> (Svg msg)
-drawBuiltIn builtIn counter =
-    SvgAssets.functionNameshape builtIn.waveType (counter * SvgAssets.blockSpacing)
 
 -- function for drawing play
 drawPlay: Play -> Int -> (Svg msg)
 drawPlay play counter =
-  SvgAssets.functionNameshape "play" (counter * 200)
+  SvgAssets.functionNameshape "play" (counter * 200) (Finite [])
 
 -- function for drawing Expression objects
 drawExpression: Expr -> Int -> (Svg msg)
 drawExpression expr counter =
   case expr of
-    BuiltInE builtIn -> drawBuiltIn builtIn counter
+    BuiltInE builtIn -> SvgAssets.drawBuiltIn builtIn.waveType counter
     PlayE play -> drawPlay play counter
 
 
@@ -65,5 +61,4 @@ drawProgram model width height =
         , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions SvgAssets.viewportWidth SvgAssets.viewportHeight) -- define the viewbox
         , display "inline-block"
         ]
-         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
          (drawOnion model.program))

@@ -18,7 +18,7 @@ builtInToSvg yPos builtInSpec =
     let 
         (name, nameList) = builtInSpec
     in
-    SvgAssets.functionNameshape (name) yPos
+    SvgAssets.drawBuiltIn name yPos
 
 allBuiltInFunctions : Int -> Int -> Int -> BuiltInList -> List (Svg msg)
 allBuiltInFunctions offset twidth theight funcList =
