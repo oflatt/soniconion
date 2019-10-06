@@ -22,12 +22,12 @@ import Html.Events exposing (onInput)
 -- function for drawing builtIns
 drawBuiltIn: BuiltIn -> Int -> (Svg msg)
 drawBuiltIn builtIn counter =
-    SvgAssets.functionNameshape (counter * SvgAssets.blockSpacing)
+    SvgAssets.functionNameshape builtIn.waveType (counter * SvgAssets.blockSpacing)
 
 -- function for drawing play
 drawPlay: Play -> Int -> (Svg msg)
 drawPlay play counter =
-  SvgAssets.functionNameshape (counter * 200)
+  SvgAssets.functionNameshape "play" (counter * 200)
 
 -- function for drawing Expression objects
 drawExpression: Expr -> Int -> (Svg msg)
