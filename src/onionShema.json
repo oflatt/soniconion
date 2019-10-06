@@ -26,7 +26,18 @@
 	},
 	"minProperties": 2,
       }
-    }
+    },
+    "inorder" : {
+      "type" : "object",
+      "properties": {
+	"type": "inorder",// this "type" is a variable literal
+	"notes": {
+	  "type": "array",
+	  "items": { "$ref": "#/definitions" }
+	},
+	"minProperties": 2,
+      }
+    },
   },
   
 

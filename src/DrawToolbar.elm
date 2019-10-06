@@ -15,7 +15,10 @@ import Svg.Attributes
 
 builtInToSvg : Int -> BuiltInSpec -> Svg msg
 builtInToSvg yPos builtInSpec =
-    SvgAssets.functionNameshape yPos
+    let 
+        (name, nameList) = builtInSpec
+    in
+    SvgAssets.drawBuiltIn name yPos
 
 allBuiltInFunctions : Int -> Int -> Int -> BuiltInList -> List (Svg msg)
 allBuiltInFunctions offset twidth theight funcList =

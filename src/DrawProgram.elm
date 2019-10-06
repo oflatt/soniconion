@@ -10,6 +10,7 @@ import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 
+import Dict
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -22,23 +23,21 @@ import Svg.Events
 import Debug exposing (log)
               
 -- function for drawing builtIns
-drawBuiltIn: BuiltIn -> Int -> (Svg msg)
-drawBuiltIn builtIn counter =
-    SvgAssets.functionNameshape (counter * SvgAssets.blockSpacing)
+--drawBuiltIn: BuiltIn -> Int -> (Svg Msg)
+--drawBuiltIn builtIn counter =
+    --SvgAssets.functionNameshape "asdf" (counter * SvgAssets.blockSpacing)
 
 -- function for drawing play
 drawPlay: Play -> Int -> (Svg msg)
 drawPlay play counter =
-  SvgAssets.functionNameshape (counter * 200)
+  SvgAssets.functionNameshape "play" (counter * 200) (Finite [])
 
 -- function for drawing Expression objects
 drawExpression: Expr -> Int -> (Svg msg)
 drawExpression expr counter =
   case expr of
-    BuiltInE builtIn -> drawBuiltIn builtIn counter
+    BuiltInE builtIn -> SvgAssets.drawBuiltIn builtIn.waveType counter
     PlayE play -> drawPlay play counter
-
---maphelp a = (log "" a)
 
 -- function for draw call objects
 drawCall: Call -> Int -> Model -> (Svg Msg)
