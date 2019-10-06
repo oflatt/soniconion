@@ -6,29 +6,31 @@ import Model exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
-import Dict
+import Dict exposing (Dict)
 
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 -- function for drawing builtIns
-drawBuiltIn: String -> Int -> (Svg msg)
-drawBuiltIn builtIn counter =
-    let get = Dict.get builtIn builtInFunctions
+drawBuiltIn: BuiltIn -> Int -> Dict Id Int -> (Svg msg)
+drawBuiltIn builtIn counter idToPos =
+    let get = Dict.get builtIn.waveType builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape builtIn (counter * blockSpacing) names
+                functionNameshape builtIn.waveType (counter * blockSpacing) names idToPos builtIn.inputs
             Nothing ->
-                functionNameshape builtIn (counter * blockSpacing) (Finite [])
+                functionNameshape builtIn.waveType (counter * blockSpacing) (Finite []) idToPos builtIn.inputs
 
-
+blockHeight = 100
 blockSpacing = 150
 paddingSize = 20
 viewportWidth = 600
 viewportHeight = 600
 
+
+                 
 mainShape =
  {- svg
     [ viewBox "0 0 400 400"
@@ -85,18 +87,19 @@ getArgCircles argList ypos =
         Finite l -> (drawNames l) ++ (drawDots (List.length l) 20 ypos)
         
 -- shape for functionName objects
-functionNameshape: String -> Int -> ArgList -> (Svg msg)
-functionNameshape name yPos argList =
+functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> (Svg msg)
+functionNameshape name yPos argList idToPos inputs =
   Svg.node "g"
       [
        transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
       ]
-       (  [
+       (
+        [
           rect
                 [ x "0"
                 , y "20"
                 , width "200"
-                , height "80"
+                , height (String.fromInt (blockHeight-20))
                 , fill "red"
                 , stroke "red"
                 , strokeWidth "2"
@@ -114,8 +117,33 @@ functionNameshape name yPos argList =
           ]
           [ Svg.text name
           ]
-          ] ++ (getArgCircles argList 20) )
+          ] ++ (getArgCircles argList 20) ++ (createLines inputs idToPos 20 20))
 
+
+createLines inputs idToPos ypos xpos =
+    case inputs of
+        [] -> []
+        (i::is) ->
+            case (createLine i idToPos ypos xpos) of
+                Nothing -> (createLines is idToPos ypos (xpos + 30))
+                Just l -> l :: (createLines is idToPos ypos (xpos + 30))
+
+idToLine: Id -> Dict Id Int -> Int -> Int -> Maybe (Svg msg)
+idToLine id idToPos ypos xpos =
+    let pos =
+            Dict.get id idToPos
+    in
+        case pos of
+            Nothing -> Nothing
+            Just i ->
+                Just (taxiLine 100 ((i-2) * blockSpacing + blockHeight) xpos ypos)
+                   
+createLine input idToPos ypos xpos =
+    case input of
+        Output id ->
+            idToLine id idToPos ypos xpos
+        Const c -> Nothing
+        Hole -> Nothing
 
 
 methodNameShape =
@@ -140,30 +168,25 @@ methodNameShape =
       []
     ]
 
-lineVertical=
-  [line
-    [x1  "260"
-    , y1  "400"
-    , x2  "260"
-    , y2  "460"
+taxiLine: Int -> Int -> Int -> Int -> Svg msg
+taxiLine x1 y1 x2 y2 =
+          Svg.node "g" []
+              [makeLine x1 y1 x2 y1,
+               makeLine x2 y1 x2 y2]
+    
+makeLine mx1 my1 mx2 my2 =
+  line
+    [x1  (String.fromInt mx1)
+    , y1  (String.fromInt my1)
+    , x2  (String.fromInt mx2)
+    , y2  (String.fromInt my2)
     , stroke  "blue"
     , strokeWidth  "5"
     , strokeLinecap  "round"
     ]
   []
-  ]
-lineHorizontal =
-  [line
-    [x1  "200"
-    , y1  "400"
-    , x2  "240"
-    , y2  "400"
-    , stroke  "purple"
-    , strokeWidth  "5"
-    , strokeLinecap  "round"
-    ]
-    []
-    ]
+  
+
 createViewboxDimensions w h =
     let
         width = String.fromInt (w)

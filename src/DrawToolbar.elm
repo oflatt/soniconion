@@ -3,6 +3,8 @@ module DrawToolbar exposing (drawToolBar)
 import Model exposing (..)
 import SvgAssets
 
+import Dict exposing (Dict)
+
 import Browser
 import Css exposing (..)
 import Html
@@ -18,7 +20,8 @@ builtInToSvg yPos builtInSpec =
     let 
         (name, nameList) = builtInSpec
     in
-    SvgAssets.drawBuiltIn name yPos
+    SvgAssets.drawBuiltIn (BuiltIn []
+                          name) yPos Dict.empty
 
 allBuiltInFunctions : Int -> Int -> Int -> BuiltInList -> List (Svg msg)
 allBuiltInFunctions offset twidth theight funcList =
