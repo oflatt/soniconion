@@ -33,21 +33,25 @@ type Input = Output Id
 type alias Onion = List Function
 type alias Function = List Call
 
-type alias BuiltInSpec = (String, (List String))
+type alias BuiltInSpec = (String, ArgList)
 type alias BuiltInList = List BuiltInSpec
 
+-- infinite has a minimum number of args
+type ArgList = Finite (List String)
+             | Infinite Int
 
+waveList : List BuiltInSpec
 waveList =
-           [("sine", ["duration", "frequency"])
-           ,("sleep", [])]
-specialFunctionList = [("join", ["wave1", "wave2"])
-                   ]
+           [("sine", Finite ["duration", "frequency"])
+           ,("sleep", Finite [])]
+specialFunctionList = [("join", Infinite 0)
+                      ,("sequence", Infinite 0)]
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ specialFunctionList
                       
 
 -- maps function names to a list of arg names
-builtInFunctions : Dict String (List String)
+builtInFunctions : Dict String ArgList
 builtInFunctions =
     Dict.fromList builtInFunctionList
 waveFunctions = Dict.fromList waveList

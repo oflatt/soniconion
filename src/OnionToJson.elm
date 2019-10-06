@@ -70,7 +70,7 @@ inputTuples inputs names =
                                              
 
                                   
-specialMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> List String -> Result Error Encode.Value
+specialMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
 specialMatched builtIn callDict inputsJson argumentNames =    
     case builtIn.waveType of
         "join" -> 
@@ -79,18 +79,36 @@ specialMatched builtIn callDict inputsJson argumentNames =
                     ,("notes", Encode.list identity inputsJson
                      )
                     ]))
+        "sequence" ->
+            Ok (Encode.object ([
+                     ("type", Encode.string "inorder")
+                    ,("notes", Encode.list identity inputsJson
+                     )
+                    ]))
         _ -> Err "Undefined for special built in"  
                      
-waveMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> List String -> Result Error Encode.Value
+waveMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
 waveMatched builtIn callDict inputsJson argumentNames =
-    (inputTuples inputsJson argumentNames)
-        |> andThen
-           (\tuples ->
+    case argumentNames of
+        Finite argStrings ->
+            (inputTuples inputsJson argStrings)
+                |> andThen
+                   (\tuples ->
+                        Ok (Encode.object ([
+                                 ("type", Encode.string "note")
+                                ,("wave", Encode.string builtIn.waveType)
+                        ] ++ tuples)))
+        Infinite n ->
+            if n <= (List.length inputsJson)
+            then
                 Ok (Encode.object ([
                          ("type", Encode.string "note")
                         ,("wave", Encode.string builtIn.waveType)
-                        ] ++ tuples)))              
-                  
+                        ,("args", Encode.list identity inputsJson)
+                        ] ))
+            else
+                Err "Not enough arguments"
+                    
 builtInWithInputs : BuiltIn -> Dict Id Call -> List Encode.Value -> Result Error Encode.Value
 builtInWithInputs builtIn callDict inputsJson =
     let getWave = Dict.get builtIn.waveType waveFunctions
@@ -101,10 +119,10 @@ builtInWithInputs builtIn callDict inputsJson =
                 in
                     case getSpecial of
                         Nothing -> Err "Not a built in function"
-                        Just specialSpec ->
-                            specialMatched builtIn callDict inputsJson specialSpec
-            Just waveSpec ->
-                waveMatched builtIn callDict inputsJson waveSpec
+                        Just specialArgs ->
+                            specialMatched builtIn callDict inputsJson specialArgs
+            Just waveArgs ->
+                waveMatched builtIn callDict inputsJson waveArgs
     
     
 builtInToJson : BuiltIn -> Dict Id Call -> Result Error Encode.Value
