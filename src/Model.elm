@@ -3,6 +3,7 @@ module Model exposing (..)
 import Url
 import Browser
 import Browser.Navigation as Nav
+import Dict exposing (Dict)
 
 type Msg = MouseOver PageName
          | MouseLeave PageName
@@ -32,10 +33,20 @@ type Input = Output Id
 type alias Onion = List Function
 type alias Function = List Call
 
-type alias Wave = {inputs: (Input, Input)
-                  ,waveType: String}
+-- maps function names to a list of arg names
+builtInFunctions : Dict String (List String)
+builtInFunctions =
+    Dict.fromList
+        [("sine", ["duration", "frequency"])
+        ,("sleep", [])
+        ,("join", ["wave1", "wave2"])
+         ]
+
+type alias BuiltIn = {inputs: List Input
+                     ,waveType: String}
+
 type alias Play = {input: Input}
-type Expr = WaveE Wave
+type Expr = BuiltInE BuiltIn
           | PlayE Play
           
 type alias Call = {id: Id,
@@ -61,7 +72,7 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-sine = (Call 1 (WaveE (Wave (Const 1, Const 440) "sine")))
+sine = (Call 1 (BuiltInE (BuiltIn [Const 1, Const 440] "sine")))
 play = (Call 2 (PlayE (Play (Output 1))))
        
 -- play is assumed to be at the end
