@@ -54,8 +54,8 @@ mainShape =
         ]
 
 -- shape for functionName objects
-functionNameshape: Int -> (Svg msg)
-functionNameshape yPos =
+functionNameshape: String -> Int -> (Svg msg)
+functionNameshape name yPos =
   Svg.node "g"
       [
        transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
@@ -84,8 +84,20 @@ functionNameshape yPos =
             , strokeWidth "2"
             ]
             []
-      ]
-      
+       , text_
+          [ x "100"
+          , y "40"
+          , fill "white"
+          , fontSize "25"
+          , textAnchor "middle"
+          , dominantBaseline "central"
+          ]
+          [ Svg.text name
+          ]
+          ]
+
+
+
 methodNameShape =
     [ circle
           [ cx "50"
@@ -107,7 +119,7 @@ methodNameShape =
         ]
       []
     ]
-    
+
 lineVertical=
   [line
     [x1  "260"
