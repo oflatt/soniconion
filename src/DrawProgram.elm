@@ -55,7 +55,11 @@ mainShape =
         [ Svg.text "Main"
         ]
         ]
-functionNameshape =
+
+-- shape for functionName objects
+functionNameshape: Int -> (Svg msg)
+functionNameshape counter =
+  Svg.node "functionNameshape" []
         {-svg
           [ viewBox "0 0 400 400"
           , width "400"
@@ -133,6 +137,43 @@ createViewboxDimensions modelWidth modelHeight =
     in
         width ++ " " ++ height
 
+-- function for drawing waves
+drawWave: Wave -> Int -> (Svg msg)
+drawWave wave counter =
+  functionNameshape counter
+
+-- function for drawing play
+drawPlay: Play -> Int -> (Svg msg)
+drawPlay play counter =
+  functionNameshape counter
+
+-- function for drawing Expression objects
+drawExpression: Expr -> Int -> (Svg msg)
+drawExpression expr counter =
+  case expr of
+    WaveE wave -> drawWave wave counter
+    PlayE play -> drawPlay play counter
+
+
+-- function for draw call objects
+drawCall: Call -> Int -> (Svg msg)
+drawCall call counter = 
+  drawExpression call.expr counter
+
+-- function for drawin function objects
+drawFunc: Function -> Int -> List (Svg msg)
+drawFunc func counter = 
+  case func of
+    [] -> []
+    (call::calls) -> (drawCall call counter)::(drawFunc calls (counter + 1))
+
+-- function for drawing the onion
+drawOnion: Onion -> List (Svg msg)
+drawOnion onion = 
+  case onion of
+    [] -> []
+    (func::funcs) -> (drawFunc func 0) ++ (drawOnion funcs)
+
 drawProgram : Model -> Int -> Int -> Html Msg
 drawProgram model width height =
     fromUnstyled
@@ -142,4 +183,5 @@ drawProgram model width height =
         , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions width height) -- define the viewbox
         , display "inline-block"
         ]
-         (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
+         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
+         (drawOnion model.program))

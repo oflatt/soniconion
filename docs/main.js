@@ -8234,6 +8234,11 @@ var author$project$DrawProgram$createViewboxDimensions = F2(
 	});
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
+var elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
+	return _VirtualDom_nodeNS(
+		_VirtualDom_noScript(tag));
+};
+var elm$svg$Svg$node = elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
 var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
 var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
@@ -8245,147 +8250,86 @@ var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var author$project$DrawProgram$functionNameshape = _List_fromArray(
-	[
-		A2(
-		elm$svg$Svg$circle,
+var author$project$DrawProgram$functionNameshape = function (counter) {
+	return A3(
+		elm$svg$Svg$node,
+		'functionNameshape',
+		_List_Nil,
 		_List_fromArray(
 			[
-				elm$svg$Svg$Attributes$cx('50'),
-				elm$svg$Svg$Attributes$cy('280'),
-				elm$svg$Svg$Attributes$r('20'),
-				elm$svg$Svg$Attributes$fill('red'),
-				elm$svg$Svg$Attributes$stroke('red'),
-				elm$svg$Svg$Attributes$strokeWidth('3')
-			]),
-		_List_Nil),
-		A2(
-		elm$svg$Svg$rect,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x('30'),
-				elm$svg$Svg$Attributes$y('280'),
-				elm$svg$Svg$Attributes$width('200'),
-				elm$svg$Svg$Attributes$height('80'),
-				elm$svg$Svg$Attributes$fill('red'),
-				elm$svg$Svg$Attributes$stroke('red'),
-				elm$svg$Svg$Attributes$strokeWidth('2')
-			]),
-		_List_Nil)
-	]);
-var elm$svg$Svg$line = elm$svg$Svg$trustedNode('line');
-var elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
-var elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
-var elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
-var elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
-var elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var author$project$DrawProgram$lineHorizontal = _List_fromArray(
-	[
-		A2(
-		elm$svg$Svg$line,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x1('200'),
-				elm$svg$Svg$Attributes$y1('400'),
-				elm$svg$Svg$Attributes$x2('240'),
-				elm$svg$Svg$Attributes$y2('400'),
-				elm$svg$Svg$Attributes$stroke('purple'),
-				elm$svg$Svg$Attributes$strokeWidth('5'),
-				elm$svg$Svg$Attributes$strokeLinecap('round')
-			]),
-		_List_Nil)
-	]);
-var author$project$DrawProgram$lineVertical = _List_fromArray(
-	[
-		A2(
-		elm$svg$Svg$line,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x1('260'),
-				elm$svg$Svg$Attributes$y1('400'),
-				elm$svg$Svg$Attributes$x2('260'),
-				elm$svg$Svg$Attributes$y2('460'),
-				elm$svg$Svg$Attributes$stroke('blue'),
-				elm$svg$Svg$Attributes$strokeWidth('5'),
-				elm$svg$Svg$Attributes$strokeLinecap('round')
-			]),
-		_List_Nil)
-	]);
-var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
-var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
-var elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
-var author$project$DrawProgram$mainShape = _List_fromArray(
-	[
-		A2(
-		elm$svg$Svg$rect,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x('30'),
-				elm$svg$Svg$Attributes$y('50'),
-				elm$svg$Svg$Attributes$width('200'),
-				elm$svg$Svg$Attributes$height('80'),
-				elm$svg$Svg$Attributes$fill('green'),
-				elm$svg$Svg$Attributes$stroke('green'),
-				elm$svg$Svg$Attributes$strokeWidth('2')
-			]),
-		_List_Nil),
-		A2(
-		elm$svg$Svg$rect,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x('30'),
-				elm$svg$Svg$Attributes$y('30'),
-				elm$svg$Svg$Attributes$width('80'),
-				elm$svg$Svg$Attributes$height('30'),
-				elm$svg$Svg$Attributes$fill('green'),
-				elm$svg$Svg$Attributes$stroke('green'),
-				elm$svg$Svg$Attributes$strokeWidth('2')
-			]),
-		_List_Nil),
-		A2(
-		elm$svg$Svg$text_,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x('70'),
-				elm$svg$Svg$Attributes$y('40'),
-				elm$svg$Svg$Attributes$fill('white'),
-				elm$svg$Svg$Attributes$textAnchor('middle'),
-				elm$svg$Svg$Attributes$dominantBaseline('central')
-			]),
-		_List_fromArray(
-			[
-				elm$svg$Svg$text('Main')
-			]))
-	]);
-var author$project$DrawProgram$methodNameShape = _List_fromArray(
-	[
-		A2(
-		elm$svg$Svg$circle,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$cx('50'),
-				elm$svg$Svg$Attributes$cy('165'),
-				elm$svg$Svg$Attributes$r('20'),
-				elm$svg$Svg$Attributes$fill('orange'),
-				elm$svg$Svg$Attributes$stroke('orange'),
-				elm$svg$Svg$Attributes$strokeWidth('3')
-			]),
-		_List_Nil),
-		A2(
-		elm$svg$Svg$rect,
-		_List_fromArray(
-			[
-				elm$svg$Svg$Attributes$x('30'),
-				elm$svg$Svg$Attributes$y('165'),
-				elm$svg$Svg$Attributes$width('200'),
-				elm$svg$Svg$Attributes$height('80'),
-				elm$svg$Svg$Attributes$fill('orange'),
-				elm$svg$Svg$Attributes$stroke('orange'),
-				elm$svg$Svg$Attributes$strokeWidth('2')
-			]),
-		_List_Nil)
-	]);
+				A2(
+				elm$svg$Svg$circle,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$cx('50'),
+						elm$svg$Svg$Attributes$cy('280'),
+						elm$svg$Svg$Attributes$r('20'),
+						elm$svg$Svg$Attributes$fill('red'),
+						elm$svg$Svg$Attributes$stroke('red'),
+						elm$svg$Svg$Attributes$strokeWidth('3')
+					]),
+				_List_Nil),
+				A2(
+				elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('30'),
+						elm$svg$Svg$Attributes$y('280'),
+						elm$svg$Svg$Attributes$width('200'),
+						elm$svg$Svg$Attributes$height('80'),
+						elm$svg$Svg$Attributes$fill('red'),
+						elm$svg$Svg$Attributes$stroke('red'),
+						elm$svg$Svg$Attributes$strokeWidth('2')
+					]),
+				_List_Nil)
+			]));
+};
+var author$project$DrawProgram$drawPlay = F2(
+	function (play, counter) {
+		return author$project$DrawProgram$functionNameshape(counter);
+	});
+var author$project$DrawProgram$drawWave = F2(
+	function (wave, counter) {
+		return author$project$DrawProgram$functionNameshape(counter);
+	});
+var author$project$DrawProgram$drawExpression = F2(
+	function (expr, counter) {
+		if (expr.$ === 'WaveE') {
+			var wave = expr.a;
+			return A2(author$project$DrawProgram$drawWave, wave, counter);
+		} else {
+			var play = expr.a;
+			return A2(author$project$DrawProgram$drawPlay, play, counter);
+		}
+	});
+var author$project$DrawProgram$drawCall = F2(
+	function (call, counter) {
+		return A2(author$project$DrawProgram$drawExpression, call.expr, counter);
+	});
+var author$project$DrawProgram$drawFunc = F2(
+	function (func, counter) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				elm$core$List$cons,
+				A2(author$project$DrawProgram$drawCall, call, counter),
+				A2(author$project$DrawProgram$drawFunc, calls, counter + 1));
+		}
+	});
+var author$project$DrawProgram$drawOnion = function (onion) {
+	if (!onion.b) {
+		return _List_Nil;
+	} else {
+		var func = onion.a;
+		var funcs = onion.b;
+		return _Utils_ap(
+			A2(author$project$DrawProgram$drawFunc, func, 0),
+			author$project$DrawProgram$drawOnion(funcs));
+	}
+};
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
 var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
@@ -8406,13 +8350,7 @@ var author$project$DrawProgram$drawProgram = F3(
 						'0 0 ' + A2(author$project$DrawProgram$createViewboxDimensions, width, height)),
 						elm$svg$Svg$Attributes$display('inline-block')
 					]),
-				_Utils_ap(
-					author$project$DrawProgram$mainShape,
-					_Utils_ap(
-						author$project$DrawProgram$functionNameshape,
-						_Utils_ap(
-							author$project$DrawProgram$methodNameShape,
-							_Utils_ap(author$project$DrawProgram$lineVertical, author$project$DrawProgram$lineHorizontal))))));
+				author$project$DrawProgram$drawOnion(model.program)));
 	});
 var author$project$DrawToolbar$drawToolBar = F3(
 	function (model, twidth, theight) {
@@ -8468,10 +8406,6 @@ var elm$virtual_dom$VirtualDom$keyedNodeNS = F2(
 			namespace,
 			_VirtualDom_noScript(tag));
 	});
-var elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
-	return _VirtualDom_nodeNS(
-		_VirtualDom_noScript(tag));
-};
 var rtfeldman$elm_css$VirtualDom$Styled$accumulateStyles = F2(
 	function (_n0, styles) {
 		var newStyles = _n0.b;
