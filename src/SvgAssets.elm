@@ -85,9 +85,10 @@ functionNameshape name yPos =
             ]
             []
        , text_
-          [ x "70"
+          [ x "100"
           , y "40"
           , fill "white"
+          , fontSize "25"
           , textAnchor "middle"
           , dominantBaseline "central"
           ]
@@ -95,8 +96,8 @@ functionNameshape name yPos =
           ]
           ]
 
-      
-      
+
+
 methodNameShape =
     [ circle
           [ cx "50"
@@ -118,7 +119,7 @@ methodNameShape =
         ]
       []
     ]
-    
+
 lineVertical=
   [line
     [x1  "260"
