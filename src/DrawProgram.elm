@@ -143,9 +143,9 @@ createViewboxDimensions modelWidth modelHeight =
     in
         width ++ " " ++ height
 
--- function for drawing waves
-drawWave: Wave -> Int -> (Svg msg)
-drawWave wave counter =
+-- function for drawing builtIns
+drawBuiltIn: BuiltIn -> Int -> (Svg msg)
+drawBuiltIn builtIn counter =
   functionNameshape (counter * 200)
 
 -- function for drawing play
@@ -157,7 +157,7 @@ drawPlay play counter =
 drawExpression: Expr -> Int -> (Svg msg)
 drawExpression expr counter =
   case expr of
-    WaveE wave -> drawWave wave counter
+    BuiltInE builtIn -> drawBuiltIn builtIn counter
     PlayE play -> drawPlay play counter
 
 
