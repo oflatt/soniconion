@@ -101,10 +101,34 @@ shape3 =
         ]
       []
     ]
+lineVertical=
+  [line
+    [x1  "260"
+    , y1  "400"
+    , x2  "260"
+    , y2  "460"
+    , stroke  "blue"
+    , strokeWidth  "5"
+    , strokeLinecap  "round"
+    ]
+  []
+  ]
+lineHorizontal =
+  [line
+    [x1  "200"
+    , y1  "400"
+    , x2  "240"
+    , y2  "400"
+    , stroke  "purple"
+    , strokeWidth  "5"
+    , strokeLinecap  "round"
+    ]
+    []
+    ]
 createViewboxDimensions modelWidth modelHeight =
     let
-        width = String.fromInt (400)
-        height = String.fromInt (400)
+        width = String.fromInt (600)
+        height = String.fromInt (600)
     in
         width ++ " " ++ height
 
@@ -115,4 +139,4 @@ drawProgram model =
         , Svg.Attributes.height(String.fromInt model.windowHeight) -- define the height of the svg
         , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
         ]
-         (shape1++shape2++shape3))
+         (shape1++shape2++shape3++lineVertical++lineHorizontal))
