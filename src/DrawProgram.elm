@@ -9,7 +9,8 @@ import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 import Html.Attributes exposing (id)
 import Svg
 import Svg.Attributes
-
+import Svg.Events
+import Model exposing (..)
 
 createViewboxDimensions modelWidth modelHeight = 
     let
@@ -26,8 +27,9 @@ drawProgram model =
         , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
         ]
         [ Svg.rect
-              [ Svg.Attributes.x "10"
-              , Svg.Attributes.y "10"
+              [ Svg.Attributes.x model.testx
+              , Svg.Events.onMouseDown (Move)
+              , Svg.Attributes.y model.testy
               , Svg.Attributes.width(String.fromInt (model.windowWidth // 20))
               , Svg.Attributes.height(String.fromInt (model.windowHeight // 20))
               , Svg.Attributes.rx "15"

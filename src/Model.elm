@@ -4,6 +4,19 @@ import Url
 import Browser
 import Browser.Navigation as Nav
 
+import Json.Decode as Decode
+
+type alias MousePos =
+    { x : Int
+    , y : Int
+    }
+
+mouseDecoder : Decode.Decoder MousePos
+mouseDecoder = 
+    Decode.map2 MousePos
+        (Decode.field "clientX" Decode.int)
+        (Decode.field "clientY" Decode.int)
+
 type Msg = MouseOver PageName
          | MouseLeave PageName
          | LinkClicked Browser.UrlRequest
@@ -11,6 +24,9 @@ type Msg = MouseOver PageName
          | UrlChanged Url.Url
          | WindowResize Int Int
          | PlaySound
+         | Move
+         | MouseMoved MousePos
+         | MouseRelease
 
 urlToPageName url =
     if url.path == "/" then
@@ -20,7 +36,7 @@ urlToPageName url =
 
 
 type alias PageName = String
-type alias MousePos = (Float, Float)
+--type alias MousePos = (Float, Float)
 
 type alias Id = Int
 type alias Constant = Int
@@ -46,7 +62,10 @@ type alias Model = {currentPage: PageName
                    ,indexurl : String
                    ,windowWidth : Int
                    ,windowHeight : Int
-                   ,program : Onion}
+                   ,program : Onion
+                   ,testx : String
+                   ,testy : String
+                   ,drag : Bool}
 
 getindexurl url =
     let str = (Url.toString url)
@@ -76,5 +95,8 @@ initialModel flags url key = ((Model
                                    (getindexurl url)
                                    flags.innerWindowWidth
                                    flags.innerWindowHeight
-                                   initialProgram),
+                                   initialProgram
+                                   "20"
+                                   "20"
+                                   False),
                                   Cmd.none)

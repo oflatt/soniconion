@@ -38,9 +38,23 @@ changeByName model pageName =
 
     in changeUrl model newurl pageName
 
+mouse_scale_x : Int -> Int
+mouse_scale_x mouse_x = (mouse_x // 5) - 15 
+
+mouse_scale_y : Int -> Int
+mouse_scale_y mouse_y = (mouse_y // 5) - 40
          
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
+                       MouseRelease ->
+                           ({model | drag = False}
+                           ,Cmd.none)
+                       MouseMoved pos ->
+                           ({model | testx = String.fromInt (mouse_scale_x pos.x)
+                            ,testy = String.fromInt (mouse_scale_y pos.y)}, Cmd.none)
+                       Move ->
+                           ({model | drag = True}
+                           ,(log "Mouse" Cmd.none))
                        PlaySound ->
                            (model
                            ,runSound (callToJson sine))
