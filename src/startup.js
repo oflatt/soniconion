@@ -45,8 +45,8 @@ app.ports.runSound.subscribe(function(msg) {
 	console.log("aasdfasdfasdf");
 	console.log(msg);
 
-	//Tone.Transport.stop();
-	//Tone.Transport.cancel();
+	Tone.Transport.stop();
+	Tone.Transport.cancel();
 	process_notes(msg, 0);
 	Tone.Transport.start("+0", "0");
 });
