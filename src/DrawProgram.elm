@@ -19,7 +19,7 @@ import Browser
 import Html.Events exposing (onInput)
 
 
-shape1 =
+mainShape =
  {- svg
     [ viewBox "0 0 400 400"
     , width "400"
@@ -55,7 +55,7 @@ shape1 =
         [ Svg.text "Main"
         ]
         ]
-shape2 =
+functionNameshape =
         {-svg
           [ viewBox "0 0 400 400"
           , width "400"
@@ -81,7 +81,7 @@ shape2 =
             ]
           []
         ]
-shape3 =
+methodNameShape =
     [ circle
         [ cx "50"
         , cy "165"
@@ -142,4 +142,4 @@ drawProgram model width height =
         , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions width height) -- define the viewbox
         , display "inline-block"
         ]
-         (shape1++shape2++shape3++lineVertical++lineHorizontal))
+         (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
