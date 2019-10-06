@@ -7,7 +7,7 @@ import Json.Encode as Encode
 import Dict exposing (Dict)
 import Tuple
 import List
-
+import Result exposing (andThen)
 
 
 type alias Error = String
@@ -68,27 +68,43 @@ inputTuples inputs names =
                         Nothing -> Err "Bad input tuples"
                         Just r -> Ok r
                                              
-                                             
-builtInMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> List String -> Result Error Encode.Value
-builtInMatched builtIn callDict inputsJson argumentNames =
-    let res = (inputTuples inputsJson argumentNames)
-    in
-      case res of
-          Err e -> Err e
-          Ok o -> Ok (Encode.object ([
-                           ("type", Encode.string "note")
-                          ,("wave", Encode.string builtIn.waveType)
-                          ] ++ o))
-                  
+
+                                  
+specialMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> List String -> Result Error Encode.Value
+specialMatched builtIn callDict inputsJson argumentNames =    
+    case builtIn.waveType of
+        "join" -> 
+            Ok (Encode.object ([
+                     ("type", Encode.string "together")
+                    ,("notes", Encode.list identity inputsJson
+                     )
+                    ]))
+        _ -> Err "Undefined for special built in"  
+                     
+waveMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> List String -> Result Error Encode.Value
+waveMatched builtIn callDict inputsJson argumentNames =
+    (inputTuples inputsJson argumentNames)
+        |> andThen
+           (\tuples ->
+                Ok (Encode.object ([
+                         ("type", Encode.string "note")
+                        ,("wave", Encode.string builtIn.waveType)
+                        ] ++ tuples)))              
                   
 builtInWithInputs : BuiltIn -> Dict Id Call -> List Encode.Value -> Result Error Encode.Value
 builtInWithInputs builtIn callDict inputsJson =
-    let argCount = Dict.get builtIn.waveType builtInFunctions
+    let getWave = Dict.get builtIn.waveType waveFunctions
     in
-        case argCount of
-            Nothing -> Err "Not a built in func"
-            Just argC ->
-                    builtInMatched builtIn callDict inputsJson argC
+        case getWave of
+            Nothing ->
+                let getSpecial = Dict.get builtIn.waveType specialFunctions
+                in
+                    case getSpecial of
+                        Nothing -> Err "Not a built in function"
+                        Just specialSpec ->
+                            specialMatched builtIn callDict inputsJson specialSpec
+            Just waveSpec ->
+                waveMatched builtIn callDict inputsJson waveSpec
     
     
 builtInToJson : BuiltIn -> Dict Id Call -> Result Error Encode.Value

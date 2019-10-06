@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "soniconion.com",
+  "title": "Sonic Onion",
+  "description": "A visual music programming language for everyone",
+  "type": "object",
+
+  "definitions": {
+    "note": {
+      "type": "object",
+      "properties": {
+	"type": "note",
+	"duration": {"type":"string"},
+	"frequency": {"type":"string"},
+	"wave" : {"type":"string"},
+      },
+      "minProperties": 4
+    },
+    "together" : {
+      "type" : "object",
+      "properties": {
+	"type": "together",// this "type" is a variable literal
+	"notes": {
+	  "type": "array",
+	  "items": { "$ref": "#/definitions" }
+	},
+	"minProperties": 2,
+      }
+    }
+  },
+  
+
+  "additionalProperties": false
+}
