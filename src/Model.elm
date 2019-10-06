@@ -23,7 +23,7 @@ type alias PageName = String
 type alias MousePos = (Float, Float)
 
 type alias Id = Int
-type alias Constant = Int
+type alias Constant = Float
 -- id of function output or a constant
 type Input = Output Id
            | Const Constant

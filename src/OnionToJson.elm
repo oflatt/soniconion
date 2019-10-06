@@ -8,6 +8,7 @@ import Dict exposing (Dict)
 import Tuple
 import List
 
+
 callHash : Function -> Dict Id Call -> Dict Id Call
 callHash func dict =
     case func of
@@ -26,7 +27,7 @@ inputToJson input callDict =
             case Dict.get id callDict of
                 Just call -> callToJson call callDict
                 Nothing -> Encode.object [] -- Very bad
-        Const c -> Encode.int c
+        Const c -> Encode.string (String.fromFloat c)
 
 inputsToJson : (Input, Input) -> Dict Id Call -> (Encode.Value, Encode.Value)
 inputsToJson inputs callDict =
@@ -38,7 +39,8 @@ waveToJson wave callDict =
             inputsToJson wave.inputs callDict
     in
         Encode.object [
-             ("type", Encode.string wave.waveType)
+             ("type", Encode.string "note")
+            ,("wave", Encode.string wave.waveType)
             ,("duration", (Tuple.first inputsJson))
             ,("frequency", (Tuple.second inputsJson))
              ]
@@ -73,11 +75,15 @@ onionToJsonList : Onion -> List Encode.Value
 onionToJsonList onion =
     case onion of
         [] -> []
-        (f::fs) -> (functionToJson f) :: (onionToJsonList fs)
+        -- TODO: parse other functions and make them available
+        (f::fs) -> [functionToJson f]
         
 onionToJson : Onion -> Encode.Value
 onionToJson onion =
-    Encode.list identity (onionToJsonList onion)
+    Encode.object [
+         ("type", Encode.string "inorder")
+        , ("notes", Encode.list identity (onionToJsonList onion))
+        ]
 
 
  --      Test Json
