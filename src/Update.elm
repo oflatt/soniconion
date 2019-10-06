@@ -51,7 +51,7 @@ update msg model = case msg of
                            ,Cmd.none)
                        MouseMoved pos ->
                            ({model | testx = String.fromInt (mouse_scale_x pos.x)
-                            ,testy = String.fromInt (mouse_scale_y pos.y)}, Cmd.none)
+                            ,testy = String.fromInt (mouse_scale_y pos.y)}, (log (String.fromInt pos.x) Cmd.none))
                        Move ->
                            ({model | drag = True}
                            ,(log "Mouse" Cmd.none))

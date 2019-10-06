@@ -18,6 +18,8 @@ import Browser
 
 import Html.Events exposing (onInput)
 
+--- Sam import
+import Svg.Events
 
 shape1 =
  {- svg
@@ -33,6 +35,7 @@ shape1 =
         , fill "green"
         , stroke "green"
         , strokeWidth "2"
+        , Svg.Events.onMouseDown (Move)
         ]
         []
      , rect
@@ -143,3 +146,25 @@ drawProgram model width height =
         , display "inline-block"
         ]
          (shape1++shape2++shape3++lineVertical++lineHorizontal))
+
+{-
+import Svg.Events
+
+drawProgram model =
+    fromUnstyled
+    (Svg.svg
+        [ Svg.Attributes.width(String.fromInt model.windowWidth) -- define the width of the svg
+        , Svg.Attributes.height(String.fromInt model.windowHeight) -- define the height of the svg
+        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
+        ]
+        [ Svg.rect
+              [ Svg.Attributes.x model.testx
+              , Svg.Events.onMouseDown (Move)
+              , Svg.Attributes.y model.testy
+              , Svg.Attributes.width(String.fromInt (model.windowWidth // 20))
+              , Svg.Attributes.height(String.fromInt (model.windowHeight // 20))
+              , Svg.Attributes.rx "15"
+              , Svg.Attributes.ry "15"
+              ]
+              []])
+-}
