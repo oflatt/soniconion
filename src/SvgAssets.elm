@@ -13,6 +13,8 @@ import Svg.Attributes exposing (..)
 
 blockSpacing = 150
 paddingSize = 20
+viewportWidth = 600
+viewportHeight = 600
 
 mainShape =
  {- svg
@@ -130,9 +132,9 @@ lineHorizontal =
     ]
     []
     ]
-createViewboxDimensions modelWidth modelHeight =
+createViewboxDimensions w h =
     let
-        width = String.fromInt (600)
-        height = String.fromInt (600)
+        width = String.fromInt (w)
+        height = String.fromInt (h)
     in
         width ++ " " ++ height

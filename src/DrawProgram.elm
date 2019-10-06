@@ -62,7 +62,7 @@ drawProgram model width height =
     (Svg.svg
         [ Svg.Attributes.width(String.fromInt width) -- define the width of the svg
         , Svg.Attributes.height(String.fromInt height) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions width height) -- define the viewbox
+        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions SvgAssets.viewportWidth SvgAssets.viewportHeight) -- define the viewbox
         , display "inline-block"
         ]
          -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))

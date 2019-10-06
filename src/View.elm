@@ -141,14 +141,15 @@ programPage : Model -> Html Msg
 programPage model =
     let toolbarWidth =
             Basics.round (toolbarProportion * (toFloat model.windowWidth))
+        programHeight = ((model.windowHeight-titleHeight)-buttonHeight - scrollbarWidth)
     in
         div [css[display (inlineBlock)]]
             [(drawToolBar
                   model
                   toolbarWidth
-                  ((model.windowHeight-titleHeight)-buttonHeight))
+                  programHeight)
             ,(drawProgram
                   model
                   (model.windowWidth-scrollbarWidth-toolbarWidth)
-                  ((model.windowHeight-titleHeight)-buttonHeight))
+                  programHeight)
             ]

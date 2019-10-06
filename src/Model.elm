@@ -33,14 +33,20 @@ type Input = Output Id
 type alias Onion = List Function
 type alias Function = List Call
 
--- maps function names to a list of arg names
-builtInFunctions : Dict String (List String)
-builtInFunctions =
-    Dict.fromList
-        [("sine", ["duration", "frequency"])
+type alias BuiltInSpec = (String, (List String))
+type alias BuiltInList = List BuiltInSpec
+    
+builtInFunctionList : BuiltInList
+builtInFunctionList = [("sine", ["duration", "frequency"])
         ,("sleep", [])
         ,("join", ["wave1", "wave2"])
          ]
+
+-- maps function names to a list of arg names
+builtInFunctions : Dict String (List String)
+builtInFunctions =
+    Dict.fromList builtInFunctionList
+        
 
 type alias BuiltIn = {inputs: List Input
                      ,waveType: String}
