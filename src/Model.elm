@@ -38,9 +38,9 @@ type alias BuiltInList = List BuiltInSpec
     
 builtInFunctionList : BuiltInList
 builtInFunctionList = [("sine", ["duration", "frequency"])
-        ,("sleep", [])
-        ,("join", ["wave1", "wave2"])
-         ]
+                      ,("sleep", [])
+                      ,("join", ["wave1", "wave2"])
+                      ]
 
 -- maps function names to a list of arg names
 builtInFunctions : Dict String (List String)
