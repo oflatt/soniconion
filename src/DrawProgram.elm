@@ -18,6 +18,7 @@ import Browser
 
 import Html.Events exposing (onInput)
 
+paddingSize = 20
 
 mainShape =
  {- svg
@@ -58,54 +59,59 @@ mainShape =
 
 -- shape for functionName objects
 functionNameshape: Int -> (Svg msg)
-functionNameshape counter =
-  Svg.node "functionNameshape" []
-        {-svg
-          [ viewBox "0 0 400 400"
-          , width "400"
-          , height "400"
-          ]-}
-          [ circle
-            [ cx "50"
-            , cy "280"
+functionNameshape yPos =
+  Svg.node "g"
+      [
+       transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
+      ]
+      {-svg
+      [ viewBox "0 0 400 400"
+      , width "400"
+      , height "400"
+      ]-}
+      [ circle
+            [ cx "20"
+            , cy "20"
             , r "20"
             , fill "red"
             , stroke "red"
             , strokeWidth "3"
             ]
-          []
-          , rect
-              [ x "30"
-              , y "280"
-              , width "200"
-              , height "80"
-              , fill "red"
-              , stroke "red"
-              , strokeWidth "2"
+            []
+      , rect
+            [ x "0"
+            , y "20"
+            , width "200"
+            , height "80"
+            , fill "red"
+            , stroke "red"
+            , strokeWidth "2"
             ]
-          []
-        ]
+            []
+      ]
+      
 methodNameShape =
     [ circle
-        [ cx "50"
-        , cy "165"
-        , r "20"
-        , fill "orange"
-        , stroke "orange"
-      , strokeWidth "3"
-        ]
-      []
-      , rect
-        [ x "30"
-        , y "165"
-        , width "200"
-        , height "80"
-        , fill "orange"
-        , stroke "orange"
-        , strokeWidth "2"
+          [ cx "50"
+          , cy "165"
+          , r "20"
+          , fill "orange"
+          , stroke "orange"
+          , strokeWidth "3"
+          ]
+          []
+    , rect
+          [ x "30"
+          , y "165"
+          , width "200"
+          , height "80"
+          , fill "orange"
+          , stroke "orange"
+          , strokeWidth "2"
         ]
       []
     ]
+    
 lineVertical=
   [line
     [x1  "260"
@@ -140,12 +146,12 @@ createViewboxDimensions modelWidth modelHeight =
 -- function for drawing waves
 drawWave: Wave -> Int -> (Svg msg)
 drawWave wave counter =
-  functionNameshape counter
+  functionNameshape (counter * 200)
 
 -- function for drawing play
 drawPlay: Play -> Int -> (Svg msg)
 drawPlay play counter =
-  functionNameshape counter
+  functionNameshape (counter * 200)
 
 -- function for drawing Expression objects
 drawExpression: Expr -> Int -> (Svg msg)
