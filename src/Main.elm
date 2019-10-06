@@ -20,10 +20,9 @@ import Url
 import Url.Builder
 import Tuple
 
-
 import Debug exposing (log)
 import Json.Encode as E
-
+import Json.Decode as Decode
 
 main : Program Flags Model Msg
 main =
@@ -40,9 +39,10 @@ main =
 
 -- SUBSCRIPTIONS
 
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Browser.Events.onResize WindowResize
-
-
-                      
+    Sub.batch
+    [ Browser.Events.onResize WindowResize
+    , if model.drag then Browser.Events.onMouseMove (Decode.map MouseMoved mouseDecoder) else Sub.none
+    , Browser.Events.onMouseUp (Decode.succeed MouseRelease) ]
