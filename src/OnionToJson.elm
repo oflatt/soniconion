@@ -45,9 +45,13 @@ waveToJson wave callDict =
             ,("frequency", (Tuple.second inputsJson))
              ]
 
+
+playToJson : Play -> Dict Id Call -> Encode.Value
 playToJson play callDict =
-    -- TODO make less assumptions, check not literal ect
-    inputToJson play.input callDict
+    -- TODO error in const case
+    case play.input of
+        Const c -> Encode.object []
+        Output o -> inputToJson play.input callDict
 
 exprToJson : Expr -> Dict Id Call -> Encode.Value
 exprToJson expr callDict =
