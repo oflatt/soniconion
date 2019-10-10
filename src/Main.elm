@@ -44,5 +44,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
     [ Browser.Events.onResize WindowResize
-    , if model.drag then Browser.Events.onMouseMove (Decode.map MouseMoved mouseDecoder) else Sub.none
-    , Browser.Events.onMouseUp (Decode.succeed MouseRelease) ]
+    , Browser.Events.onMouseMove (Decode.map MouseMoved mouseDecoder)
+    , Browser.Events.onMouseUp (Decode.succeed MouseRelease)]
+
+    -- mouse down handled by svg objects and buttons

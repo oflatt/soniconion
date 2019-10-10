@@ -29,7 +29,6 @@ paddingSize = 20
 viewportWidth = 600
 viewportHeight = 600
 
-
                  
 mainShape =
  {- svg

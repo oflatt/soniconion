@@ -25,15 +25,23 @@ type Msg = MouseOver PageName
          | UrlChanged Url.Url
          | WindowResize Int Int
          | PlaySound
-         | Move Int
          | MouseMoved MousePos
          | MouseRelease
+         | Clicked Id
 
+pageNames : List String
+pageNames = ["Home", "Unused"]
+           
 urlToPageName url =
-    if url.path == "/" then
-        "Home"
-    else
-        (String.slice 1 (String.length url.path) url.path)
+    if (String.length url.path) > 1
+    then
+        let potentialName = (String.slice 1 (String.length url.path) url.path)
+        in
+         if List.member potentialName pageNames
+         then potentialName
+         else "Home"  
+    else "Home"
+        
 
 
 type alias PageName = String
@@ -83,7 +91,11 @@ type Expr = BuiltInE BuiltIn
           
 type alias Call = {id: Id,
                    expr: Expr}
-    
+
+type alias MouseState = {mouseX : Int
+                        ,mouseY : Int
+                        ,selectedId : Int
+                        ,mousePressedp : Bool}
 type alias Model = {currentPage: PageName
                    ,highlightedButton: PageName
                    ,urlkey : Nav.Key
@@ -92,12 +104,7 @@ type alias Model = {currentPage: PageName
                    ,windowWidth : Int
                    ,windowHeight : Int
                    ,program : Onion
-                   ,start_x : Int
-                   ,start_y : Int
-                   ,dx : Int
-                   ,dy : Int
-                   ,sel_id : Int
-                   ,drag : Bool}
+                   ,mouseState : MouseState}
 
 getindexurl url =
     let str = (Url.toString url)
@@ -132,10 +139,9 @@ initialModel flags url key = ((Model
                                    flags.innerWindowWidth
                                    flags.innerWindowHeight
                                    initialProgram
-                                   0
-                                   0
-                                   0
-                                   0
-                                   -1
-                                   False),
+                                   (MouseState
+                                        0
+                                        0
+                                        0
+                                        False)),
                                    Cmd.none)

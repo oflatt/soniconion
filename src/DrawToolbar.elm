@@ -16,21 +16,21 @@ import Svg exposing (Svg)
 import Svg.Attributes
 
 builtInToSvg : Int -> BuiltInSpec -> Svg msg
-builtInToSvg yPos builtInSpec =
+builtInToSvg counter builtInSpec =
     let 
         (name, nameList) = builtInSpec
     in
     SvgAssets.drawBuiltIn (BuiltIn []
-                          name) yPos Dict.empty
+                          name) counter Dict.empty
 
 allBuiltInFunctions : Int -> Int -> Int -> BuiltInList -> List (Svg msg)
-allBuiltInFunctions offset twidth theight funcList =
+allBuiltInFunctions counter twidth theight funcList =
     case funcList of
         [] -> []
-        (f::fs) -> (builtInToSvg offset f) :: (allBuiltInFunctions (offset + SvgAssets.blockSpacing) twidth theight fs)
+        (f::fs) -> (builtInToSvg counter f) :: (allBuiltInFunctions (counter + 1) twidth theight fs)
 
 
-toolBarSvg model twidth theight =
+toolBarSvg twidth theight =
     fromUnstyled
     (Svg.svg
         [ Svg.Attributes.width(String.fromInt twidth) -- define the width of the svg
@@ -39,15 +39,15 @@ toolBarSvg model twidth theight =
                                      SvgAssets.createViewboxDimensions (Basics.round (SvgAssets.viewportWidth / 2)) SvgAssets.viewportHeight) -- define the viewbox
         ]
          -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
-         (allBuiltInFunctions SvgAssets.paddingSize twidth theight builtInFunctionList))
+         (allBuiltInFunctions 0 twidth theight builtInFunctionList))
 
-drawToolBar : Model -> Int -> Int -> Html Msg
-drawToolBar model twidth theight =
+drawToolBar : Int -> Int -> Html Msg
+drawToolBar twidth theight =
     div [css [
           width (px (toFloat twidth))
          ,height (px (toFloat theight))
          ,display (inlineBlock)
          ]
         ]
-        [toolBarSvg model twidth theight]
+        [toolBarSvg twidth theight]
         

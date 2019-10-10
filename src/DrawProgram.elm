@@ -22,11 +22,7 @@ import Html.Events exposing (onInput)
 import Svg.Events
 
 import Debug exposing (log)
-              
--- function for drawing builtIns
---drawBuiltIn: BuiltIn -> Int -> (Svg Msg)
---drawBuiltIn builtIn counter =
-    --SvgAssets.functionNameshape "asdf" (counter * SvgAssets.blockSpacing)
+
 
 -- function for drawing play
 drawPlay: Play -> Int -> Dict Id Int -> (Svg Msg)
@@ -42,15 +38,15 @@ drawExpression expr counter idToPos =
 
 -- function for draw call objects
 
-drawCall: Call -> Int -> Dict Id Int -> Model -> (Svg Msg)
-drawCall call counter idToPos model =
-    if call.id == model.sel_id then
+drawCall: Call -> Int -> Dict Id Int -> MouseState -> (Svg Msg)
+drawCall call counter idToPos mouseState =
+    if (call.id == mouseState.selectedId) && mouseState.mousePressedp then
         (Svg.g [
-            transform(("translate(" ++ (String.fromInt model.dx) ++ "," ++ (String.fromInt model.dy) ++ ")")),
-            Svg.Events.onMouseDown (Move call.id)] [(drawExpression call.expr counter idToPos)])
+            transform(("translate(" ++ (String.fromInt mouseState.mouseX) ++ "," ++ (String.fromInt mouseState.mouseY) ++ ")")),
+            Svg.Events.onMouseDown (Clicked call.id)] [(drawExpression call.expr counter idToPos)])
     else
         (Svg.g [
-            Svg.Events.onMouseDown (Move call.id)] [(drawExpression call.expr counter idToPos)])
+            Svg.Events.onMouseDown (Clicked call.id)] [(drawExpression call.expr counter idToPos)])
   
 
       
@@ -61,26 +57,25 @@ idToPosition func dict pos =
                    (Dict.insert e.id pos dict)
                    (pos + 1)
 
-      
+
 -- function for drawin function objects
-drawFunc: Function -> Int -> Dict Id Int -> Model -> List (Svg Msg)
-drawFunc func counter idToPos model = 
+drawFunc: Function -> Int -> Dict Id Int -> MouseState -> List (Svg Msg)
+drawFunc func counter idToPos mouseState = 
   case func of
     [] -> []
-    (call::calls) -> (drawCall call counter idToPos model)::(drawFunc calls (counter + 1) idToPos model)
+    (call::calls) -> (drawCall call counter idToPos mouseState)::(drawFunc calls (counter + 1) idToPos mouseState)
 
 
 -- function for drawing the onion
-drawOnion: Onion -> Model -> List (Svg Msg)
-drawOnion onion model = 
+drawOnion: Onion -> MouseState -> List (Svg Msg)
+drawOnion onion mouseState = 
   case onion of
     [] -> []
-
     (func::funcs) -> (drawFunc func 0
-                          (idToPosition func Dict.empty 0) model) ++ (drawOnion funcs model)
+                          (idToPosition func Dict.empty 0) mouseState) ++ (drawOnion funcs mouseState)
 
-drawProgram : Model -> Int -> Int -> Html Msg
-drawProgram model width height =
+drawProgram : Onion -> MouseState -> Int -> Int -> Html Msg
+drawProgram program mouseState width height =
     fromUnstyled
     (Svg.svg
         [ Svg.Attributes.width(String.fromInt width) -- define the width of the svg
@@ -88,27 +83,4 @@ drawProgram model width height =
         , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions SvgAssets.viewportWidth SvgAssets.viewportHeight) -- define the viewbox
         , display "inline-block"
         ]
-         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
-         (drawOnion model.program model))
-
-{-
-import Svg.Events
-
-drawProgram model =
-    fromUnstyled
-    (Svg.svg
-        [ Svg.Attributes.width(String.fromInt model.windowWidth) -- define the width of the svg
-        , Svg.Attributes.height(String.fromInt model.windowHeight) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ createViewboxDimensions model.windowWidth model.windowHeight) -- define the viewbox
-        ]
-        [ Svg.rect
-              [ Svg.Attributes.x model.testx
-              , Svg.Events.onMouseDown (Move)
-              , Svg.Attributes.y model.testy
-              , Svg.Attributes.width(String.fromInt (model.windowWidth // 20))
-              , Svg.Attributes.height(String.fromInt (model.windowHeight // 20))
-              , Svg.Attributes.rx "15"
-              , Svg.Attributes.ry "15"
-              ]
-              []])
--}
+         (drawOnion program mouseState))

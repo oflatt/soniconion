@@ -1,6 +1,7 @@
 module View exposing (view)
 
 import Model exposing (..)
+import ViewVariables exposing (..)
 import DrawProgram exposing (drawProgram)
 import DrawToolbar exposing (drawToolBar)
 
@@ -16,13 +17,6 @@ import Svg.Attributes
 
 
 
-pageColor = (rgb 247 247 222)
-pageBackgroundColor = (rgb 229 229 208)
-
-scrollbarWidth = 40
-titleHeight = 90
-buttonHeight = 50
-toolbarProportion = 0.25
                
 
 view : Model -> Browser.Document Msg
@@ -40,13 +34,13 @@ view model =
                   ,(makeTitle)
                   
                   ,(pagebutton "Home" model)
-                  ,(pagebutton "Listings" model)
+                  ,(pagebutton "Unused" model)
                       
                   
                   ,(makePage "Home" (programPage model) model)
                       
                   
-                  , (makePage "Listings" (listing "./assets/placeholder.png"
+                  , (makePage "Unused" (listing "./assets/placeholder.png"
                                               "Listing title" model)
                          model)
                   ])]
@@ -135,8 +129,7 @@ listing imgName title model =
                   ,height (pct 50)
                   ]][]
          ,text title]
-
-
+            
 programPage : Model -> Html Msg
 programPage model =
     let toolbarWidth =
@@ -145,11 +138,11 @@ programPage model =
     in
         div [css[display (inlineBlock)]]
             [(drawToolBar
-                  model
                   toolbarWidth
                   programHeight)
             ,(drawProgram
-                  model
+                  model.program
+                  model.mouseState
                   (model.windowWidth-scrollbarWidth-toolbarWidth)
                   programHeight)
             ]

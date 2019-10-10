@@ -20,6 +20,7 @@ port runSound : Encode.Value -> Cmd msg
 
 changeUrl : Model -> Url.Url -> PageName -> (Model, Cmd Msg)
 changeUrl model newurl newPage =
+    
     ( { model | currentPage = newPage
          ,url = newurl}
        , Nav.pushUrl model.urlkey (Url.toString newurl)
@@ -45,34 +46,45 @@ mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 --mouse_scale_y mouse_y = (mouse_y // 5)
-         
+
+
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = case msg of
                        MouseRelease ->
-                           ({model | drag = False}
-                           ,Cmd.none)
+                           let oldMouse = model.mouseState
+                               newMouse =
+                                   {oldMouse | mousePressedp = False}
+                           in
+                               ({model |
+                                     mouseState = newMouse}
+                               ,Cmd.none)
                        MouseMoved pos ->
-                           if model.start_x == -1 then
+                           let oldMouse = model.mouseState
+                               newMouse =
+                                   {oldMouse |
+                                        mouseX = pos.x,
+                                        mouseY = pos.y}
+                           in
                                ({model |
-                                   start_x = (mouse_scale_x pos.x),
-                                   start_y = (mouse_scale_y pos.y),
-                                   dx = 0,
-                                   dy = 0}
+                                     mouseState = newMouse}
                                , Cmd.none)
-                           else
+                       Clicked id ->
+                           let oldMouse = model.mouseState
+                               newMouse = {oldMouse |
+                                               mousePressedp = True,
+                                               selectedId = id}
+                           in
                                ({model |
-                                   dx = (mouse_scale_x pos.x) - model.start_x,
-                                   dy = (mouse_scale_y pos.y) - model.start_y}
-                               , Cmd.none)
-                       Move id ->
-                           ({model | drag = True, sel_id = id, start_x = -1, start_y = -1}
-                           ,(log (String.fromInt id) Cmd.none))
+                                     mouseState = newMouse}
+                               ,Cmd.none)
                        PlaySound ->
                            (model
                            ,runSound (onionToJson model.program))
                        WindowResize newWidth newHeight ->
-                           ({model | windowWidth = newWidth,
-                                                  windowHeight = newHeight},
+                           ({model |
+                                 windowWidth = newWidth,
+                                 windowHeight = newHeight},
                                 Cmd.none)
                        LinkClicked urlRequest ->
                            case urlRequest of
