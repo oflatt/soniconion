@@ -87,7 +87,6 @@ type alias BuiltIn = {inputs: List Input
 
 type alias Play = {input: Input}
 type Expr = BuiltInE BuiltIn
-          | PlayE Play
           
 type alias Call = {id: Id,
                    expr: Expr}
@@ -120,7 +119,7 @@ type alias Flags = {innerWindowWidth : Int,
 sine = (Call 1 (BuiltInE (BuiltIn [Const 1, Const 440] "sine")))
 sine2 = (Call 2 (BuiltInE (BuiltIn [Const 2, Const 640] "sine")))
 join = (Call 3 (BuiltInE (BuiltIn [Output 1, Output 2] "join")))
-play = (Call 1092392 (PlayE (Play (Output 3))))
+play = (Call 1092392 (BuiltInE (BuiltIn [Output 3] "play")))
        
 -- play is assumed to be at the end
 initialProgram : Onion

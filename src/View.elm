@@ -132,17 +132,14 @@ listing imgName title model =
             
 programPage : Model -> Html Msg
 programPage model =
-    let toolbarWidth =
-            Basics.round (toolbarProportion * (toFloat model.windowWidth))
+    let programWidth =
+            model.windowWidth - scrollbarWidth
         programHeight = ((model.windowHeight-titleHeight)-buttonHeight - scrollbarWidth)
     in
         div [css[display (inlineBlock)]]
-            [(drawToolBar
-                  toolbarWidth
-                  programHeight)
-            ,(drawProgram
+            [(drawProgram
                   model.program
                   model.mouseState
-                  (model.windowWidth-scrollbarWidth-toolbarWidth)
+                  programWidth
                   programHeight)
             ]

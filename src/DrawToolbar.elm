@@ -2,8 +2,10 @@ module DrawToolbar exposing (drawToolBar)
 
 import Model exposing (..)
 import SvgAssets
+import ViewVariables
 
 import Dict exposing (Dict)
+import Array exposing (Array)
 
 import Browser
 import Css exposing (..)
@@ -21,7 +23,7 @@ builtInToSvg counter builtInSpec =
         (name, nameList) = builtInSpec
     in
     SvgAssets.drawBuiltIn (BuiltIn []
-                          name) counter Dict.empty
+                          name) counter Dict.empty Array.empty
 
 allBuiltInFunctions : Int -> Int -> Int -> BuiltInList -> List (Svg msg)
 allBuiltInFunctions counter twidth theight funcList =
@@ -36,7 +38,7 @@ toolBarSvg twidth theight =
         [ Svg.Attributes.width(String.fromInt twidth) -- define the width of the svg
         , Svg.Attributes.height(String.fromInt theight) -- define the height of the svg
         , Svg.Attributes.viewBox("0 0 " ++
-                                     SvgAssets.createViewboxDimensions (Basics.round (SvgAssets.viewportWidth / 2)) SvgAssets.viewportHeight) -- define the viewbox
+                                     SvgAssets.createViewboxDimensions (Basics.round (ViewVariables.viewportWidth / 2)) ViewVariables.viewportHeight) -- define the viewbox
         ]
          -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
          (allBuiltInFunctions 0 twidth theight builtInFunctionList))
@@ -49,5 +51,5 @@ drawToolBar twidth theight =
          ,display (inlineBlock)
          ]
         ]
-        [toolBarSvg twidth theight]
+        [] -- todo fix toolbar
         

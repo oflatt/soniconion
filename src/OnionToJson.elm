@@ -147,7 +147,6 @@ exprToJson : Expr -> Dict Id Call -> Result Error Encode.Value
 exprToJson expr callDict =
     case expr of
         BuiltInE builtIn -> builtInToJson builtIn callDict
-        PlayE play -> playToJson play callDict
             
 callToJson : Call -> Dict Id Call -> Result Error Encode.Value
 callToJson call callDict =

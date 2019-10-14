@@ -1,41 +1,93 @@
-module SvgAssets exposing (..)
+module SvgAssets exposing (functionNameshape, drawBuiltIn, createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions)
 
 
 import Model exposing (..)
+import ViewVariables exposing (blockHeight, blockSpacing)
 
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 import Dict exposing (Dict)
+import Array exposing (Array)
 
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
+-- skip index of -1 if 
+type alias MovedBlockInfo = {skipIndex : Int,
+                             movedIndex : Int,
+                             movedPos : (Int, Int)}
+noMovedBlock: MovedBlockInfo
+noMovedBlock = (MovedBlockInfo -1 -1 (-1, -1))
+
+mouseToSvgCoordinates: MouseState -> Int -> Int -> (Int, Int)
+mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
+    (mouseState.mouseX * ViewVariables.viewportWidth // svgScreenWidth
+    ,(mouseState.mouseY - ViewVariables.svgYpos) * ViewVariables.viewportWidth // svgScreenWidth)
+
+svgYposToIndex: Int -> Int
+svgYposToIndex yPos =
+    yPos // (blockHeight + blockSpacing)
+    
+getMovedInfo func mouseState index mouseSvgCoordinates =
+    case func of
+        [] -> noMovedBlock
+        (call::calls) ->
+            if mouseState.mousePressedp && (mouseState.selectedId == call.id)
+            then
+                let mPos = mouseSvgCoordinates
+                in
+                    (MovedBlockInfo (svgYposToIndex (Tuple.first mPos))
+                         index
+                         mPos)
+            else
+                getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
+
+type alias BlockPos = (Int, Int)
+type alias BlockPositions = Array BlockPos
+
+indexToBlockPos indexPos =
+    (100, indexPos * (ViewVariables.blockHeight + ViewVariables.blockSpacing))
+
+-- index is the index in the list but indexPos is where to draw (used for skipping positions)
+getAllBlockPositions: MovedBlockInfo -> Function -> MouseState -> Int -> Int -> List BlockPos
+getAllBlockPositions moveInfo func mouseState index indexPos =
+    case func of
+        [] -> []
+        (call::calls) ->
+            if indexPos == moveInfo.skipIndex && index == moveInfo.movedIndex
+            then
+                moveInfo.movedPos :: (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1))
+            else if indexPos == moveInfo.skipIndex
+                 then
+                     (getAllBlockPositions moveInfo func mouseState index (indexPos + 1))
+                 else
+                     if index == moveInfo.movedIndex
+                         then
+                             moveInfo.movedPos :: (getAllBlockPositions moveInfo calls mouseState (index + 1) indexPos)
+                     else
+                         (indexToBlockPos indexPos) :: (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1))
+                      
+getBlockPositions: Function -> MouseState -> Int -> Int -> BlockPositions
+getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
+    let moveInfo = getMovedInfo func mouseState 0 (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
+    in
+        Array.fromList (getAllBlockPositions moveInfo func mouseState 0 0)
+        
+            
 -- function for drawing builtIns
-drawBuiltIn: BuiltIn -> Int -> Dict Id Int -> (Svg msg)
-drawBuiltIn builtIn counter idToPos =
+drawBuiltIn: BuiltIn -> Int -> Dict Id Int -> BlockPositions -> (Svg msg)
+drawBuiltIn builtIn index idToPos blockPositions =
     let get = Dict.get builtIn.waveType builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape builtIn.waveType (counter * blockSpacing) names idToPos builtIn.inputs
+                functionNameshape builtIn.waveType index names idToPos builtIn.inputs blockPositions
             Nothing ->
-                functionNameshape builtIn.waveType (counter * blockSpacing) (Finite []) idToPos builtIn.inputs
+                functionNameshape builtIn.waveType index (Finite []) idToPos builtIn.inputs blockPositions
 
-blockHeight = 100
-blockSpacing = 150
-paddingSize = 20
-viewportWidth = 600
-viewportHeight = 600
-
-                 
 mainShape =
- {- svg
-    [ viewBox "0 0 400 400"
-    , width "400"
-    , height "400"
-    ]-}
     [rect
         [ x "30"
         , y "50"
@@ -86,37 +138,54 @@ getArgCircles argList ypos =
         Finite l -> (drawNames l) ++ (drawDots (List.length l) 20 ypos)
         
 -- shape for functionName objects
-functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> (Svg msg)
-functionNameshape name yPos argList idToPos inputs =
-  Svg.node "g"
-      [
-       transform ("translate(" ++ "30," ++(String.fromInt (paddingSize + yPos) ++ ")"))
-      ]
-       (
-        [
-          rect
-                [ x "0"
-                , y "20"
-                , width "200"
-                , height (String.fromInt (blockHeight-20))
-                , fill "red"
-                , stroke "red"
-                , strokeWidth "2"
-                , rx "10"
-                , ry "10"
+functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> (Svg msg)
+functionNameshape name index argList idToPos inputs blockPositions =
+    case Array.get index blockPositions of
+        Just blockPos ->
+            Svg.node "g"
+                [
+                 transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")
                 ]
-                []
-          , text_
-                [ x "100"
-                , y "60"
-                , fill "white"
-                , fontSize "25"
-                , textAnchor "middle"
-          , dominantBaseline "central"
-          ]
-          [ Svg.text name
-          ]
-          ] ++ (getArgCircles argList 20) ++ (createLines inputs idToPos 20 20))
+                (
+                 [
+                  rect
+                      [ x "0"
+                      , y "20"
+                      , width "200"
+                      , height (String.fromInt (blockHeight-20))
+                      , fill "red"
+                      , stroke "red"
+                      , strokeWidth "2"
+                      , rx "10"
+                      , ry "10"
+                      ]
+                      []
+                 , text_
+                      [ x "100"
+                      , y "60"
+                      , fill "white"
+                      , fontSize "25"
+                      , textAnchor "middle"
+                      , dominantBaseline "central"
+                      ]
+                      [ Svg.text name
+                      ]
+                 ] ++ (getArgCircles argList 20) ++ (createLines inputs idToPos 20 20))
+        Nothing ->
+            Svg.node "g"
+                [
+                 ]
+                [
+                 rect
+                     [x "0"
+                     ,y "0"
+                     ,width "100"
+                     ,height "100"
+                     ,fill "red"
+                     ,stroke "red"
+                     ]
+                     []
+                ]
 
 
 createLines inputs idToPos ypos xpos =

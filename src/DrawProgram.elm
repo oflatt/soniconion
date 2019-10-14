@@ -1,7 +1,8 @@
 module DrawProgram exposing (drawProgram)
 
 import Model exposing (..)
-import SvgAssets
+import SvgAssets exposing (BlockPositions)
+import ViewVariables
 
 
 import Browser
@@ -24,30 +25,21 @@ import Svg.Events
 import Debug exposing (log)
 
 
--- function for drawing play
-drawPlay: Play -> Int -> Dict Id Int -> (Svg Msg)
-drawPlay play counter idToPos =
-    SvgAssets.functionNameshape "play" (counter * SvgAssets.blockSpacing) (Finite []) idToPos [play.input]
 
 -- function for drawing Expression objects
-drawExpression: Expr -> Int -> Dict Id Int -> (Svg Msg)
-drawExpression expr counter idToPos =
+drawExpression: Expr -> Int -> Dict Id Int -> BlockPositions -> (Svg Msg)
+drawExpression expr counter idToPos blockPositions =
   case expr of
-    BuiltInE builtIn -> SvgAssets.drawBuiltIn builtIn counter idToPos
-    PlayE play -> drawPlay play counter idToPos
+    BuiltInE builtIn -> SvgAssets.drawBuiltIn builtIn counter idToPos blockPositions
+
 
 -- function for draw call objects
 
-drawCall: Call -> Int -> Dict Id Int -> MouseState -> (Svg Msg)
-drawCall call counter idToPos mouseState =
-    if (call.id == mouseState.selectedId) && mouseState.mousePressedp then
-        (Svg.g [
-            transform(("translate(" ++ (String.fromInt mouseState.mouseX) ++ "," ++ (String.fromInt mouseState.mouseY) ++ ")")),
-            Svg.Events.onMouseDown (Clicked call.id)] [(drawExpression call.expr counter idToPos)])
-    else
-        (Svg.g [
-            Svg.Events.onMouseDown (Clicked call.id)] [(drawExpression call.expr counter idToPos)])
-  
+drawCall: Call -> Int -> Dict Id Int -> BlockPositions -> (Svg Msg)
+drawCall call counter idToPos blockPositions =
+    (Svg.g
+         [Svg.Events.onMouseDown (Clicked call.id)]
+         [(drawExpression call.expr counter idToPos blockPositions)])
 
       
 idToPosition func dict pos =
@@ -59,28 +51,35 @@ idToPosition func dict pos =
 
 
 -- function for drawin function objects
-drawFunc: Function -> Int -> Dict Id Int -> MouseState -> List (Svg Msg)
-drawFunc func counter idToPos mouseState = 
+drawFunc: Function -> Int -> Dict Id Int -> BlockPositions -> List (Svg Msg)
+drawFunc func counter idToPos blockPositions =
   case func of
     [] -> []
-    (call::calls) -> (drawCall call counter idToPos mouseState)::(drawFunc calls (counter + 1) idToPos mouseState)
+    (call::calls) -> (drawCall call counter idToPos blockPositions) :: (drawFunc calls (counter + 1) idToPos blockPositions)
 
 
 -- function for drawing the onion
-drawOnion: Onion -> MouseState -> List (Svg Msg)
-drawOnion onion mouseState = 
+drawOnion: Onion -> MouseState -> Int -> Int -> List (Svg Msg)
+drawOnion onion mouseState svgWindowWidth svgWindowHeight = 
   case onion of
     [] -> []
-    (func::funcs) -> (drawFunc func 0
-                          (idToPosition func Dict.empty 0) mouseState) ++ (drawOnion funcs mouseState)
+    (func::funcs) ->
+        let blockPositions = SvgAssets.getBlockPositions func mouseState svgWindowWidth svgWindowHeight
+        in
+            (drawFunc func 0
+                 (idToPosition func Dict.empty 0)
+                 blockPositions) ++
+            (drawOnion funcs mouseState svgWindowWidth svgWindowHeight)
 
+
+                     
 drawProgram : Onion -> MouseState -> Int -> Int -> Html Msg
-drawProgram program mouseState width height =
+drawProgram program mouseState svgWindowWidth svgWindowHeight =
     fromUnstyled
     (Svg.svg
-        [ Svg.Attributes.width(String.fromInt width) -- define the width of the svg
-        , Svg.Attributes.height(String.fromInt height) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions SvgAssets.viewportWidth SvgAssets.viewportHeight) -- define the viewbox
+        [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
+        , Svg.Attributes.height(String.fromInt svgWindowHeight) -- define the height of the svg
+        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions ViewVariables.viewportWidth ViewVariables.viewportHeight) -- define the viewbox
         , display "inline-block"
         ]
-         (drawOnion program mouseState))
+         (drawOnion program mouseState svgWindowWidth svgWindowHeight))
