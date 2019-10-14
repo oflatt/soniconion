@@ -1,5 +1,4 @@
 module DrawProgram exposing (drawProgram)
-
 import Model exposing (..)
 import SvgAssets exposing (BlockPositions)
 import ViewVariables
@@ -75,11 +74,13 @@ drawOnion onion mouseState svgWindowWidth svgWindowHeight =
                      
 drawProgram : Onion -> MouseState -> Int -> Int -> Html Msg
 drawProgram program mouseState svgWindowWidth svgWindowHeight =
-    fromUnstyled
-    (Svg.svg
-        [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
-        , Svg.Attributes.height(String.fromInt svgWindowHeight) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++ SvgAssets.createViewboxDimensions ViewVariables.viewportWidth ViewVariables.viewportHeight) -- define the viewbox
-        , display "inline-block"
-        ]
-         (drawOnion program mouseState svgWindowWidth svgWindowHeight))
+    let viewportHeight = (SvgAssets.getViewportHeight svgWindowWidth svgWindowHeight)
+    in
+        fromUnstyled
+        (Svg.svg
+             [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
+             , Svg.Attributes.height(String.fromInt svgWindowHeight) -- define the height of the svg
+             , Svg.Attributes.viewBox("0 0 " ++ (SvgAssets.createViewboxDimensions ViewVariables.viewportWidth viewportHeight)) -- define the viewbox
+             , display "inline-block"
+             ]
+             (drawOnion program mouseState svgWindowWidth svgWindowHeight))

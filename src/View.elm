@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Model exposing (..)
-import ViewVariables exposing (..)
+import ViewVariables
 import DrawProgram exposing (drawProgram)
 import DrawToolbar exposing (drawToolBar)
 
@@ -50,14 +50,14 @@ view model =
 makePage pageName content model =
                 if pageName == model.currentPage then
                     div [css[display block
-                ,backgroundColor pageColor]]
+                ,backgroundColor ViewVariables.pageColor]]
             [content]
     else
         text ""
       
 makeTitle = div
             [css [
-             height (px titleHeight)
+             height (px ViewVariables.titleHeight)
              ,width (pct 100)
                 ]
                ]
@@ -88,8 +88,8 @@ pagebutton : PageName -> Model -> Html Msg
 pagebutton pageName model =
     let buttonPageColor =
             if pageName == model.currentPage
-            then pageColor
-            else pageBackgroundColor
+            then ViewVariables.pageColor
+            else ViewVariables.pageBackgroundColor
     in
     button [
          onClick (PageChange pageName)
@@ -97,7 +97,7 @@ pagebutton pageName model =
         ,onMouseLeave (MouseLeave pageName)
         ,css
              [width (pct 20)
-             ,height (px buttonHeight)
+             ,height (px ViewVariables.buttonHeight)
              ,marginTop (px 10)
              ,marginRight (px 10)
              ,borderTopLeftRadius (px 8)
@@ -132,14 +132,13 @@ listing imgName title model =
             
 programPage : Model -> Html Msg
 programPage model =
-    let programWidth =
-            model.windowWidth - scrollbarWidth
-        programHeight = ((model.windowHeight-titleHeight)-buttonHeight - scrollbarWidth)
+    let programWidth = model.windowWidth - ViewVariables.scrollbarWidth
+        programSectionHeight = (model.windowHeight- ViewVariables.svgYpos - ViewVariables.scrollbarWidth) -- might scroll bigger
     in
         div [css[display (inlineBlock)]]
             [(drawProgram
                   model.program
                   model.mouseState
                   programWidth
-                  programHeight)
+                  programSectionHeight)
             ]

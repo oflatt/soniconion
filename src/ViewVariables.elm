@@ -4,17 +4,30 @@ import Css exposing (..)
 pageColor = (rgb 247 247 222)
 pageBackgroundColor = (rgb 229 229 208)
 
+
+
+-- By pixel attributes
 scrollbarWidth = 40
 titleHeight = 90
 buttonHeight = 50
 svgYpos = titleHeight + buttonHeight
+
+
+-- svg attributes
+viewportWidth = 1000 -- defines the coordinate space
+-- viewport Height depends on the aspect ratio of the screen, so that the svg
+-- aspect ratio matches
+
+blockWidth = 200
+blockHeight = blockWidth // 3
+blockSpacing = blockHeight // 2
+nodeRadius = blockSpacing // 4
+nodeSpacing = nodeRadius * 6
+
 toolbarProportion = 0.25
 
-
-blockHeight = 100
-blockSpacing = 50
+blockColor = "rgb(50, 214, 232)"
               
-viewportWidth = 600
-viewportHeight = 600
+
 
 

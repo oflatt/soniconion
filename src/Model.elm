@@ -67,7 +67,8 @@ type ArgList = Finite (List String)
 waveList : List BuiltInSpec
 waveList =
            [("sine", Finite ["duration", "frequency"])
-           ,("sleep", Finite [])]
+           ,("sleep", Finite [])
+           ,("play", Finite ["sound"])]
 specialFunctionList = [("join", Infinite 0)
                       ,("sequence", Infinite 0)]
 builtInFunctionList : BuiltInList

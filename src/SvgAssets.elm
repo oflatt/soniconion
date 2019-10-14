@@ -1,4 +1,4 @@
-module SvgAssets exposing (functionNameshape, drawBuiltIn, createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions)
+module SvgAssets exposing (functionNameshape, drawBuiltIn, createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions, getViewportHeight)
 
 
 import Model exposing (..)
@@ -23,8 +23,8 @@ noMovedBlock = (MovedBlockInfo -1 -1 (-1, -1))
 
 mouseToSvgCoordinates: MouseState -> Int -> Int -> (Int, Int)
 mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
-    (mouseState.mouseX * ViewVariables.viewportWidth // svgScreenWidth
-    ,(mouseState.mouseY - ViewVariables.svgYpos) * ViewVariables.viewportWidth // svgScreenWidth)
+    ((mouseState.mouseX * ViewVariables.viewportWidth) // svgScreenWidth
+    ,((mouseState.mouseY - ViewVariables.svgYpos) * (getViewportHeight svgScreenWidth svgScreenHeight)) // svgScreenHeight)
 
 svgYposToIndex: Int -> Int
 svgYposToIndex yPos =
@@ -36,11 +36,9 @@ getMovedInfo func mouseState index mouseSvgCoordinates =
         (call::calls) ->
             if mouseState.mousePressedp && (mouseState.selectedId == call.id)
             then
-                let mPos = mouseSvgCoordinates
-                in
-                    (MovedBlockInfo (svgYposToIndex (Tuple.first mPos))
-                         index
-                         mPos)
+                (MovedBlockInfo (svgYposToIndex (Tuple.second mouseSvgCoordinates))
+                     index
+                     mouseSvgCoordinates)
             else
                 getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
 
@@ -124,17 +122,17 @@ drawDots num xpos ypos =
     if num <= 0
     then []
     else
-        (circle [r "10"
+        (circle [r (String.fromInt ViewVariables.nodeRadius)
                 , cx (String.fromInt xpos)
                 , cy (String.fromInt ypos)
-                , fill "black"] []) :: (drawDots (num - 1) (xpos + 40) ypos)
+                , fill "black"] []) :: (drawDots (num - 1) (xpos + ViewVariables.nodeSpacing) ypos)
             
         
 drawNames l = []
         
-getArgCircles argList ypos =
+getArgCircles argList ypos inputs =
     case argList of
-        Infinite min -> drawDots min 20 ypos
+        Infinite minArgCount -> drawDots ((Basics.max (List.length inputs) minArgCount) + 1) 20 ypos
         Finite l -> (drawNames l) ++ (drawDots (List.length l) 20 ypos)
         
 -- shape for functionName objects
@@ -151,26 +149,25 @@ functionNameshape name index argList idToPos inputs blockPositions =
                   rect
                       [ x "0"
                       , y "20"
-                      , width "200"
-                      , height (String.fromInt (blockHeight-20))
-                      , fill "red"
-                      , stroke "red"
-                      , strokeWidth "2"
-                      , rx "10"
-                      , ry "10"
+                      , width (String.fromInt (ViewVariables.blockWidth))
+                      , height (String.fromInt (blockHeight-ViewVariables.nodeRadius)) -- room for dots
+                      , fill ViewVariables.blockColor
+                      , stroke ViewVariables.blockColor
+                      , rx (String.fromInt ViewVariables.nodeRadius)
+                      , ry (String.fromInt ViewVariables.nodeRadius)
                       ]
                       []
                  , text_
-                      [ x "100"
-                      , y "60"
+                      [ x (String.fromInt (ViewVariables.blockWidth // 2))
+                      , y (String.fromInt (ViewVariables.blockHeight // 2 + ViewVariables.nodeRadius))
                       , fill "white"
-                      , fontSize "25"
+                      , fontSize (String.fromInt ViewVariables.blockSpacing)
                       , textAnchor "middle"
                       , dominantBaseline "central"
                       ]
                       [ Svg.text name
                       ]
-                 ] ++ (getArgCircles argList 20) ++ (createLines inputs idToPos 20 20))
+                 ] ++ (getArgCircles argList 20 inputs))
         Nothing ->
             Svg.node "g"
                 [
@@ -187,7 +184,7 @@ functionNameshape name index argList idToPos inputs blockPositions =
                      []
                 ]
 
-
+createLines: List Input -> Dict Id Int -> Int -> Int -> List (Svg msg)
 createLines inputs idToPos ypos xpos =
     case inputs of
         [] -> []
@@ -261,3 +258,7 @@ createViewboxDimensions w h =
         height = String.fromInt (h)
     in
         width ++ " " ++ height
+
+getViewportHeight windowWidth windowHeight =
+    ViewVariables.viewportWidth * windowHeight // windowWidth
+            

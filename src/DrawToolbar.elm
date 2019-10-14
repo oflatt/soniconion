@@ -33,15 +33,7 @@ allBuiltInFunctions counter twidth theight funcList =
 
 
 toolBarSvg twidth theight =
-    fromUnstyled
-    (Svg.svg
-        [ Svg.Attributes.width(String.fromInt twidth) -- define the width of the svg
-        , Svg.Attributes.height(String.fromInt theight) -- define the height of the svg
-        , Svg.Attributes.viewBox("0 0 " ++
-                                     SvgAssets.createViewboxDimensions (Basics.round (ViewVariables.viewportWidth / 2)) ViewVariables.viewportHeight) -- define the viewbox
-        ]
-         -- (mainShape ++ functionNameshape ++ methodNameShape ++ lineVertical ++ lineHorizontal))
-         (allBuiltInFunctions 0 twidth theight builtInFunctionList))
+    (allBuiltInFunctions 0 twidth theight builtInFunctionList)
 
 drawToolBar : Int -> Int -> Html Msg
 drawToolBar twidth theight =
