@@ -1,7 +1,7 @@
 module DrawToolbar exposing (drawToolBar)
 
 import Model exposing (..)
-import SvgAssets
+
 import ViewVariables
 
 import Dict exposing (Dict)
@@ -17,7 +17,7 @@ import Html.Attributes exposing (id)
 import Svg exposing (Svg)
 import Svg.Attributes
 
-builtInToSvg : Int -> BuiltInSpec -> Svg msg
+{-builtInToSvg : Int -> BuiltInSpec -> Svg msg
 builtInToSvg counter builtInSpec =
     let 
         (name, nameList) = builtInSpec
@@ -44,4 +44,6 @@ drawToolBar twidth theight =
          ]
         ]
         [] -- todo fix toolbar
+
+-}
         

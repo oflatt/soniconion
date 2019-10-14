@@ -81,16 +81,10 @@ builtInFunctions =
     Dict.fromList builtInFunctionList
 waveFunctions = Dict.fromList waveList
 specialFunctions = Dict.fromList builtInFunctionList
-        
-
-type alias BuiltIn = {inputs: List Input
-                     ,waveType: String}
-
-type alias Play = {input: Input}
-type Expr = BuiltInE BuiltIn
           
-type alias Call = {id: Id,
-                   expr: Expr}
+type alias Call = {id: Id
+                  ,inputs: List Input
+                  ,waveType: String}
 
 type alias MouseState = {mouseX : Int
                         ,mouseY : Int
@@ -117,10 +111,10 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-sine = (Call 1 (BuiltInE (BuiltIn [Const 1, Const 440] "sine")))
-sine2 = (Call 2 (BuiltInE (BuiltIn [Const 2, Const 640] "sine")))
-join = (Call 3 (BuiltInE (BuiltIn [Output 1, Output 2] "join")))
-play = (Call 1092392 (BuiltInE (BuiltIn [Output 3] "play")))
+sine = (Call 1 [Const 1, Const 440] "sine")
+sine2 = (Call 2 [Const 2, Const 640] "sine")
+join = (Call 3 [Output 1, Output 2] "join")
+play = (Call 1092392 [Output 3] "play")
        
 -- play is assumed to be at the end
 initialProgram : Onion

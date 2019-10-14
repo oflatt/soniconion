@@ -70,9 +70,9 @@ inputTuples inputs names =
                                              
 
                                   
-specialMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
-specialMatched builtIn callDict inputsJson argumentNames =    
-    case builtIn.waveType of
+specialMatched : Call -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
+specialMatched call callDict inputsJson argumentNames =    
+    case call.waveType of
         "join" -> 
             Ok (Encode.object ([
                      ("type", Encode.string "together")
@@ -87,8 +87,8 @@ specialMatched builtIn callDict inputsJson argumentNames =
                     ]))
         _ -> Err "Undefined for special built in"  
                      
-waveMatched : BuiltIn -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
-waveMatched builtIn callDict inputsJson argumentNames =
+waveMatched : Call -> Dict Id Call -> List Encode.Value -> ArgList -> Result Error Encode.Value
+waveMatched call callDict inputsJson argumentNames =
     case argumentNames of
         Finite argStrings ->
             (inputTuples inputsJson argStrings)
@@ -96,62 +96,45 @@ waveMatched builtIn callDict inputsJson argumentNames =
                    (\tuples ->
                         Ok (Encode.object ([
                                  ("type", Encode.string "note")
-                                ,("wave", Encode.string builtIn.waveType)
+                                ,("wave", Encode.string call.waveType)
                         ] ++ tuples)))
         Infinite n ->
             if n <= (List.length inputsJson)
             then
                 Ok (Encode.object ([
                          ("type", Encode.string "note")
-                        ,("wave", Encode.string builtIn.waveType)
+                        ,("wave", Encode.string call.waveType)
                         ,("args", Encode.list identity inputsJson)
                         ] ))
             else
                 Err "Not enough arguments"
                     
-builtInWithInputs : BuiltIn -> Dict Id Call -> List Encode.Value -> Result Error Encode.Value
-builtInWithInputs builtIn callDict inputsJson =
-    let getWave = Dict.get builtIn.waveType waveFunctions
+callWithInputs : Call -> Dict Id Call -> List Encode.Value -> Result Error Encode.Value
+callWithInputs call callDict inputsJson =
+    let getWave = Dict.get call.waveType waveFunctions
     in
         case getWave of
             Nothing ->
-                let getSpecial = Dict.get builtIn.waveType specialFunctions
+                let getSpecial = Dict.get call.waveType specialFunctions
                 in
                     case getSpecial of
                         Nothing -> Err "Not a built in function"
                         Just specialArgs ->
-                            specialMatched builtIn callDict inputsJson specialArgs
+                            specialMatched call callDict inputsJson specialArgs
             Just waveArgs ->
-                waveMatched builtIn callDict inputsJson waveArgs
+                waveMatched call callDict inputsJson waveArgs
     
     
-builtInToJson : BuiltIn -> Dict Id Call -> Result Error Encode.Value
-builtInToJson builtIn callDict =
+callToJson : Call -> Dict Id Call -> Result Error Encode.Value
+callToJson call callDict =
     let inputsJsonRes =
-            inputsToJson builtIn.inputs callDict
+            inputsToJson call.inputs callDict
     in
         case inputsJsonRes of
             Err e -> Err e
-            Ok o -> builtInWithInputs builtIn callDict o
+            Ok o -> callWithInputs call callDict o
 
 
-playToJson : Play -> Dict Id Call -> Result Error Encode.Value
-playToJson play callDict =
-    -- TODO error in const case
-    case play.input of
-        Const c -> Err "Play got a const"
-        Hole -> Err "Incomplete program - Play requires a value"
-        Output o -> (inputToJson play.input callDict)
-
-exprToJson : Expr -> Dict Id Call -> Result Error Encode.Value
-exprToJson expr callDict =
-    case expr of
-        BuiltInE builtIn -> builtInToJson builtIn callDict
-            
-callToJson : Call -> Dict Id Call -> Result Error Encode.Value
-callToJson call callDict =
-    exprToJson call.expr callDict
-        
 
 functionToJson : Function -> Result Error Encode.Value
 functionToJson function =

@@ -3,7 +3,7 @@ module View exposing (view)
 import Model exposing (..)
 import ViewVariables
 import DrawProgram exposing (drawProgram)
-import DrawToolbar exposing (drawToolBar)
+
 
 import Browser
 import Css exposing (..)
