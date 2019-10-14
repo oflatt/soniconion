@@ -42,55 +42,28 @@ drawBuiltIn builtIn index idToPos blockPositions =
             Nothing ->
                 functionNameshape builtIn.waveType index (Finite []) idToPos builtIn.inputs blockPositions
 
-mainShape =
-    [rect
-        [ x "30"
-        , y "50"
-        , width "200"
-        , height "80"
-        , fill "green"
-        , stroke "green"
-        , strokeWidth "2"
-        ]
-        []
-     , rect
-       [ x "30"
-        , y "30"
-        , width "80"
-        , height "30"
-        , fill "green"
-        , stroke "green"
-        , strokeWidth "2"
-        ]
-        []
-     , text_
-        [ x "70"
-        , y "40"
-        , fill "white"
-        , textAnchor "middle"
-        , dominantBaseline "central"
-        ]
-        [ Svg.text "Main"
-        ]
-        ]
 
+
+drawNode xpos ypos =
+    (circle [r (String.fromInt ViewVariables.nodeRadius)
+            , cx (String.fromInt xpos)
+            , cy (String.fromInt ypos)
+            , fill "black"] [])
+                      
 drawDots : Int -> Int -> Int -> List (Svg msg)
-drawDots num xpos ypos =
+drawDots num index ypos =
     if num <= 0
     then []
     else
-        (circle [r (String.fromInt ViewVariables.nodeRadius)
-                , cx (String.fromInt xpos)
-                , cy (String.fromInt ypos)
-                , fill "black"] []) :: (drawDots (num - 1) (xpos + ViewVariables.nodeSpacing) ypos)
+         (drawNode (ViewVariables.indexToNodeX index) ypos) :: (drawDots (num - 1) (index+1)  ypos)
             
         
 drawNames l = []
         
 getArgCircles argList ypos inputs =
     case argList of
-        Infinite minArgCount -> drawDots ((Basics.max (List.length inputs) minArgCount) + 1) ViewVariables.nodeSpacing ypos
-        Finite l -> (drawNames l) ++ (drawDots (List.length l) ViewVariables.nodeSpacing ypos)
+        Infinite minArgCount -> drawDots ((Basics.max (List.length inputs) minArgCount) + 1) 0 ypos
+        Finite l -> (drawNames l) ++ (drawDots (List.length l) 0 ypos)
 
                     
 -- shape for functionName objects
@@ -108,7 +81,7 @@ functionNameshape name index argList idToPos inputs blockPositions =
                       [ x "0"
                       , y (String.fromInt ViewVariables.nodeRadius)
                       , width (String.fromInt (ViewVariables.blockWidth))
-                      , height (String.fromInt (blockHeight-ViewVariables.nodeRadius)) -- room for dots
+                      , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
                       , fill ViewVariables.blockColor
                       , stroke ViewVariables.blockColor
                       , rx (String.fromInt ViewVariables.nodeRadius)
@@ -125,6 +98,7 @@ functionNameshape name index argList idToPos inputs blockPositions =
                       ]
                       [ Svg.text name
                       ]
+                 , drawNode ViewVariables.outputNodeX ViewVariables.outputNodeY
                  ] ++ (getArgCircles argList ViewVariables.nodeRadius inputs))
         Nothing ->
             errorSvgNode
@@ -132,7 +106,11 @@ functionNameshape name index argList idToPos inputs blockPositions =
 
                 
 drawConnector blockPos inputCounter otherBlockPos =
-    taxiLine (Tuple.first otherBlockPos) (Tuple.second otherBlockPos) (ViewVariables.nodeSpacing * (inputCounter + 1) + (Tuple.first blockPos)) ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+    taxiLine
+    ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
+    ((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
+    ((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
+    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                    
 
 taxiLine: Int -> Int -> Int -> Int -> Svg msg

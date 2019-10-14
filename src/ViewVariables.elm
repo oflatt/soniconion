@@ -22,7 +22,12 @@ blockWidth = 200
 blockHeight = blockWidth // 3
 blockSpacing = blockHeight // 2
 nodeRadius = blockSpacing // 4
+nodePadding = nodeRadius * 2
 nodeSpacing = nodeRadius * 6
+outputNodeY = blockHeight - nodeRadius
+outputNodeX = blockWidth // 2
+
+indexToNodeX index = index * nodeSpacing + nodePadding
 
 toolbarProportion = 0.25
 
