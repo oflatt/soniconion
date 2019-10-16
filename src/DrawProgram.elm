@@ -54,7 +54,9 @@ drawInput input blockPos inputCounter idToPos blockPositions =
     case input of
         Output id -> drawOutputLine id blockPos inputCounter idToPos blockPositions
         Const c -> SvgDraw.errorSvgNode
-        Hole -> SvgDraw.errorSvgNode
+        Hole -> SvgDraw.drawNode
+                ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
+                (Tuple.second blockPos)
                        
 drawInputLines inputs blockPos inputCounter idToPos blockPositions =
     case inputs of

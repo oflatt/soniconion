@@ -1,4 +1,4 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector)
+module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode)
 
 import Model exposing (..)
 import ViewVariables exposing (blockHeight, blockSpacing)
@@ -50,20 +50,10 @@ drawNode xpos ypos =
             , cy (String.fromInt ypos)
             , fill "black"] [])
                       
-drawDots : Int -> Int -> Int -> List (Svg msg)
-drawDots num index ypos =
-    if num <= 0
-    then []
-    else
-         (drawNode (ViewVariables.indexToNodeX index) ypos) :: (drawDots (num - 1) (index+1)  ypos)
             
         
 drawNames l = []
         
-getArgCircles argList ypos inputs =
-    case argList of
-        Infinite minArgCount -> drawDots ((Basics.max (List.length inputs) minArgCount) + 1) 0 ypos
-        Finite l -> (drawNames l) ++ (drawDots (List.length l) 0 ypos)
 
                     
 -- shape for functionName objects
@@ -75,7 +65,6 @@ functionNameshape name index argList idToPos inputs blockPositions =
                 [
                  transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")
                 ]
-                (
                  [
                   rect
                       [ x "0"
@@ -99,7 +88,7 @@ functionNameshape name index argList idToPos inputs blockPositions =
                       [ Svg.text name
                       ]
                  , drawNode ViewVariables.outputNodeX ViewVariables.outputNodeY
-                 ] ++ (getArgCircles argList ViewVariables.nodeRadius inputs))
+                 ]
         Nothing ->
             errorSvgNode
 
@@ -117,7 +106,8 @@ taxiLine: Int -> Int -> Int -> Int -> Svg msg
 taxiLine x1 y1 x2 y2 =
           Svg.node "g" []
               [makeLine x1 y1 x2 y1,
-               makeLine x2 y1 x2 y2]
+               makeLine x2 y1 x2 y2,
+               drawNode x2 y2]
     
 makeLine mx1 my1 mx2 my2 =
   line
