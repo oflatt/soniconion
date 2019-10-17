@@ -27,14 +27,16 @@ getMovedInfo func mouseState index mouseSvgCoordinates =
     case func of
         [] -> noMovedBlock
         (call::calls) ->
-            if mouseState.mousePressedp && (mouseState.selectedId == call.id)
-            then
-                (MovedBlockInfo (svgYposToIndex (Tuple.second mouseSvgCoordinates))
-                     index
-                     ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
-                     ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
-            else
-                getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
+            case mouseState.mouseSelection of
+                BlockSelected id ->
+                    if id == call.id
+                    then
+                        (MovedBlockInfo (svgYposToIndex (Tuple.second mouseSvgCoordinates))
+                             index
+                             ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
+                             ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
+                    else getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
+                _ -> getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
 
 type alias BlockPos = (Int, Int)
 type alias BlockPositions = Array BlockPos

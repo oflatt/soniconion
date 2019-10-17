@@ -27,7 +27,9 @@ type Msg = MouseOver PageName
          | PlaySound
          | MouseMoved MousePos
          | MouseRelease
-         | Clicked Id
+         | BlockClick Id
+         | InputClick Id Int
+         | OutputClick Id
 
 pageNames : List String
 pageNames = ["Home", "Unused"]
@@ -85,11 +87,15 @@ specialFunctions = Dict.fromList builtInFunctionList
 type alias Call = {id: Id
                   ,inputs: List Input
                   ,waveType: String}
+type MouseSelection = BlockSelected Id
+                    | InputSelected Id Int -- id of block and index of input
+                    | OutputSelected Id
+                    | NoneSelected
 
 type alias MouseState = {mouseX : Int
                         ,mouseY : Int
-                        ,selectedId : Int
-                        ,mousePressedp : Bool}
+                        ,mouseSelection : MouseSelection}
+
 type alias Model = {currentPage: PageName
                    ,highlightedButton: PageName
                    ,urlkey : Nav.Key
@@ -111,10 +117,10 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-sine = (Call 1 [Const 1, Const 440] "sine")
-sine2 = (Call 2 [Const 2, Const 640] "sine")
-join = (Call 3 [Output 1, Output 2] "join")
-play = (Call 1092392 [Output 3] "play")
+sine = (Call 80 [Const 1, Const 440] "sine")
+sine2 = (Call 89 [Const 2, Const 640] "sine")
+join = (Call 85 [Output 80, Output 89] "join")
+play = (Call 1092392 [Output 85] "play")
        
 -- play is assumed to be at the end
 initialProgram : Onion
@@ -136,6 +142,5 @@ initialModel flags url key = ((Model
                                    (MouseState
                                         0
                                         0
-                                        0
-                                        False)),
+                                        NoneSelected)),
                                    Cmd.none)

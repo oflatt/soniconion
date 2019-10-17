@@ -48,66 +48,95 @@ mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 --mouse_scale_y mouse_y = (mouse_y // 5)
 
 
+inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
+inputClickModel model id index =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = (InputSelected id index)}
+    in
+        ({model |
+              mouseState = newMouse}
+        ,Cmd.none)
+
+outputClickModel : Model -> Id -> (Model, Cmd Msg)
+outputClickModel model id =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = (OutputSelected id)}
+    in
+        ({model |
+              mouseState = newMouse}
+        ,Cmd.none)
+
+        
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = case msg of
-                       MouseRelease ->
-                           let oldMouse = model.mouseState
-                               newMouse =
-                                   {oldMouse | mousePressedp = False}
-                           in
-                               ({model |
-                                     mouseState = newMouse}
-                               ,Cmd.none)
-                       MouseMoved pos ->
-                           let oldMouse = model.mouseState
-                               newMouse =
-                                   {oldMouse |
-                                        mouseX = pos.x,
-                                        mouseY = pos.y}
-                           in
-                               ({model |
-                                     mouseState = newMouse}
-                               , Cmd.none)
-                       Clicked id ->
-                           let oldMouse = model.mouseState
-                               newMouse = {oldMouse |
-                                               mousePressedp = True,
-                                               selectedId = id}
-                           in
-                               ({model |
-                                     mouseState = newMouse}
-                               ,Cmd.none)
-                       PlaySound ->
-                           (model
-                           ,runSound (onionToJson model.program))
-                       WindowResize newWidth newHeight ->
-                           ({model |
-                                 windowWidth = newWidth,
-                                 windowHeight = newHeight},
-                                Cmd.none)
-                       LinkClicked urlRequest ->
-                           case urlRequest of
-                               Browser.Internal url ->
-                                   (changeByName model (urlToPageName url))
-                                       
-                               Browser.External href ->
-                                   ( model, Nav.load href )
+update msg model =
+    case msg of
+        MouseRelease ->
+            let oldMouse = model.mouseState
+                newMouse =
+                    {oldMouse | mouseSelection = NoneSelected}
+            in
+                ({model |
+                      mouseState = newMouse}
+                ,Cmd.none)
+        MouseMoved pos ->
+            let oldMouse = model.mouseState
+                newMouse =
+                    {oldMouse |
+                         mouseX = pos.x,
+                         mouseY = pos.y}
+            in
+                ({model |
+                      mouseState = newMouse}
+                , Cmd.none)
+        BlockClick id ->
+            log (String.fromInt id)
+                (let oldMouse = model.mouseState
+                     newMouse = {oldMouse |
+                                     mouseSelection = (BlockSelected id)}
+                 in
+                     ({model |
+                           mouseState = newMouse}
+                     ,Cmd.none))
+        InputClick id index ->
+            inputClickModel model id index
 
-                       PageChange pageName ->
-                           let result = (changeByName model pageName)
-                           in result
-                                        
+        OutputClick id ->
+            outputClickModel model id
+                
+        PlaySound ->
+            (model
+            ,runSound (onionToJson model.program))
+        WindowResize newWidth newHeight ->
+            ({model |
+                  windowWidth = newWidth,
+                  windowHeight = newHeight},
+                 Cmd.none)
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    (changeByName model (urlToPageName url))
 
-                       UrlChanged url ->
-                           ((Tuple.first (changeByName model (urlToPageName url))),
-                           Cmd.none)
-                       
-                       MouseOver pageName ->
-                           ({model | highlightedButton = pageName},
-                                testprint (2))
-                       MouseLeave pageName -> if pageName == model.highlightedButton
-                                              then ({model | highlightedButton = "none"}, Cmd.none)
-                                              else (model, Cmd.none)
+                Browser.External href ->
+                    ( model, Nav.load href )
 
-                                                  
+        PageChange pageName ->
+            let result = (changeByName model pageName)
+            in result
+
+
+        UrlChanged url ->
+            ((Tuple.first (changeByName model (urlToPageName url))),
+            Cmd.none)
+
+        MouseOver pageName ->
+            ({model | highlightedButton = pageName},
+                 testprint (2))
+        MouseLeave pageName -> if pageName == model.highlightedButton
+                               then ({model | highlightedButton = "none"}, Cmd.none)
+                               else (model, Cmd.none)
+        
+
+

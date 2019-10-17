@@ -2,6 +2,7 @@ module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode)
 
 import Model exposing (..)
 import ViewVariables exposing (blockHeight, blockSpacing)
+import Utils
 
 
 import ViewPositions exposing (BlockPositions)
@@ -15,6 +16,7 @@ import Array exposing (Array)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Svg.Events
 
 errorSvgNode = Svg.node "g"
                [
@@ -32,23 +34,33 @@ errorSvgNode = Svg.node "g"
                ]
 
 -- function for drawing builtIns
-drawBuiltIn: Call -> Int -> Dict Id Int -> BlockPositions -> (Svg msg)
-drawBuiltIn builtIn index idToPos blockPositions =
-    let get = Dict.get builtIn.waveType builtInFunctions
+drawBuiltIn: Call -> Int -> Dict Id Int -> BlockPositions -> Bool -> (Svg Msg)
+drawBuiltIn call index idToPos blockPositions isOutputHighlighted =
+    let get = Dict.get call.waveType builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape builtIn.waveType index names idToPos builtIn.inputs blockPositions
+                functionNameshape call.waveType index names idToPos call.inputs blockPositions call.id isOutputHighlighted
             Nothing ->
-                functionNameshape builtIn.waveType index (Finite []) idToPos builtIn.inputs blockPositions
+                errorSvgNode
 
 
 
-drawNode xpos ypos =
-    (circle [r (String.fromInt ViewVariables.nodeRadius)
+drawNode xpos ypos event isHighlighted =
+    if isHighlighted
+    then
+        (circle [r (String.fromInt ViewVariables.nodeRadius)
             , cx (String.fromInt xpos)
             , cy (String.fromInt ypos)
-            , fill "black"] [])
+            , fill "blue"
+            , event] [])
+    else
+        (circle [r (String.fromInt ViewVariables.nodeRadius)
+            , cx (String.fromInt xpos)
+            , cy (String.fromInt ypos)
+            , fill "black"
+            , event] [])
+    
                       
             
         
@@ -57,8 +69,8 @@ drawNames l = []
 
                     
 -- shape for functionName objects
-functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> (Svg msg)
-functionNameshape name index argList idToPos inputs blockPositions =
+functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> Id -> Bool -> (Svg Msg)
+functionNameshape name index argList idToPos inputs blockPositions id isOutputHighlighted =
     case Array.get index blockPositions of
         Just blockPos ->
             Svg.node "g"
@@ -66,57 +78,61 @@ functionNameshape name index argList idToPos inputs blockPositions =
                  transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")
                 ]
                  [
-                  rect
-                      [ x "0"
-                      , y (String.fromInt ViewVariables.nodeRadius)
-                      , width (String.fromInt (ViewVariables.blockWidth))
-                      , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
-                      , fill ViewVariables.blockColor
-                      , stroke ViewVariables.blockColor
-                      , rx (String.fromInt ViewVariables.nodeRadius)
-                      , ry (String.fromInt ViewVariables.nodeRadius)
-                      ]
-                      []
-                 , text_
-                      [ x (String.fromInt (ViewVariables.blockWidth // 2))
-                      , y (String.fromInt (ViewVariables.blockHeight // 2))
-                      , fill "white"
-                      , fontSize (String.fromInt ViewVariables.blockSpacing)
-                      , textAnchor "middle"
-                      , dominantBaseline "central"
-                      ]
+                  Svg.node "g"
+                      [(Svg.Events.onMouseDown (BlockClick id))]
+                      [
+                       rect
+                           [ x "0"
+                           , y (String.fromInt ViewVariables.nodeRadius)
+                           , width (String.fromInt (ViewVariables.blockWidth))
+                           , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
+                           , fill ViewVariables.blockColor
+                           , stroke ViewVariables.blockColor
+                           , rx (String.fromInt ViewVariables.nodeRadius)
+                           , ry (String.fromInt ViewVariables.nodeRadius)
+                           ]
+                           []
+                      , text_
+                           [ x (String.fromInt (ViewVariables.blockWidth // 2))
+                           , y (String.fromInt (ViewVariables.blockHeight // 2))
+                           , fill "white"
+                           , fontSize (String.fromInt ViewVariables.blockSpacing)
+                           , textAnchor "middle"
+                           , dominantBaseline "central"
+                           ]
                       [ Svg.text name
                       ]
-                 , drawNode ViewVariables.outputNodeX ViewVariables.outputNodeY
+                      ]
+                 , drawNode ViewVariables.outputNodeX ViewVariables.outputNodeY (Svg.Events.onMouseDown (OutputClick id)) isOutputHighlighted
                  ]
         Nothing ->
             errorSvgNode
 
 
                 
-drawConnector blockPos inputCounter otherBlockPos =
+drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted =
     taxiLine
     ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
     ((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
     ((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
     ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+    inputEvent
+    isLineHighlighted
                    
 
-taxiLine: Int -> Int -> Int -> Int -> Svg msg
-taxiLine x1 y1 x2 y2 =
-          Svg.node "g" []
-              [makeLine x1 y1 x2 y1,
-               makeLine x2 y1 x2 y2,
-               drawNode x2 y2]
+taxiLine: Int -> Int -> Int -> Int -> Svg.Attribute msg -> Bool -> Svg msg
+taxiLine x1 y1 x2 y2 inputEvent isLineHighlighted =
+    let color =
+            if isLineHighlighted
+            then "blue"
+            else "black"
+    in
+        polyline
+        [points (Utils.listToStringList [x1, y1, x1, y2, x2, y2])
+        ,stroke color
+        ,fill "none"
+        ,strokeWidth "5"
+        ,strokeLinecap "round"
+        ,inputEvent]
+        []
     
-makeLine mx1 my1 mx2 my2 =
-  line
-    [x1  (String.fromInt mx1)
-    , y1  (String.fromInt my1)
-    , x2  (String.fromInt mx2)
-    , y2  (String.fromInt my2)
-    , stroke  "blue"
-    , strokeWidth  "5"
-    , strokeLinecap  "round"
-    ]
-  []
