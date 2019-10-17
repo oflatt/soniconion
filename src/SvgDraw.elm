@@ -34,13 +34,13 @@ errorSvgNode = Svg.node "g"
                ]
 
 -- function for drawing builtIns
-drawBuiltIn: Call -> Int -> Dict Id Int -> BlockPositions -> Bool -> (Svg Msg)
-drawBuiltIn call index idToPos blockPositions isOutputHighlighted =
+drawBuiltIn: Call -> Int -> Dict Id Int -> BlockPositions -> (Svg Msg)
+drawBuiltIn call index idToPos blockPositions=
     let get = Dict.get call.waveType builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape call.waveType index names idToPos call.inputs blockPositions call.id isOutputHighlighted
+                functionNameshape call.waveType index names idToPos call.inputs blockPositions call.id
             Nothing ->
                 errorSvgNode
 
@@ -69,47 +69,41 @@ drawNames l = []
 
                     
 -- shape for functionName objects
-functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> Id -> Bool -> (Svg Msg)
-functionNameshape name index argList idToPos inputs blockPositions id isOutputHighlighted =
+functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> Id -> (Svg Msg)
+functionNameshape name index argList idToPos inputs blockPositions id =
     case Array.get index blockPositions of
         Just blockPos ->
             Svg.node "g"
+                [(Svg.Events.onMouseDown (BlockClick id))
+                ,transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")]
                 [
-                 transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")
+                 rect
+                     [ x "0"
+                     , y (String.fromInt ViewVariables.nodeRadius)
+                     , width (String.fromInt (ViewVariables.blockWidth))
+                     , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
+                     , fill ViewVariables.blockColor
+                     , stroke ViewVariables.blockColor
+                     , rx (String.fromInt ViewVariables.nodeRadius)
+                     , ry (String.fromInt ViewVariables.nodeRadius)
+                     ]
+                     []
+                , text_
+                     [ x (String.fromInt (ViewVariables.blockWidth // 2))
+                     , y (String.fromInt (ViewVariables.blockHeight // 2))
+                     , fill "white"
+                     , fontSize (String.fromInt ViewVariables.blockSpacing)
+                     , textAnchor "middle"
+                     , dominantBaseline "central"
+                     ]
+                     [ Svg.text name
+                     ]
                 ]
-                 [
-                  Svg.node "g"
-                      [(Svg.Events.onMouseDown (BlockClick id))]
-                      [
-                       rect
-                           [ x "0"
-                           , y (String.fromInt ViewVariables.nodeRadius)
-                           , width (String.fromInt (ViewVariables.blockWidth))
-                           , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
-                           , fill ViewVariables.blockColor
-                           , stroke ViewVariables.blockColor
-                           , rx (String.fromInt ViewVariables.nodeRadius)
-                           , ry (String.fromInt ViewVariables.nodeRadius)
-                           ]
-                           []
-                      , text_
-                           [ x (String.fromInt (ViewVariables.blockWidth // 2))
-                           , y (String.fromInt (ViewVariables.blockHeight // 2))
-                           , fill "white"
-                           , fontSize (String.fromInt ViewVariables.blockSpacing)
-                           , textAnchor "middle"
-                           , dominantBaseline "central"
-                           ]
-                      [ Svg.text name
-                      ]
-                      ]
-                 , drawNode ViewVariables.outputNodeX ViewVariables.outputNodeY (Svg.Events.onMouseDown (OutputClick id)) isOutputHighlighted
-                 ]
         Nothing ->
             errorSvgNode
-
-
-                
+                        
+                        
+                        
 drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted =
     taxiLine
     ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)

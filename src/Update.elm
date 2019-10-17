@@ -68,19 +68,28 @@ outputClickModel model id =
               mouseState = newMouse}
         ,Cmd.none)
 
+modelNoneSelected model =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = NoneSelected}
+    in
+        ({model |
+              mouseState = newMouse}
+        ,Cmd.none)
+
+modelMouseRelease model =
+    case model.mouseState.mouseSelection of
+        NoneSelected -> (model, Cmd.none)
+        BlockSelected id -> modelNoneSelected model
+        InputSelected id index -> (model, Cmd.none)
+        OutputSelected id -> (model, Cmd.none)
         
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         MouseRelease ->
-            let oldMouse = model.mouseState
-                newMouse =
-                    {oldMouse | mouseSelection = NoneSelected}
-            in
-                ({model |
-                      mouseState = newMouse}
-                ,Cmd.none)
+            modelMouseRelease model
         MouseMoved pos ->
             let oldMouse = model.mouseState
                 newMouse =

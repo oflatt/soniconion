@@ -26,14 +26,9 @@ import Debug exposing (log)
 
 -- function for draw call objects
 
-drawCall: Call -> Int -> Dict Id Int -> BlockPositions -> MouseState -> (Svg Msg)
-drawCall call counter idToPos blockPositions mouseState =
-    let isOutputHighlighted =
-            case mouseState.mouseSelection of
-                OutputSelected id -> (id == call.id)
-                _ -> False
-    in
-        SvgDraw.drawBuiltIn call counter idToPos blockPositions isOutputHighlighted
+drawCall: Call -> Int -> Dict Id Int -> BlockPositions -> (Svg Msg)
+drawCall call counter idToPos blockPositions=
+    SvgDraw.drawBuiltIn call counter idToPos blockPositions
 
       
 idToPosition func dict pos =
@@ -75,48 +70,69 @@ drawInput input blockPos inputCounter idToPos blockPositions blockId mouseState 
                         [drawOutputLine id blockPos inputCounter idToPos blockPositions inputEvent isLineHighlighted
                         ,(SvgDraw.drawNode
                               ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                              (Tuple.second blockPos)
+                              ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                               outputEvent
                               isInputHighlighted)]
             Const c -> SvgDraw.errorSvgNode
             Hole -> SvgDraw.drawNode
                     ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                    (Tuple.second blockPos)
+                    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                     inputEvent
                     isInputHighlighted
                        
-drawInputLines inputs blockPos inputCounter idToPos blockPositions id mouseState =
+drawInputLines inputs blockPos inputCounter idToPos blockPositions id mouseState base =
     case inputs of
-        [] -> []
-        (input::rest) -> (drawInput input blockPos inputCounter idToPos blockPositions id mouseState) :: (drawInputLines rest blockPos (inputCounter + 1) idToPos blockPositions id mouseState)
+        [] -> [base]
+        (input::rest) -> (drawInput input blockPos inputCounter idToPos blockPositions id mouseState) :: (drawInputLines rest blockPos (inputCounter + 1) idToPos blockPositions id mouseState base)
 
     
 drawCallLines call counter idToPos blockPositions mouseState =
-    case Array.get counter blockPositions of
-        Just blockPos ->
-            drawInputLines call.inputs blockPos 0 idToPos blockPositions call.id mouseState
-        Nothing ->
-            [SvgDraw.errorSvgNode]
+    let isOutputHighlighted =
+            case mouseState.mouseSelection of
+                OutputSelected id -> (id == call.id)
+                _ -> False
+    in
+        case Array.get counter blockPositions of
+            Just blockPos ->
+                Svg.g
+                    []
+                    (drawInputLines
+                     call.inputs
+                     blockPos
+                     0
+                     idToPos
+                     blockPositions
+                     call.id
+                     mouseState
+                     (SvgDraw.drawNode
+                          (ViewVariables.outputNodeX + (Tuple.first blockPos))
+                          (ViewVariables.outputNodeY + (Tuple.second blockPos))
+                          (Svg.Events.onMouseDown (OutputClick call.id))
+                          isOutputHighlighted))
+            Nothing ->
+                SvgDraw.errorSvgNode
 
-                       
-drawFuncInputs func counter idToPos blockPositions mouseState =
+
+-- draw last ones in the list first, so that first blocks overlap later ones
+drawFuncInputs func counter idToPos blockPositions mouseState rest =
     case func of
-        [] -> []
-        (call::calls) -> (drawCallLines call counter idToPos blockPositions mouseState) ++ (drawFuncInputs calls (counter+1) idToPos blockPositions mouseState)
+        [] -> rest
+        (call::calls) ->  (drawFuncInputs calls (counter+1) idToPos blockPositions mouseState
+                               ((drawCallLines call counter idToPos blockPositions mouseState) :: rest))
 
 -- function for drawing function records
 drawFunc: Function -> Int -> Dict Id Int -> BlockPositions -> MouseState -> List (Svg Msg)
 drawFunc func counter idToPos blockPositions mouseState =
   case func of
     [] -> []
-    (call::calls) -> (drawCall call counter idToPos blockPositions mouseState) :: (drawFunc calls (counter + 1) idToPos blockPositions mouseState)
+    (call::calls) -> (drawCall call counter idToPos blockPositions) :: (drawFunc calls (counter + 1) idToPos blockPositions mouseState)
 
 drawFuncWithConnections: Function -> Dict Id Int -> BlockPositions -> MouseState -> Svg Msg
 drawFuncWithConnections func idToPos blockPositions mouseState =
     Svg.g
         []
-        [Svg.g [] (drawFuncInputs func 0 idToPos blockPositions mouseState)
-        ,Svg.g [] (drawFunc func 0 idToPos blockPositions mouseState)]
+        [Svg.g [] (drawFunc func 0 idToPos blockPositions mouseState)
+        ,Svg.g [] (drawFuncInputs func 0 idToPos blockPositions mouseState [])]
 
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> List (Svg Msg)
