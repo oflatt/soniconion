@@ -66,6 +66,14 @@ type alias BuiltInList = List BuiltInSpec
 type ArgList = Finite (List String)
              | Infinite Int
 
+getCallById id func =
+    case func of
+        [] -> Nothing
+        (call::calls) ->
+            if call.id == id
+            then Just call
+            else getCallById id calls
+               
 waveList : List BuiltInSpec
 waveList =
            [("sine", Finite ["duration", "frequency"])

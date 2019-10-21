@@ -18,31 +18,38 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events
 
-errorSvgNode = Svg.node "g"
-               [
-               ]
-               [
-                rect
-                    [x "0"
-                    ,y "0"
-                    ,width "100"
-                    ,height "100"
-                    ,fill "red"
-                    ,stroke "red"
-                    ]
-                    []
-               ]
-
+errorSvgNode errorMsg=
+    Svg.node "g"
+        [
+        ]
+        [
+         rect
+             [x "0"
+             ,y "0"
+             ,width "100"
+             ,height "100"
+             ,fill "red"
+             ,stroke "red"
+             ]
+             []
+        ,text_
+             [x "0"
+             ,y "50"
+             ,fill "white"
+             ,stroke "white"]
+             [Svg.text errorMsg]
+        ]
+        
 -- function for drawing builtIns
-drawBuiltIn: Call -> Int -> Dict Id Int -> BlockPositions -> (Svg Msg)
-drawBuiltIn call index idToPos blockPositions=
+drawBuiltIn: Call -> Int -> BlockPositions -> (Svg Msg)
+drawBuiltIn call index blockPositions=
     let get = Dict.get call.waveType builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape call.waveType index names idToPos call.inputs blockPositions call.id
+                functionNameshape call.waveType names call.inputs blockPositions call.id
             Nothing ->
-                errorSvgNode
+                errorSvgNode "call without block position"
 
 
 drawConst const xpos ypos =
@@ -87,9 +94,9 @@ drawNames l = []
 
                     
 -- shape for functionName objects
-functionNameshape: String -> Int -> ArgList -> Dict Id Int -> List Input -> BlockPositions -> Id -> (Svg Msg)
-functionNameshape name index argList idToPos inputs blockPositions id =
-    case Array.get index blockPositions of
+functionNameshape: String -> ArgList -> List Input -> BlockPositions -> Id -> (Svg Msg)
+functionNameshape name argList inputs blockPositions id =
+    case Dict.get id blockPositions of
         Just blockPos ->
             Svg.node "g"
                 [(Svg.Events.onMouseDown (BlockClick id))
@@ -118,7 +125,7 @@ functionNameshape name index argList idToPos inputs blockPositions id =
                      ]
                 ]
         Nothing ->
-            errorSvgNode
+            errorSvgNode "function call without block pos"
                         
                         
                         

@@ -11,6 +11,9 @@ scrollbarWidth = 40
 titleHeight = 90
 buttonHeight = 50
 svgYpos = titleHeight + buttonHeight
+programWidth windowWidth = windowWidth - scrollbarWidth
+-- height of the html object, but might scroll bigger
+programHeight windowHeight = windowHeight - svgYpos - scrollbarWidth
 
 
 -- svg attributes
@@ -35,6 +38,4 @@ toolbarProportion = 0.25
 
 blockColor = "rgb(50, 214, 232)"
               
-
-
 

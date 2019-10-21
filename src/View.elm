@@ -132,8 +132,8 @@ listing imgName title model =
             
 programPage : Model -> Html Msg
 programPage model =
-    let programWidth = model.windowWidth - ViewVariables.scrollbarWidth
-        programSectionHeight = (model.windowHeight- ViewVariables.svgYpos - ViewVariables.scrollbarWidth) -- might scroll bigger
+    let programWidth = ViewVariables.programWidth model.windowWidth
+        programSectionHeight = ViewVariables.programHeight model.windowHeight
     in
         div [css[display (inlineBlock)]]
             [(drawProgram

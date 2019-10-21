@@ -1,5 +1,7 @@
 port module Update exposing (update)
 
+import ViewVariables
+import ViewPositions
 import Model exposing (..)
 import OnionToJson exposing (onionToJson)
 import Debug exposing (log)
@@ -11,6 +13,9 @@ import Browser.Events
 import Browser.Dom
 import Browser.Navigation as Nav
 import Json.Encode as Encode
+
+import Dict exposing (Dict)
+
 
 port testprint : Int -> Cmd msg
 
@@ -77,10 +82,74 @@ modelNoneSelected model =
               mouseState = newMouse}
         ,Cmd.none)
 
+finishBlockAtPos func blockId =
+    case func of
+        [] -> []
+        (currentCall::calls) ->
+            if currentCall.id == blockId
+            then
+                calls
+            else
+                currentCall :: finishBlockAtPos calls blockId
+        
+placeBlockAtPos func blockId blockPos blockPositions call =
+    case func of
+        [] -> [call]
+        (currentCall::calls) ->
+            if currentCall.id == blockId
+            then
+                placeBlockAtPos calls blockId blockPos blockPositions call
+            else
+                case Dict.get currentCall.id blockPositions of
+                    Nothing -> log "No block in placeBlockAtPos" func
+                    Just currentBlockPos ->
+                        if (Tuple.second blockPos) < (Tuple.second currentBlockPos)
+                        then
+                            call :: (finishBlockAtPos func blockId)
+                        else
+                            currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
+                        
+
+funcBlockDropped func blockId oldMouse windowWidth windowHeight =
+    let blockPositions =
+            (ViewPositions.getBlockPositions func oldMouse
+                 (ViewVariables.programWidth windowWidth)
+                 (ViewVariables.programHeight windowHeight))
+    in
+        case Dict.get blockId blockPositions of
+            Nothing -> log "No block in funcBlockDropped" func
+            Just blockPos ->
+                case getCallById blockId func of
+                    Nothing -> log "No block in func in funcBlockDropped" func
+                    Just call ->
+                        placeBlockAtPos func blockId blockPos blockPositions call
+
+    
+-- todo handle multiple functions
+programBlockDropped : Onion -> Id -> MouseState -> Int -> Int -> Onion
+programBlockDropped program blockId oldMouse windowWidth windowHeight=
+    case program of
+        [f] -> [funcBlockDropped f blockId oldMouse windowWidth windowHeight]
+        _ -> program
+        
+        
+modelBlockDropped model id =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = NoneSelected}
+    in
+        ({model |
+              mouseState = newMouse
+              ,program = programBlockDropped model.program id oldMouse model.windowWidth model.windowHeight}
+        ,Cmd.none)
+
+
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
         NoneSelected -> (model, Cmd.none)
-        BlockSelected id -> modelNoneSelected model
+        BlockSelected id ->
+            modelBlockDropped model id
+                            
         InputSelected id index -> (model, Cmd.none)
         OutputSelected id -> (model, Cmd.none)
         
