@@ -21,9 +21,11 @@ viewportWidth = 1000 -- defines the coordinate space
 blockWidth = 200
 blockHeight = blockWidth // 3
 blockSpacing = blockHeight // 2
+               
 nodeRadius = blockSpacing // 4
-nodePadding = nodeRadius * 2
+nodePadding = nodeRadius * 4
 nodeSpacing = nodeRadius * 6
+              
 outputNodeY = blockHeight - nodeRadius
 outputNodeX = blockWidth // 2
 

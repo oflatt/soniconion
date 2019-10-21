@@ -110,7 +110,8 @@ update msg model =
                            mouseState = newMouse}
                      ,Cmd.none))
         InputClick id index ->
-            inputClickModel model id index
+            log (String.fromInt id)
+                inputClickModel model id index
 
         OutputClick id ->
             outputClickModel model id

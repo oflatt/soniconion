@@ -1,4 +1,4 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode)
+module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawConst)
 
 import Model exposing (..)
 import ViewVariables exposing (blockHeight, blockSpacing)
@@ -45,6 +45,24 @@ drawBuiltIn call index idToPos blockPositions=
                 errorSvgNode
 
 
+drawConst const xpos ypos =
+    Svg.g
+        []
+        [rect [x (String.fromInt (xpos-ViewVariables.nodeRadius*2))
+              ,y (String.fromInt (ypos-ViewVariables.nodeRadius))
+              ,width (String.fromInt (ViewVariables.nodeRadius * 4))
+              ,height (String.fromInt (ViewVariables.nodeRadius * 2))
+              ,fill "white"
+              ,stroke "black"]
+             []
+        ,text_
+            [x (String.fromInt xpos)
+            ,y (String.fromInt ypos)
+            ,textAnchor "middle"
+            ,dominantBaseline "central"
+            ,fontSize (String.fromInt ViewVariables.nodeRadius)]
+            [Svg.text (String.fromFloat const)]]
+    
 
 drawNode xpos ypos event isHighlighted =
     if isHighlighted
