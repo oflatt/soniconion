@@ -1,4 +1,4 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 
 import Model exposing (..)
