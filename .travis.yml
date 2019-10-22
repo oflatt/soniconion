@@ -1,6 +1,11 @@
 
 
+language: elm
 
+elm:
+  - elm0.19.1
+
+elm-test: 0.19.1
 
 script:
   - bash build.sh
