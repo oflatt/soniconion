@@ -108,7 +108,42 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                             call :: (finishBlockAtPos func blockId)
                         else
                             currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
-                        
+
+idToPosition func dict pos =
+    case func of
+        [] -> dict
+        (e::es) -> idToPosition es
+                   (Dict.insert e.id pos dict)
+                   (pos + 1)
+
+fixInputs inputs idToPos currentIndex =
+    case inputs of
+        [] -> []
+        (input::rest) ->
+            case input of
+                Output id ->
+                    case Dict.get id idToPos of
+                        Nothing -> (Hole) :: fixInputs rest idToPos currentIndex
+                        Just index ->
+                            if index >= currentIndex
+                            then (Hole) :: fixInputs rest idToPos currentIndex
+                            else input :: fixInputs rest idToPos currentIndex
+                _ -> input :: fixInputs rest idToPos currentIndex
+                       
+fixCallInputs call idToPos currentIndex =
+    {call | inputs = fixInputs call.inputs idToPos currentIndex}
+                       
+fixInvalidInputsHelper func idToPos currentIndex =
+    case func of
+        [] -> []
+        (call::calls) ->
+            (fixCallInputs call idToPos currentIndex) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1)
+ 
+fixInvalidInputs func =
+    let idToPos = idToPosition func Dict.empty 0
+    in
+        fixInvalidInputsHelper func idToPos 0
+                                
 
 funcBlockDropped func blockId oldMouse windowWidth windowHeight =
     let blockPositions =
@@ -122,7 +157,7 @@ funcBlockDropped func blockId oldMouse windowWidth windowHeight =
                 case getCallById blockId func of
                     Nothing -> log "No block in func in funcBlockDropped" func
                     Just call ->
-                        placeBlockAtPos func blockId blockPos blockPositions call
+                        fixInvalidInputs (placeBlockAtPos func blockId blockPos blockPositions call)
 
     
 -- todo handle multiple functions

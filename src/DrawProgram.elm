@@ -30,14 +30,6 @@ drawCall: Call -> Int ->  BlockPositions -> (Svg Msg)
 drawCall call counter blockPositions =
     SvgDraw.drawBuiltIn call counter blockPositions
 
-      
-idToPosition func dict pos =
-    case func of
-        [] -> dict
-        (e::es) -> idToPosition es
-                   (Dict.insert e.id pos dict)
-                   (pos + 1)
-
 drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighlighted isOutputHighlighted =
     case Dict.get id blockPositions of
         Nothing -> SvgDraw.errorSvgNode "Can't find line output"
