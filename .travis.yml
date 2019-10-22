@@ -1,0 +1,6 @@
+
+
+
+
+script:
+  - bash build.sh
