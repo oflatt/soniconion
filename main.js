@@ -5188,51 +5188,52 @@ var $author$project$Model$Call = F3(
 	function (id, inputs, waveType) {
 		return {id: id, inputs: inputs, waveType: waveType};
 	});
-var $author$project$Model$Output = function (a) {
-	return {$: 'Output', a: a};
-};
-var $author$project$Model$join = A3(
-	$author$project$Model$Call,
-	85,
-	_List_fromArray(
-		[
-			$author$project$Model$Output(80),
-			$author$project$Model$Output(89)
-		]),
-	'join');
-var $author$project$Model$play = A3(
-	$author$project$Model$Call,
-	1092392,
-	_List_fromArray(
-		[
-			$author$project$Model$Output(85)
-		]),
-	'play');
 var $author$project$Model$Const = function (a) {
 	return {$: 'Const', a: a};
 };
-var $author$project$Model$sine = A3(
-	$author$project$Model$Call,
-	80,
-	_List_fromArray(
-		[
-			$author$project$Model$Const(1),
-			$author$project$Model$Const(440)
-		]),
-	'sine');
-var $author$project$Model$sine2 = A3(
-	$author$project$Model$Call,
-	89,
-	_List_fromArray(
-		[
-			$author$project$Model$Const(2),
-			$author$project$Model$Const(640)
-		]),
-	'sine');
+var $author$project$Model$Output = function (a) {
+	return {$: 'Output', a: a};
+};
 var $author$project$Model$initialProgram = _List_fromArray(
 	[
 		_List_fromArray(
-		[$author$project$Model$sine, $author$project$Model$sine2, $author$project$Model$join, $author$project$Model$play])
+		[
+			A3(
+			$author$project$Model$Call,
+			80,
+			_List_fromArray(
+				[
+					$author$project$Model$Const(1),
+					$author$project$Model$Const(440)
+				]),
+			'sine'),
+			A3(
+			$author$project$Model$Call,
+			89,
+			_List_fromArray(
+				[
+					$author$project$Model$Const(2),
+					$author$project$Model$Const(640)
+				]),
+			'sine'),
+			A3(
+			$author$project$Model$Call,
+			85,
+			_List_fromArray(
+				[
+					$author$project$Model$Output(80),
+					$author$project$Model$Output(89)
+				]),
+			'join'),
+			A3(
+			$author$project$Model$Call,
+			1092392,
+			_List_fromArray(
+				[
+					$author$project$Model$Output(85)
+				]),
+			'play')
+		])
 	]);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -5803,22 +5804,6 @@ var $author$project$Model$InputSelected = F2(
 	function (a, b) {
 		return {$: 'InputSelected', a: a, b: b};
 	});
-var $author$project$Update$inputClickModel = F3(
-	function (model, id, index) {
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A2($author$project$Model$InputSelected, id, index)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse}),
-			$elm$core$Platform$Cmd$none);
-	});
-var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Model$Hole = {$: 'Hole'};
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Dict$get = F2(
@@ -5929,6 +5914,95 @@ var $author$project$Update$fixInvalidInputs = function (func) {
 	var idToPos = A3($author$project$Update$idToPosition, func, $elm$core$Dict$empty, 0);
 	return A3($author$project$Update$fixInvalidInputsHelper, func, idToPos, 0);
 };
+var $author$project$Update$setOutputInputs = F3(
+	function (inputs, outputId, index) {
+		if (!inputs.b) {
+			return _List_fromArray(
+				[
+					$author$project$Model$Output(outputId)
+				]);
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			return (!index) ? A2(
+				$elm$core$List$cons,
+				$author$project$Model$Output(outputId),
+				rest) : A2(
+				$elm$core$List$cons,
+				input,
+				A3($author$project$Update$setOutputInputs, rest, outputId, index - 1));
+		}
+	});
+var $author$project$Update$setOutputCall = F4(
+	function (call, id, outputId, index) {
+		return _Utils_eq(id, call.id) ? _Utils_update(
+			call,
+			{
+				inputs: A3($author$project$Update$setOutputInputs, call.inputs, outputId, index)
+			}) : call;
+	});
+var $author$project$Update$setOutputFunc = F4(
+	function (func, id, outputId, index) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A4($author$project$Update$setOutputCall, call, id, outputId, index),
+				A4($author$project$Update$setOutputFunc, calls, id, outputId, index));
+		}
+	});
+var $author$project$Update$setOutputOnion = F4(
+	function (onion, id, outputId, index) {
+		if (!onion.b) {
+			return _List_Nil;
+		} else {
+			var func = onion.a;
+			var funcs = onion.b;
+			return A2(
+				$elm$core$List$cons,
+				$author$project$Update$fixInvalidInputs(
+					A4($author$project$Update$setOutputFunc, func, id, outputId, index)),
+				A4($author$project$Update$setOutputOnion, funcs, id, outputId, index));
+		}
+	});
+var $author$project$Update$setOutput = F4(
+	function (model, id, outputId, index) {
+		var oldMouse = model.mouseState;
+		var newOnion = A4($author$project$Update$setOutputOnion, model.program, id, outputId, index);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{mouseSelection: $author$project$Model$NoneSelected});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newOnion}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$inputClickModel = F3(
+	function (model, id, index) {
+		var oldMouse = model.mouseState;
+		var _v0 = oldMouse.mouseSelection;
+		if (_v0.$ === 'OutputSelected') {
+			var outputId = _v0.a;
+			return A4($author$project$Update$setOutput, model, id, outputId, index);
+		} else {
+			var newMouse = _Utils_update(
+				oldMouse,
+				{
+					mouseSelection: A2($author$project$Model$InputSelected, id, index)
+				});
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{mouseState: newMouse}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
+var $elm$browser$Browser$Navigation$load = _Browser_load;
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$ViewVariables$blockWidth = 200;
 var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 3) | 0;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 2) | 0;
@@ -9332,6 +9406,15 @@ var $author$project$DrawProgram$drawInputLines = F7(
 	});
 var $author$project$DrawProgram$drawCallInputs = F3(
 	function (call, blockPositions, mouseState) {
+		var isOutputHighlighted = function () {
+			var _v1 = mouseState.mouseSelection;
+			if (_v1.$ === 'OutputSelected') {
+				var id = _v1.a;
+				return _Utils_eq(id, call.id);
+			} else {
+				return false;
+			}
+		}();
 		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
 		if (_v0.$ === 'Just') {
 			var blockPos = _v0.a;
@@ -9352,7 +9435,7 @@ var $author$project$DrawProgram$drawCallInputs = F3(
 						$author$project$ViewVariables$outputNodeY + blockPos.b,
 						$elm$svg$Svg$Events$onMouseDown(
 							$author$project$Model$OutputClick(call.id)),
-						false)));
+						isOutputHighlighted)));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position');
 		}
