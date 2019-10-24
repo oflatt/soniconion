@@ -10,7 +10,7 @@ import List
 import Result exposing (andThen)
 
 
-type alias Error = String
+
 
 callHash : Function -> Dict Id Call -> Dict Id Call
 callHash func dict =

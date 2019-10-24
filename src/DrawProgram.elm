@@ -92,24 +92,29 @@ drawInputLines inputs blockPos inputCounter blockPositions id mouseState base =
 
 drawCallInputs: Call -> BlockPositions -> MouseState -> (Svg Msg)
 drawCallInputs call blockPositions mouseState =
-    case Dict.get call.id blockPositions of
-        Just blockPos ->
-            Svg.g
-                []
-                (drawInputLines
-                     call.inputs
-                     blockPos
-                     0
-                     blockPositions
-                     call.id
-                     mouseState
-                     (SvgDraw.drawNode
-                          (ViewVariables.outputNodeX + (Tuple.first blockPos))
-                          (ViewVariables.outputNodeY + (Tuple.second blockPos))
-                          (Svg.Events.onMouseDown (OutputClick call.id))
-                          False))
-        Nothing ->
-            SvgDraw.errorSvgNode "Call without a block position"
+    let isOutputHighlighted =
+            case mouseState.mouseSelection of
+                OutputSelected id -> id == call.id
+                _ -> False
+    in
+        case Dict.get call.id blockPositions of
+            Just blockPos ->
+                Svg.g
+                    []
+                    (drawInputLines
+                         call.inputs
+                         blockPos
+                         0
+                         blockPositions
+                         call.id
+                         mouseState
+                         (SvgDraw.drawNode
+                              (ViewVariables.outputNodeX + (Tuple.first blockPos))
+                              (ViewVariables.outputNodeY + (Tuple.second blockPos))
+                              (Svg.Events.onMouseDown (OutputClick call.id))
+                          isOutputHighlighted))
+            Nothing ->
+                SvgDraw.errorSvgNode "Call without a block position"
 
 
 drawFuncInputs func blockPositions mouseState =

@@ -46,22 +46,67 @@ changeByName model pageName =
 
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
---mouse_scale_x mouse_x = (mouse_x // 5) 
+
 
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
---mouse_scale_y mouse_y = (mouse_y // 5)
 
+setOutputInputs : List Input -> Id -> Int -> List Input
+setOutputInputs inputs outputId index =
+    case inputs of
+        [] -> [Output outputId]
+        (input::rest) ->
+            if index == 0
+            then Output outputId :: rest
+            else
+                input :: setOutputInputs rest outputId (index - 1)
+                        
+
+setOutputCall call id outputId index =
+    if id == call.id
+    then
+        {call | inputs = setOutputInputs call.inputs outputId index}
+    else
+        call
+                        
+setOutputFunc func id outputId index =
+    case func of
+        [] -> []
+        (call::calls) -> setOutputCall call id outputId index :: setOutputFunc calls id outputId index
+
+setOutputOnion : Onion -> Id -> Id -> Int -> Onion
+setOutputOnion onion id outputId index =
+    case onion of
+        [] -> []
+        (func::funcs) -> fixInvalidInputs (setOutputFunc func id outputId index) :: setOutputOnion funcs id outputId index
+    
+                        
+setOutput : Model -> Id -> Id -> Int -> (Model, Cmd Msg)
+setOutput model id outputId index =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = NoneSelected}
+        newOnion = setOutputOnion model.program id outputId index
+    in
+        ({model |
+              mouseState = newMouse
+              ,program = newOnion}
+        ,Cmd.none)
 
 inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
     let oldMouse = model.mouseState
-        newMouse =
-            {oldMouse | mouseSelection = (InputSelected id index)}
     in
-        ({model |
-              mouseState = newMouse}
-        ,Cmd.none)
+        case oldMouse.mouseSelection of
+            OutputSelected outputId -> setOutput model id outputId index
+            _ ->
+                let
+                    newMouse =
+                        {oldMouse | mouseSelection = (InputSelected id index)}
+                in
+                    ({model |
+                          mouseState = newMouse}
+                    ,Cmd.none)
 
 outputClickModel : Model -> Id -> (Model, Cmd Msg)
 outputClickModel model id =

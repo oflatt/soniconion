@@ -7,6 +7,7 @@ import Dict exposing (Dict)
 
 import Json.Decode as Decode
 
+type alias Error = String
 type alias MousePos =
     { x : Int
     , y : Int
@@ -59,6 +60,8 @@ type Input = Output Id
 type alias Onion = List Function
 type alias Function = List Call
 
+
+    
 type alias BuiltInSpec = (String, ArgList)
 type alias BuiltInList = List BuiltInSpec
 
@@ -125,17 +128,14 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-sine = (Call 80 [Const 1, Const 440] "sine")
-sine2 = (Call 89 [Const 2, Const 640] "sine")
-join = (Call 85 [Output 80, Output 89] "join")
-play = (Call 1092392 [Output 85] "play")
        
 -- play is assumed to be at the end
 initialProgram : Onion
-initialProgram = [[sine
-                  ,sine2
-                  ,join
-                  ,play]
+initialProgram = [[(Call 80 [Const 1, Const 440] "sine")
+                   ,(Call 89 [Const 2, Const 640] "sine")
+                  ,(Call 85 [Output 80, Output 89] "join")
+                  ,(Call 1092392 [Output 85] "play")
+                  ]
                  ] 
  
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
