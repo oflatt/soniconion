@@ -1,11 +1,12 @@
-module ViewPositions exposing (createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions, getViewportHeight, getOutputConnectedArray, makeIdToPos, getViewStructure)
+module ViewPositions exposing (createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions, getViewportHeight, getOutputConnectedArray, makeIdToPos, getViewStructure, CallLineRoute, ViewStructure, blockPositionsToPositionList)
 
 
 import Model exposing (..)
-import ViewVariables exposing (blockHeight, blockSpacing)
+import ViewVariables
 
 import Dict exposing (Dict)
 import Array exposing (Array)
+import Debug exposing (log)
 
 -- skip index of -1 if 
 type alias MovedBlockInfo = {skipIndex : Int,
@@ -21,7 +22,7 @@ mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
 
 svgYposToIndex: Int -> Int
 svgYposToIndex yPos =
-    yPos // (blockHeight + blockSpacing)
+    yPos // (ViewVariables.blockSpace)
     
 getMovedInfo func mouseState index mouseSvgCoordinates =
     case func of
@@ -39,13 +40,26 @@ getMovedInfo func mouseState index mouseSvgCoordinates =
                 _ -> getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
 
 type alias BlockPos = (Int, Int)
-type alias LineRoute = Int -- the relative positions of the outside of the line to the middle, in increments
+type alias CallLineRoute = List (Maybe Int) -- the relative positions of the outside of the line to the middle, in increments
+type alias LineRouting = List CallLineRoute
 type alias BlockPositions = Dict Id BlockPos
 type alias ViewStructure = {blockPositions : BlockPositions
-                           ,lineRouting : (List (List LineRoute))}
+                           ,lineRouting : LineRouting}
 
+blockPositionsToPositionList func blockPositions =
+    case func of
+        [] -> Ok []
+        (call::calls) ->
+            case Dict.get call.id blockPositions of
+                Nothing -> Err "block not in blockPositions"
+                Just pos ->
+                    case blockPositionsToPositionList calls blockPositions of
+                        Err e -> Err e
+                        Ok positions ->
+                            Ok (pos :: positions)
+    
 indexToBlockPos indexPos =
-    (100, indexPos * (ViewVariables.blockHeight + ViewVariables.blockSpacing))
+    (ViewVariables.functionXSpacing, indexPos * (ViewVariables.blockSpace))
 
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: MovedBlockInfo -> Function -> MouseState -> Int -> Int -> BlockPositions
@@ -64,7 +78,7 @@ getAllBlockPositions moveInfo func mouseState index indexPos =
                          then
                              Dict.insert call.id moveInfo.movedPos (getAllBlockPositions moveInfo calls mouseState (index + 1) indexPos)
                      else
-                         Dict.insert call.id (indexToBlockPos indexPos) (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1)) 
+                         Dict.insert call.id (indexToBlockPos indexPos) (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1))
                       
 getBlockPositions: Function -> MouseState -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
@@ -120,9 +134,6 @@ getOutputConnectedArray func indexToPos =
     in
         getOutputConnectedArrayHelper func indexToPos (oneArray, oneArray) True
 
--- relative offset of inputs for each call
-type alias LineRouting = List (List Int)
-
 countOutputsBetween subConnectedArray startIndex endIndex =
     if endIndex <= (startIndex + 1)
     then
@@ -152,7 +163,7 @@ getOutputRouting id connectedArray idToPos isLeft callIndex =
                 in
                     startingSign + (startingSign * (countOutputsBetween subConnectedArray outputIndex callIndex))
     
-getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Int -> ((List Int), Bool)
+getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Int -> (CallLineRoute, Bool)
 getInputsRouting inputs connectedArray idToPos isLeft callIndex =
     case inputs of
         [] -> ([], isLeft)
@@ -162,12 +173,17 @@ getInputsRouting inputs connectedArray idToPos isLeft callIndex =
                     let
                         restAnswer = getInputsRouting rest connectedArray idToPos (not isLeft) callIndex
                     in
-                        ((getOutputRouting id connectedArray idToPos isLeft callIndex ::
+                        ((Just (getOutputRouting id connectedArray idToPos isLeft callIndex) ::
                              (Tuple.first restAnswer))
                         ,(Tuple.second restAnswer))
                         
                 _ ->
-                    getInputsRouting rest connectedArray idToPos isLeft callIndex
+                    let
+                        restAnswer = getInputsRouting rest connectedArray idToPos isLeft callIndex
+                    in
+                        (Nothing :: (Tuple.first restAnswer)
+                        ,(Tuple.second restAnswer))
+
     
 getLineRouting : Function -> ConnectedArray -> IdToPos -> Bool -> Int -> LineRouting
 getLineRouting func connectedArray idToPos isLeft iter =

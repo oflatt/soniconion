@@ -25,8 +25,8 @@ complexRoutingFunc : Function
 complexRoutingFunc =
     [(Call 80 [Const 1, Const 2] "sine")
     ,(Call 98 [Output 80, Const 2] "sine")
-    ,(Call 80 [Output 80, Const 2] "sine")
+    ,(Call 83 [Output 80, Const 2] "sine")
     ,(Call 23 [Output 98, Output 98] "sine")
     ,(Call 12 [Output 80, Output 23] "sine")
      ]
-    
+

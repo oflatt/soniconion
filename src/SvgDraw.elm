@@ -129,28 +129,58 @@ functionNameshape name argList inputs blockPositions id =
                         
                         
                         
-drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted =
-    taxiLine
-    ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
-    ((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
-    ((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
-    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
-    inputEvent
-    isLineHighlighted
+drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing =
+    case routing of
+        Nothing -> (errorSvgNode "got nothing where expected routing")
+        Just routeOffset ->
+            let lineX =
+                    if routeOffset < 0
+                    then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset
+                    else
+                        if routeOffset > 0
+                        then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
+                        else (Tuple.first otherBlockPos) + ViewVariables.outputNodeX
+                middleSpace = (ViewVariables.blockSpacing // 3)
+                linepoints =
+                    [
+                     ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
+                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
+                    -- just below
+                    ,((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
+                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + middleSpace
+                    -- to right or left
+                    ,lineX
+                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + middleSpace
+                    -- down to other block
+                    ,lineX
+                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - middleSpace
+                    -- above node
+                    ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
+                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - middleSpace
+                        
+                    -- on block node
+                    ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
+                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                    ]
+            in
+                taxiLine
+                linepoints
+                inputEvent
+                isLineHighlighted
                    
 
-taxiLine: Int -> Int -> Int -> Int -> Svg.Attribute msg -> Bool -> Svg msg
-taxiLine x1 y1 x2 y2 inputEvent isLineHighlighted =
+taxiLine: List Int -> Svg.Attribute msg -> Bool -> Svg msg
+taxiLine posList inputEvent isLineHighlighted =
     let color =
             if isLineHighlighted
             then "blue"
             else "black"
     in
         polyline
-        [points (Utils.listToStringList [x1, y1, x1, y2, x2, y2])
+        [points (Utils.listToStringList posList)
         ,stroke color
         ,fill "none"
-        ,strokeWidth "5"
+        ,strokeWidth ViewVariables.lineWidth
         ,strokeLinecap "round"
         ,inputEvent]
         []

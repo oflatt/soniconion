@@ -135,7 +135,10 @@ programPage model =
     let programWidth = ViewVariables.programWidth model.windowWidth
         programSectionHeight = ViewVariables.programHeight model.windowHeight
     in
-        div [css[display (inlineBlock)]]
+        div [css[display (inlineBlock)
+                ,overflowY scroll
+                ,width (px (toFloat programWidth + ViewVariables.scrollbarWidth)) 
+                ,height (px (toFloat programSectionHeight))]]
             [(drawProgram
                   model.program
                   model.mouseState

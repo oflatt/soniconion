@@ -6,24 +6,32 @@ pageBackgroundColor = (rgb 229 229 208)
 
 
 
--- By pixel attributes
+-- By pixel attributes ------------------------------------------
 scrollbarWidth = 40
 titleHeight = 90
 buttonHeight = 50
 svgYpos = titleHeight + buttonHeight
-programWidth windowWidth = windowWidth - scrollbarWidth
+programWidth windowWidth = windowWidth - (2 *scrollbarWidth)
 -- height of the html object, but might scroll bigger
 programHeight windowHeight = windowHeight - svgYpos - scrollbarWidth
 
 
--- svg attributes
+                             
+-- svg attributes ------------------------------------------------
 viewportWidth = 1000 -- defines the coordinate space
 -- viewport Height depends on the aspect ratio of the screen, so that the svg
 -- aspect ratio matches
 
+functionXSpacing = 100
+
 blockWidth = 200
 blockHeight = blockWidth // 3
 blockSpacing = blockHeight // 2
+blockSpace = blockHeight + blockSpacing
+
+
+lineXSpace = blockHeight // 2
+lineWidth = "4"
                
 nodeRadius = blockSpacing // 4
 nodePadding = nodeRadius * 4
