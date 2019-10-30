@@ -10,11 +10,8 @@ import List
 import Debug exposing (log)
 
 -- skip index of -1 if 
-type alias MovedBlockInfo = {skipIndex : Int,
-                             movedIndex : Int,
-                             movedPos : (Int, Int)}
-noMovedBlock: MovedBlockInfo
-noMovedBlock = (MovedBlockInfo -1 -1 (-1, -1))
+type alias MovedBlockInfo = {movedCall : Call
+                             ,movedPos : (Int, Int)}
 
 mouseToSvgCoordinates: MouseState -> Int -> Int -> (Int, Int)
 mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
@@ -25,20 +22,20 @@ svgYposToIndex: Int -> Int
 svgYposToIndex yPos =
     yPos // (ViewVariables.blockSpace)
     
-getMovedInfo func mouseState index mouseSvgCoordinates =
+getMovedInfo func mouseState mouseSvgCoordinates =
     case func of
-        [] -> noMovedBlock
+        [] -> Nothing
         (call::calls) ->
             case mouseState.mouseSelection of
                 BlockSelected id ->
                     if id == call.id
                     then
-                        (MovedBlockInfo (svgYposToIndex (Tuple.second mouseSvgCoordinates))
-                             index
-                             ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
-                             ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
-                    else getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
-                _ -> getMovedInfo calls mouseState (index + 1) mouseSvgCoordinates
+                        Just (MovedBlockInfo
+                                  call
+                                  ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
+                                  ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
+                    else getMovedInfo calls mouseState mouseSvgCoordinates
+                _ -> getMovedInfo calls mouseState mouseSvgCoordinates
 
 type alias BlockPos = (Int, Int)
 type alias CallLineRoute = List (Maybe Int) -- the relative positions of the outside of the line to the middle, in increments
@@ -59,34 +56,59 @@ blockPositionsToPositionList func blockPositions =
                         Err e -> Err e
                         Ok positions ->
                             Ok (pos :: positions)
-    
-indexToBlockPos indexPos =
-    (ViewVariables.functionXSpacing, indexPos * (ViewVariables.blockSpace))
+
+-- gets extra space for the outputs of a call
+countOutputs inputs =
+    case inputs of
+        [] -> 0
+        (input::rest) ->
+            case input of
+                Output id -> 1 + (countOutputs rest)
+                _ -> countOutputs rest
+                           
+callLinesSpace call =
+    (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
 
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: MovedBlockInfo -> Function -> MouseState -> Int -> Int -> BlockPositions
-getAllBlockPositions moveInfo func mouseState index indexPos =
+getAllBlockPositions: Maybe MovedBlockInfo -> Function -> MouseState -> Int -> BlockPositions
+getAllBlockPositions maybeMoveInfo func mouseState currentY =
     case func of
-        [] -> Dict.empty
+        [] ->
+            case maybeMoveInfo of
+                Just moveInfo ->
+                    Dict.insert moveInfo.movedCall.id moveInfo.movedPos Dict.empty
+                Nothing ->
+                    Dict.empty
         (call::calls) ->
-            if indexPos == moveInfo.skipIndex && index == moveInfo.movedIndex
-            then
-                Dict.insert call.id moveInfo.movedPos (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1))
-            else if indexPos == moveInfo.skipIndex
-                 then
-                     (getAllBlockPositions moveInfo func mouseState index (indexPos + 1))
-                 else
-                     if index == moveInfo.movedIndex
-                         then
-                             Dict.insert call.id moveInfo.movedPos (getAllBlockPositions moveInfo calls mouseState (index + 1) indexPos)
-                     else
-                         Dict.insert call.id (indexToBlockPos indexPos) (getAllBlockPositions moveInfo calls mouseState (index + 1) (indexPos + 1))
+            case maybeMoveInfo of
+                Just moveInfo ->
+                    if call == moveInfo.movedCall
+                    then
+                        -- skip the moved call
+                        getAllBlockPositions maybeMoveInfo calls mouseState currentY
+                    else
+                        -- if we need to use up the moved block
+                        if currentY+ViewVariables.blockHeight > (Tuple.second moveInfo.movedPos)
+                        then
+                            Dict.insert moveInfo.movedCall.id moveInfo.movedPos
+                                (getAllBlockPositions Nothing func -- continue with whole func
+                                     mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
+                        else
+                            Dict.insert call.id (ViewVariables.functionXSpacing, currentY)
+                                (getAllBlockPositions maybeMoveInfo calls
+                                     mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
+                                    
+                Nothing ->
+                    Dict.insert call.id (ViewVariables.functionXSpacing, currentY)
+                        (getAllBlockPositions maybeMoveInfo calls
+                             mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
+
                       
 getBlockPositions: Function -> MouseState -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
-    let moveInfo = getMovedInfo func mouseState 0 (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
+    let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
     in
-        getAllBlockPositions moveInfo func mouseState 0 0
+        getAllBlockPositions moveInfo func mouseState 0
 
 type alias IdToPos = Dict Id Int
 

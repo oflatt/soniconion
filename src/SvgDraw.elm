@@ -140,23 +140,22 @@ drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted r
                         if routeOffset > 0
                         then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
                         else (Tuple.first otherBlockPos) + ViewVariables.outputNodeX
-                middleSpace = (ViewVariables.blockSpacing // 3)
                 linepoints =
                     [
                      ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
                     ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
                     -- just below
                     ,((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
-                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + middleSpace
+                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
                     -- to right or left
                     ,lineX
-                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + middleSpace
+                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
                     -- down to other block
                     ,lineX
-                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - middleSpace
-                    -- above node
+                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - (ViewVariables.lineSpaceBeforeBlock * (1 + inputCounter))
+                    -- above node by inputcounter spacing
                     ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
-                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - middleSpace
+                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - (ViewVariables.lineSpaceBeforeBlock * (1 + inputCounter))
                         
                     -- on block node
                     ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
