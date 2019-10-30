@@ -6017,82 +6017,110 @@ var $author$project$ViewVariables$blockWidth = 200;
 var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 3) | 0;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
-var $author$project$ViewVariables$functionXSpacing = 100;
-var $author$project$ViewPositions$indexToBlockPos = function (indexPos) {
-	return _Utils_Tuple2($author$project$ViewVariables$functionXSpacing, indexPos * $author$project$ViewVariables$blockSpace);
-};
-var $author$project$ViewPositions$getAllBlockPositions = F5(
-	function (moveInfo, func, mouseState, index, indexPos) {
-		getAllBlockPositions:
-		while (true) {
-			if (!func.b) {
-				return $elm$core$Dict$empty;
+var $author$project$ViewPositions$countOutputs = function (inputs) {
+	countOutputs:
+	while (true) {
+		if (!inputs.b) {
+			return 0;
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			if (input.$ === 'Output') {
+				var id = input.a;
+				return 1 + $author$project$ViewPositions$countOutputs(rest);
 			} else {
-				var call = func.a;
-				var calls = func.b;
-				if (_Utils_eq(indexPos, moveInfo.skipIndex) && _Utils_eq(index, moveInfo.movedIndex)) {
-					return A3(
-						$elm$core$Dict$insert,
-						call.id,
-						moveInfo.movedPos,
-						A5($author$project$ViewPositions$getAllBlockPositions, moveInfo, calls, mouseState, index + 1, indexPos + 1));
-				} else {
-					if (_Utils_eq(indexPos, moveInfo.skipIndex)) {
-						var $temp$moveInfo = moveInfo,
-							$temp$func = func,
-							$temp$mouseState = mouseState,
-							$temp$index = index,
-							$temp$indexPos = indexPos + 1;
-						moveInfo = $temp$moveInfo;
-						func = $temp$func;
-						mouseState = $temp$mouseState;
-						index = $temp$index;
-						indexPos = $temp$indexPos;
-						continue getAllBlockPositions;
-					} else {
-						if (_Utils_eq(index, moveInfo.movedIndex)) {
-							return A3(
-								$elm$core$Dict$insert,
-								call.id,
-								moveInfo.movedPos,
-								A5($author$project$ViewPositions$getAllBlockPositions, moveInfo, calls, mouseState, index + 1, indexPos));
-						} else {
-							return A3(
-								$elm$core$Dict$insert,
-								call.id,
-								$author$project$ViewPositions$indexToBlockPos(indexPos),
-								A5($author$project$ViewPositions$getAllBlockPositions, moveInfo, calls, mouseState, index + 1, indexPos + 1));
-						}
-					}
-				}
+				var $temp$inputs = rest;
+				inputs = $temp$inputs;
+				continue countOutputs;
 			}
 		}
-	});
-var $author$project$ViewPositions$MovedBlockInfo = F3(
-	function (skipIndex, movedIndex, movedPos) {
-		return {movedIndex: movedIndex, movedPos: movedPos, skipIndex: skipIndex};
-	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
+	}
 };
-var $author$project$ViewPositions$noMovedBlock = A3(
-	$author$project$ViewPositions$MovedBlockInfo,
-	-1,
-	-1,
-	_Utils_Tuple2(-1, -1));
+var $author$project$ViewVariables$lineSpaceBeforeBlock = ($author$project$ViewVariables$blockSpacing / 3) | 0;
+var $author$project$ViewPositions$callLinesSpace = function (call) {
+	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
+};
+var $author$project$ViewVariables$functionXSpacing = 100;
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
 };
-var $author$project$ViewPositions$svgYposToIndex = function (yPos) {
-	return (yPos / $author$project$ViewVariables$blockSpace) | 0;
-};
-var $author$project$ViewPositions$getMovedInfo = F4(
-	function (func, mouseState, index, mouseSvgCoordinates) {
+var $author$project$ViewPositions$getAllBlockPositions = F4(
+	function (maybeMoveInfo, func, mouseState, currentY) {
+		getAllBlockPositions:
+		while (true) {
+			if (!func.b) {
+				if (maybeMoveInfo.$ === 'Just') {
+					var moveInfo = maybeMoveInfo.a;
+					return A3($elm$core$Dict$insert, moveInfo.movedCall.id, moveInfo.movedPos, $elm$core$Dict$empty);
+				} else {
+					return $elm$core$Dict$empty;
+				}
+			} else {
+				var call = func.a;
+				var calls = func.b;
+				if (maybeMoveInfo.$ === 'Just') {
+					var moveInfo = maybeMoveInfo.a;
+					if (_Utils_eq(call, moveInfo.movedCall)) {
+						var $temp$maybeMoveInfo = maybeMoveInfo,
+							$temp$func = calls,
+							$temp$mouseState = mouseState,
+							$temp$currentY = currentY;
+						maybeMoveInfo = $temp$maybeMoveInfo;
+						func = $temp$func;
+						mouseState = $temp$mouseState;
+						currentY = $temp$currentY;
+						continue getAllBlockPositions;
+					} else {
+						if (_Utils_cmp(currentY + $author$project$ViewVariables$blockHeight, moveInfo.movedPos.b) > 0) {
+							return A3(
+								$elm$core$Dict$insert,
+								moveInfo.movedCall.id,
+								moveInfo.movedPos,
+								A4(
+									$author$project$ViewPositions$getAllBlockPositions,
+									$elm$core$Maybe$Nothing,
+									func,
+									mouseState,
+									(currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewPositions$callLinesSpace(moveInfo.movedCall)));
+						} else {
+							return A3(
+								$elm$core$Dict$insert,
+								call.id,
+								_Utils_Tuple2($author$project$ViewVariables$functionXSpacing, currentY),
+								A4(
+									$author$project$ViewPositions$getAllBlockPositions,
+									maybeMoveInfo,
+									calls,
+									mouseState,
+									(currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewPositions$callLinesSpace(call)));
+						}
+					}
+				} else {
+					return A3(
+						$elm$core$Dict$insert,
+						call.id,
+						_Utils_Tuple2($author$project$ViewVariables$functionXSpacing, currentY),
+						A4(
+							$author$project$ViewPositions$getAllBlockPositions,
+							maybeMoveInfo,
+							calls,
+							mouseState,
+							(currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewPositions$callLinesSpace(call)));
+				}
+			}
+		}
+	});
+var $author$project$ViewPositions$MovedBlockInfo = F2(
+	function (movedCall, movedPos) {
+		return {movedCall: movedCall, movedPos: movedPos};
+	});
+var $author$project$ViewPositions$getMovedInfo = F3(
+	function (func, mouseState, mouseSvgCoordinates) {
 		getMovedInfo:
 		while (true) {
 			if (!func.b) {
-				return $author$project$ViewPositions$noMovedBlock;
+				return $elm$core$Maybe$Nothing;
 			} else {
 				var call = func.a;
 				var calls = func.b;
@@ -6100,30 +6128,26 @@ var $author$project$ViewPositions$getMovedInfo = F4(
 				if (_v1.$ === 'BlockSelected') {
 					var id = _v1.a;
 					if (_Utils_eq(id, call.id)) {
-						return A3(
-							$author$project$ViewPositions$MovedBlockInfo,
-							$author$project$ViewPositions$svgYposToIndex(mouseSvgCoordinates.b),
-							index,
-							_Utils_Tuple2(mouseSvgCoordinates.a - (($author$project$ViewVariables$blockWidth / 2) | 0), mouseSvgCoordinates.b - (($author$project$ViewVariables$blockHeight / 2) | 0)));
+						return $elm$core$Maybe$Just(
+							A2(
+								$author$project$ViewPositions$MovedBlockInfo,
+								call,
+								_Utils_Tuple2(mouseSvgCoordinates.a - (($author$project$ViewVariables$blockWidth / 2) | 0), mouseSvgCoordinates.b - (($author$project$ViewVariables$blockHeight / 2) | 0))));
 					} else {
 						var $temp$func = calls,
 							$temp$mouseState = mouseState,
-							$temp$index = index + 1,
 							$temp$mouseSvgCoordinates = mouseSvgCoordinates;
 						func = $temp$func;
 						mouseState = $temp$mouseState;
-						index = $temp$index;
 						mouseSvgCoordinates = $temp$mouseSvgCoordinates;
 						continue getMovedInfo;
 					}
 				} else {
 					var $temp$func = calls,
 						$temp$mouseState = mouseState,
-						$temp$index = index + 1,
 						$temp$mouseSvgCoordinates = mouseSvgCoordinates;
 					func = $temp$func;
 					mouseState = $temp$mouseState;
-					index = $temp$index;
 					mouseSvgCoordinates = $temp$mouseSvgCoordinates;
 					continue getMovedInfo;
 				}
@@ -6146,13 +6170,12 @@ var $author$project$ViewPositions$mouseToSvgCoordinates = F3(
 	});
 var $author$project$ViewPositions$getBlockPositions = F4(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight) {
-		var moveInfo = A4(
+		var moveInfo = A3(
 			$author$project$ViewPositions$getMovedInfo,
 			func,
 			mouseState,
-			0,
 			A3($author$project$ViewPositions$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight));
-		return A5($author$project$ViewPositions$getAllBlockPositions, moveInfo, func, mouseState, 0, 0);
+		return A4($author$project$ViewPositions$getAllBlockPositions, moveInfo, func, mouseState, 0);
 	});
 var $author$project$Model$getCallById = F2(
 	function (id, func) {
@@ -7808,6 +7831,9 @@ var $Skinney$murmur3$Murmur3$hashString = F2(
 	});
 var $rtfeldman$elm_css$Hash$murmurSeed = 15739;
 var $elm$core$String$fromList = _String_fromList;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $rtfeldman$elm_hex$Hex$unsafeToDigit = function (num) {
 	unsafeToDigit:
@@ -9304,20 +9330,19 @@ var $author$project$SvgDraw$drawConnector = F6(
 			return $author$project$SvgDraw$errorSvgNode('got nothing where expected routing');
 		} else {
 			var routeOffset = routing.a;
-			var middleSpace = ($author$project$ViewVariables$blockSpacing / 3) | 0;
 			var lineX = (routeOffset < 0) ? (otherBlockPos.a + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.a + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.a + $author$project$ViewVariables$outputNodeX));
 			var linepoints = _List_fromArray(
 				[
 					otherBlockPos.a + $author$project$ViewVariables$outputNodeX,
 					otherBlockPos.b + $author$project$ViewVariables$outputNodeY,
 					otherBlockPos.a + $author$project$ViewVariables$outputNodeX,
-					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + middleSpace,
+					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock,
 					lineX,
-					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + middleSpace,
+					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock,
 					lineX,
-					(blockPos.b + $author$project$ViewVariables$nodeRadius) - middleSpace,
+					(blockPos.b + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + inputCounter)),
 					$author$project$ViewVariables$indexToNodeX(inputCounter) + blockPos.a,
-					(blockPos.b + $author$project$ViewVariables$nodeRadius) - middleSpace,
+					(blockPos.b + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + inputCounter)),
 					$author$project$ViewVariables$indexToNodeX(inputCounter) + blockPos.a,
 					blockPos.b + $author$project$ViewVariables$nodeRadius
 				]);
