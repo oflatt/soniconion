@@ -6015,7 +6015,7 @@ var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$ViewVariables$blockWidth = 200;
 var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 3) | 0;
-var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 2) | 0;
+var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 3) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
 var $author$project$ViewPositions$countOutputs = function (inputs) {
 	countOutputs:
@@ -6036,7 +6036,7 @@ var $author$project$ViewPositions$countOutputs = function (inputs) {
 		}
 	}
 };
-var $author$project$ViewVariables$lineSpaceBeforeBlock = ($author$project$ViewVariables$blockSpacing / 3) | 0;
+var $author$project$ViewVariables$lineSpaceBeforeBlock = ($author$project$ViewVariables$blockSpacing / 2) | 0;
 var $author$project$ViewPositions$callLinesSpace = function (call) {
 	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
 };
@@ -6087,7 +6087,9 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 							return A3(
 								$elm$core$Dict$insert,
 								call.id,
-								_Utils_Tuple2($author$project$ViewVariables$functionXSpacing, currentY),
+								_Utils_Tuple2(
+									$author$project$ViewVariables$functionXSpacing,
+									currentY + $author$project$ViewPositions$callLinesSpace(call)),
 								A4(
 									$author$project$ViewPositions$getAllBlockPositions,
 									maybeMoveInfo,
@@ -6100,7 +6102,9 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 					return A3(
 						$elm$core$Dict$insert,
 						call.id,
-						_Utils_Tuple2($author$project$ViewVariables$functionXSpacing, currentY),
+						_Utils_Tuple2(
+							$author$project$ViewVariables$functionXSpacing,
+							currentY + $author$project$ViewPositions$callLinesSpace(call)),
 						A4(
 							$author$project$ViewPositions$getAllBlockPositions,
 							maybeMoveInfo,
@@ -9083,7 +9087,8 @@ var $author$project$Model$BlockClick = function (a) {
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
-var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockSpacing / 4) | 0;
+var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
+var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 8) | 0;
 var $elm$html$Html$Events$on = F2(
 	function (event, decoder) {
 		return A2(
@@ -9147,7 +9152,7 @@ var $author$project$SvgDraw$functionNameshape = F5(
 								$elm$core$String$fromInt(($author$project$ViewVariables$blockHeight / 2) | 0)),
 								$elm$svg$Svg$Attributes$fill('white'),
 								$elm$svg$Svg$Attributes$fontSize(
-								$elm$core$String$fromInt($author$project$ViewVariables$blockSpacing)),
+								$elm$core$String$fromInt($author$project$ViewVariables$funcNameFontHeight)),
 								$elm$svg$Svg$Attributes$textAnchor('middle'),
 								$elm$svg$Svg$Attributes$dominantBaseline('central')
 							]),
