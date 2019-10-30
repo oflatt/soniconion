@@ -1,4 +1,4 @@
-module ViewPositions exposing (createViewboxDimensions, BlockPositions, BlockPos, getBlockPositions, getViewportHeight, getOutputConnectedArray, makeIdToPos, getViewStructure, CallLineRoute, ViewStructure, blockPositionsToPositionList)
+module ViewPositions exposing (..)
 
 
 import Model exposing (..)
@@ -94,12 +94,14 @@ getAllBlockPositions maybeMoveInfo func mouseState currentY =
                                 (getAllBlockPositions Nothing func -- continue with whole func
                                      mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
                         else
-                            Dict.insert call.id (ViewVariables.functionXSpacing, currentY)
+                            -- iterate normally
+                            Dict.insert call.id (ViewVariables.functionXSpacing, currentY+(callLinesSpace call))
                                 (getAllBlockPositions maybeMoveInfo calls
                                      mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
                                     
                 Nothing ->
-                    Dict.insert call.id (ViewVariables.functionXSpacing, currentY)
+                    -- iterate normally 
+                    Dict.insert call.id (ViewVariables.functionXSpacing, currentY+(callLinesSpace call))
                         (getAllBlockPositions maybeMoveInfo calls
                              mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
 

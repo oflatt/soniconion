@@ -26,16 +26,19 @@ functionXSpacing = 100
 
 blockWidth = 200
 blockHeight = blockWidth // 3
-blockSpacing = blockHeight // 2
+blockSpacing = blockHeight // 3
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing
 
 
+funcNameFontHeight = blockHeight // 2
+             
+
 lineXSpace = blockHeight // 2
 lineWidth = "4"
-lineSpaceBeforeBlock = blockSpacing // 3
+lineSpaceBeforeBlock = blockSpacing // 2
                
-nodeRadius = blockSpacing // 4
+nodeRadius = blockHeight // 8
 nodePadding = nodeRadius * 4
 nodeSpacing = nodeRadius * 6
               

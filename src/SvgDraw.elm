@@ -117,7 +117,7 @@ functionNameshape name argList inputs blockPositions id =
                      [ x (String.fromInt (ViewVariables.blockWidth // 2))
                      , y (String.fromInt (ViewVariables.blockHeight // 2))
                      , fill "white"
-                     , fontSize (String.fromInt ViewVariables.blockSpacing)
+                     , fontSize (String.fromInt ViewVariables.funcNameFontHeight)
                      , textAnchor "middle"
                      , dominantBaseline "central"
                      ]
