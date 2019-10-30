@@ -178,6 +178,7 @@ taxiLine posList inputEvent isLineHighlighted =
     in
         polyline
         [points (Utils.listToStringList posList)
+        ,strokeLinejoin "round"
         ,stroke color
         ,fill "none"
         ,strokeWidth ViewVariables.lineWidth

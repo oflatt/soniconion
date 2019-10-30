@@ -141,12 +141,12 @@ drawFunc func counter blockPositions mouseState =
     [] -> []
     (call::calls) -> (drawCall call counter blockPositions) :: (drawFunc calls (counter + 1) blockPositions mouseState)
 
-drawFuncWithConnections: Function ->  ViewStructure -> MouseState -> Svg Msg
-drawFuncWithConnections func viewStructure mouseState =
+drawFuncWithConnections: ViewStructure -> MouseState -> Svg Msg
+drawFuncWithConnections viewStructure mouseState =
     Svg.g
         []
-        [Svg.g [] (drawFunc func 0 viewStructure.blockPositions mouseState)
-        ,Svg.g [] (drawFuncInputs func viewStructure.blockPositions mouseState viewStructure.lineRouting)]
+        [Svg.g [] (drawFunc viewStructure.sortedFunc 0 viewStructure.blockPositions mouseState)
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure.blockPositions mouseState viewStructure.lineRouting)]
 
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> List (Svg Msg)
@@ -156,7 +156,7 @@ drawOnion onion mouseState svgWindowWidth svgWindowHeight =
     (func::funcs) ->
         let viewStructure = ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
         in
-            (drawFuncWithConnections func
+            (drawFuncWithConnections
                  viewStructure
                  mouseState) ::
             (drawOnion funcs mouseState svgWindowWidth svgWindowHeight)

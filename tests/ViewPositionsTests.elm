@@ -15,27 +15,28 @@ myexpect item1 item2 =
     (\_ ->
          (Expect.equal item1 item2))
 
+outputConnectedArrayTest func expected =
+    let blockPositions = (ViewPositions.getBlockPositions func (MouseState 0 0 NoneSelected) 1000 1000)
+    in
+        (myexpect
+             (ViewPositions.getOutputConnectedArray
+                  func
+                  (ViewPositions.makeIdToPos func blockPositions))
+             expected)
+        
 fixInvalidInputs : Test
 fixInvalidInputs =
     describe "getOutputConnectedArray"
         [test "no connections"
-             (myexpect
-                  (ViewPositions.getOutputConnectedArray
-                       TestModel.testFunctionHoles
-                       (ViewPositions.makeIdToPos TestModel.testFunctionHoles Dict.empty 0))
-                  ((Array.repeat 4 0), (Array.repeat 4 0)))
+             (outputConnectedArrayTest TestModel.testFunctionHoles
+                  (Array.fromList [0,0,0,0]
+                  ,Array.fromList [0,0,0,0]))
         ,test "test connections"
-            (myexpect
-                 (ViewPositions.getOutputConnectedArray
-                      TestModel.testFunction
-                      (ViewPositions.makeIdToPos TestModel.testFunction Dict.empty 0))
-                 ((Array.fromList [1, 0, 1, 0])
-                 ,(Array.fromList [0, 1, 0, 0])))
+            (outputConnectedArrayTest TestModel.testFunction
+                  ((Array.fromList [1, 0, 1, 0])
+                  ,(Array.fromList [0, 1, 0, 0])))
         ,test "test complex"
-            (myexpect
-                 (ViewPositions.getOutputConnectedArray
-                      TestModel.complexRoutingFunc
-                      (ViewPositions.makeIdToPos TestModel.complexRoutingFunc Dict.empty 0))
+            (outputConnectedArrayTest TestModel.complexRoutingFunc
                  ((Array.fromList [1, 1, 0, 0, 0])
                  ,(Array.fromList [1, 1, 0, 1, 0])))
         ]

@@ -6,6 +6,7 @@ import ViewVariables
 
 import Dict exposing (Dict)
 import Array exposing (Array)
+import List
 import Debug exposing (log)
 
 -- skip index of -1 if 
@@ -44,7 +45,8 @@ type alias CallLineRoute = List (Maybe Int) -- the relative positions of the out
 type alias LineRouting = List CallLineRoute
 type alias BlockPositions = Dict Id BlockPos
 type alias ViewStructure = {blockPositions : BlockPositions
-                           ,lineRouting : LineRouting}
+                           ,lineRouting : LineRouting
+                           ,sortedFunc : Function}
 
 blockPositionsToPositionList func blockPositions =
     case func of
@@ -87,11 +89,23 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
         getAllBlockPositions moveInfo func mouseState 0 0
 
 type alias IdToPos = Dict Id Int
-            
-makeIdToPos func dict currentPos =
+
+idToPosAdd func dict currentPos =
     case func of
         [] -> dict
-        (call::calls) -> Dict.insert call.id currentPos (makeIdToPos calls dict (currentPos + 1))
+        (call::calls) -> Dict.insert call.id currentPos (idToPosAdd calls dict (currentPos + 1))
+
+blockSorter blockPositions call =
+    case Dict.get call.id blockPositions of
+        Nothing -> -100 -- todo some sort of error handeling
+        Just pos -> Tuple.second pos
+                   
+
+makeIdToPos : Function -> BlockPositions -> (Function, IdToPos)
+makeIdToPos func blockPositions =
+    let sorted = (List.sortBy (blockSorter blockPositions) func)
+    in
+        (sorted, idToPosAdd sorted Dict.empty 0)
 
 updateConnectedArray : List Input -> IdToPos -> ConnectedArray -> Bool -> (Bool, ConnectedArray)
 updateConnectedArray inputs indexToPos array isLeft =
@@ -145,64 +159,71 @@ countOutputsBetween subConnectedArray startIndex endIndex =
                 connectedness + (countOutputsBetween subConnectedArray (startIndex+1) endIndex)
                 
     
-getOutputRouting id connectedArray idToPos isLeft callIndex =
+getOutputRouting id connectedArray idToPos isLeft thisCallId =
     case Dict.get id idToPos of
         Nothing -> 0 -- TODO throw error
         Just outputIndex ->
-            if outputIndex == (callIndex-1)
-            then 0
-            else
-                let startingSign =
-                        if isLeft
-                        then -1
-                        else 1
-                    subConnectedArray =
-                        if isLeft
-                        then (Tuple.first connectedArray)
-                        else (Tuple.second connectedArray)
-                in
-                    startingSign + (startingSign * (countOutputsBetween subConnectedArray outputIndex callIndex))
+            case Dict.get thisCallId idToPos of
+                Nothing -> 0 -- TODO throw error
+                Just callIndex ->
+                    if outputIndex == (callIndex-1)
+                    then 0
+                    else
+                        let startingSign =
+                                if isLeft
+                                then -1
+                                else 1
+                            subConnectedArray =
+                                if isLeft
+                                then (Tuple.first connectedArray)
+                                else (Tuple.second connectedArray)
+                        in
+                            startingSign + (startingSign * (countOutputsBetween subConnectedArray outputIndex callIndex))
     
-getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Int -> (CallLineRoute, Bool)
-getInputsRouting inputs connectedArray idToPos isLeft callIndex =
+getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Id -> (CallLineRoute, Bool)
+getInputsRouting inputs connectedArray idToPos isLeft thisCallId =
     case inputs of
         [] -> ([], isLeft)
         (input::rest) ->
             case input of
                 Output id ->
                     let
-                        restAnswer = getInputsRouting rest connectedArray idToPos (not isLeft) callIndex
+                        restAnswer = getInputsRouting rest connectedArray idToPos (not isLeft) thisCallId
                     in
-                        ((Just (getOutputRouting id connectedArray idToPos isLeft callIndex) ::
+                        ((Just (getOutputRouting id connectedArray idToPos isLeft thisCallId) ::
                              (Tuple.first restAnswer))
                         ,(Tuple.second restAnswer))
                         
                 _ ->
                     let
-                        restAnswer = getInputsRouting rest connectedArray idToPos isLeft callIndex
+                        restAnswer = getInputsRouting rest connectedArray idToPos isLeft thisCallId
                     in
                         (Nothing :: (Tuple.first restAnswer)
                         ,(Tuple.second restAnswer))
 
     
-getLineRouting : Function -> ConnectedArray -> IdToPos -> Bool -> Int -> LineRouting
-getLineRouting func connectedArray idToPos isLeft iter =
+getLineRouting : Function -> ConnectedArray -> IdToPos -> Bool -> LineRouting
+getLineRouting func connectedArray idToPos isLeft=
     case func of
         [] -> []
         (call::calls) ->
-            let routing = (getInputsRouting call.inputs connectedArray idToPos isLeft iter)
+            let routing = (getInputsRouting call.inputs connectedArray idToPos isLeft call.id)
             in
              (Tuple.first routing) ::
-                (getLineRouting calls connectedArray idToPos (Tuple.second routing) (iter + 1))
+                (getLineRouting calls connectedArray idToPos (Tuple.second routing))
 
 getViewStructure func mouseState svgScreenWidth svgScreenHeight =
-    let idToPos = makeIdToPos func Dict.empty 0
-        connectedArray = getOutputConnectedArray func idToPos
-        lineRouting = getLineRouting func connectedArray idToPos True 0
+    let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
+        madePos = makeIdToPos func blockPositions
+        sortedFunc = (Tuple.first madePos)
+        idToPos = (Tuple.second madePos)
+        connectedArray = getOutputConnectedArray sortedFunc idToPos
+        lineRouting = getLineRouting sortedFunc connectedArray idToPos True
     in
         (ViewStructure
-             (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
-             lineRouting)
+             blockPositions
+             lineRouting
+             sortedFunc)
 
 
 createViewboxDimensions w h =
