@@ -1,6 +1,7 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawConst)
 
 import Model exposing (..)
+import BuiltIn exposing (builtInFunctions, ArgList)
 import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 
@@ -43,11 +44,11 @@ errorSvgNode errorMsg=
 -- function for drawing builtIns
 drawBuiltIn: Call -> Int -> BlockPositions -> (Svg Msg)
 drawBuiltIn call index blockPositions=
-    let get = Dict.get call.waveType builtInFunctions
+    let get = Dict.get call.functionName builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape call.waveType names call.inputs blockPositions call.id
+                functionNameshape call.functionName names call.inputs blockPositions call.id
             Nothing ->
                 errorSvgNode "call without block position"
 

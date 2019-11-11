@@ -9,10 +9,7 @@ var app = Elm.Main.init({
     });
 
 
-app.ports.testprint.subscribe(function(data) {
-	console.log("got msg");
-});
-
+/*
 function process_notes(data, time) {
 	console.log(data, time);
 
@@ -43,6 +40,7 @@ function process_notes(data, time) {
 	return end_time;
 };
 
+
 app.ports.runSound.subscribe(function(msg) {
 	console.log("aasdfasdfasdf");
 	console.log(msg);
@@ -53,3 +51,8 @@ app.ports.runSound.subscribe(function(msg) {
 	Tone.Transport.start("+0", "0");
 });
 
+*/
+
+app.ports.evalJavascript.subscribe(function(javascriptCode) {
+    eval(javascriptCode);
+});

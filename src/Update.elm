@@ -1,9 +1,4 @@
 port module Update exposing (update, fixInvalidInputs)
-
-import ViewVariables
-import ViewPositions
-import Model exposing (..)
-import OnionToJson exposing (onionToJson)
 import Debug exposing (log)
 
 import Url
@@ -12,14 +7,17 @@ import Browser
 import Browser.Events
 import Browser.Dom
 import Browser.Navigation as Nav
-import Json.Encode as Encode
-
 import Dict exposing (Dict)
 
 
-port testprint : Int -> Cmd msg
+import ViewVariables
+import ViewPositions
+import Model exposing (..)
+import Compiler.Compile exposing (compileOnion)
 
-port runSound : Encode.Value -> Cmd msg
+
+-- just need a port for javascript
+port evalJavascript : String -> Cmd msg
 
 -- UPDATE
 
@@ -111,12 +109,17 @@ inputClickModel model id index =
 outputClickModel : Model -> Id -> (Model, Cmd Msg)
 outputClickModel model id =
     let oldMouse = model.mouseState
-        newMouse =
-            {oldMouse | mouseSelection = (OutputSelected id)}
     in
-        ({model |
-              mouseState = newMouse}
-        ,Cmd.none)
+        case oldMouse.mouseSelection of
+            InputSelected inputId index -> setOutput model inputId id index
+            _ ->
+                let
+                    newMouse =
+                        {oldMouse | mouseSelection = (OutputSelected id)}
+                in
+                    ({model |
+                          mouseState = newMouse}
+                    ,Cmd.none)
 
 modelNoneSelected model =
     let oldMouse = model.mouseState
@@ -223,7 +226,11 @@ modelBlockDropped model id =
               ,program = programBlockDropped model.program id oldMouse model.windowWidth model.windowHeight}
         ,Cmd.none)
 
-
+modelWithError : Model -> String -> Model
+modelWithError model errorString =
+    {model |
+         errorBoxMaybe = Just (ErrorBox errorString)}
+        
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
         NoneSelected -> (model, Cmd.none)
@@ -232,11 +239,20 @@ modelMouseRelease model =
                             
         InputSelected id index -> (model, Cmd.none)
         OutputSelected id -> (model, Cmd.none)
-        
 
+playSoundResult : Model -> (Model, Cmd Msg)
+playSoundResult model =
+    case (compileOnion model.program) of
+        Err e ->
+            ((modelWithError model e), Cmd.none)
+        Ok s -> (model, (evalJavascript s))
+                             
+                             
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        SetError errorString ->
+            (modelWithError model errorString, Cmd.none)
         MouseRelease ->
             modelMouseRelease model
         MouseMoved pos ->
@@ -266,8 +282,7 @@ update msg model =
             outputClickModel model id
                 
         PlaySound ->
-            (model
-            ,runSound (onionToJson model.program))
+            playSoundResult model
         WindowResize newWidth newHeight ->
             ({model |
                   windowWidth = newWidth,
@@ -292,7 +307,7 @@ update msg model =
 
         MouseOver pageName ->
             ({model | highlightedButton = pageName},
-                 testprint (2))
+                 Cmd.none)
         MouseLeave pageName -> if pageName == model.highlightedButton
                                then ({model | highlightedButton = "none"}, Cmd.none)
                                else (model, Cmd.none)

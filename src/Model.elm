@@ -31,6 +31,7 @@ type Msg = MouseOver PageName
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
+         | SetError String
 
 pageNames : List String
 pageNames = ["Home", "Unused"]
@@ -44,7 +45,6 @@ urlToPageName url =
          then potentialName
          else "Home"  
     else "Home"
-        
 
 
 type alias PageName = String
@@ -58,16 +58,9 @@ type Input = Output Id
            | Hole
 
 type alias Onion = List Function
-type alias Function = List Call
+type alias Function = List Call    
 
 
-    
-type alias BuiltInSpec = (String, ArgList)
-type alias BuiltInList = List BuiltInSpec
-
--- infinite has a minimum number of args
-type ArgList = Finite (List String)
-             | Infinite Int
 
 getCallById id func =
     case func of
@@ -77,27 +70,10 @@ getCallById id func =
             then Just call
             else getCallById id calls
                
-waveList : List BuiltInSpec
-waveList =
-           [("sine", Finite ["duration", "frequency"])
-           ,("sleep", Finite [])
-           ,("play", Finite ["sound"])]
-specialFunctionList = [("join", Infinite 0)
-                      ,("sequence", Infinite 0)]
-builtInFunctionList : BuiltInList
-builtInFunctionList = waveList ++ specialFunctionList
-                      
-
--- maps function names to a list of arg names
-builtInFunctions : Dict String ArgList
-builtInFunctions =
-    Dict.fromList builtInFunctionList
-waveFunctions = Dict.fromList waveList
-specialFunctions = Dict.fromList builtInFunctionList
-          
 type alias Call = {id: Id
                   ,inputs: List Input
-                  ,waveType: String}
+                  ,functionName: String}
+    
 type MouseSelection = BlockSelected Id
                     | InputSelected Id Int -- id of block and index of input
                     | OutputSelected Id
@@ -107,6 +83,8 @@ type alias MouseState = {mouseX : Int
                         ,mouseY : Int
                         ,mouseSelection : MouseSelection}
 
+type alias ErrorBox = {error : String}
+
 type alias Model = {currentPage: PageName
                    ,highlightedButton: PageName
                    ,urlkey : Nav.Key
@@ -115,7 +93,8 @@ type alias Model = {currentPage: PageName
                    ,windowWidth : Int
                    ,windowHeight : Int
                    ,program : Onion
-                   ,mouseState : MouseState}
+                   ,mouseState : MouseState
+                   ,errorBoxMaybe : Maybe ErrorBox}
 
 getindexurl url =
     let str = (Url.toString url)
@@ -151,5 +130,6 @@ initialModel flags url key = ((Model
                                    (MouseState
                                         0
                                         0
-                                        NoneSelected)),
+                                        NoneSelected)
+                                   Nothing),
                                    Cmd.none)
