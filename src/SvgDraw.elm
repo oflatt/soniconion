@@ -37,7 +37,9 @@ errorSvgNode errorMsg=
              [x "0"
              ,y "50"
              ,fill "white"
-             ,stroke "white"]
+             ,stroke "white"
+             ,pointerEvents "none"
+             ,Svg.Attributes.cursor "default"]
              [Svg.text errorMsg]
         ]
         
@@ -53,6 +55,19 @@ drawBuiltIn call index blockPositions=
                 errorSvgNode "call without block position"
 
 
+svgText xpos ypos textIn fontSizeIn fillIn =
+    text_
+    [x (String.fromInt xpos)
+    ,y (String.fromInt ypos)
+    ,textAnchor "middle"
+    ,dominantBaseline "central"
+    ,fontSize (String.fromInt fontSizeIn)
+    ,pointerEvents "none"
+    ,Svg.Attributes.cursor "default"
+    ,Svg.Attributes.style "user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;"
+    ,fill fillIn]
+    [Svg.text textIn]
+
 drawConst const xpos ypos =
     Svg.g
         []
@@ -63,13 +78,7 @@ drawConst const xpos ypos =
               ,fill "white"
               ,stroke "black"]
              []
-        ,text_
-            [x (String.fromInt xpos)
-            ,y (String.fromInt ypos)
-            ,textAnchor "middle"
-            ,dominantBaseline "central"
-            ,fontSize (String.fromInt ViewVariables.nodeRadius)]
-            [Svg.text (String.fromFloat const)]]
+        ,svgText xpos ypos (String.fromFloat const) ViewVariables.nodeRadius "black"]
     
 
 drawNode xpos ypos event isHighlighted =
@@ -114,16 +123,7 @@ functionNameshape name argList inputs blockPositions id =
                      , ry (String.fromInt ViewVariables.nodeRadius)
                      ]
                      []
-                , text_
-                     [ x (String.fromInt (ViewVariables.blockWidth // 2))
-                     , y (String.fromInt (ViewVariables.blockHeight // 2))
-                     , fill "white"
-                     , fontSize (String.fromInt ViewVariables.funcNameFontHeight)
-                     , textAnchor "middle"
-                     , dominantBaseline "central"
-                     ]
-                     [ Svg.text name
-                     ]
+                , svgText (ViewVariables.blockWidth // 2) (ViewVariables.blockHeight // 2) name ViewVariables.funcNameFontHeight "white"
                 ]
         Nothing ->
             errorSvgNode "function call without block pos"
