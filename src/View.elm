@@ -129,19 +129,42 @@ listing imgName title model =
                   ,height (pct 50)
                   ]][]
          ,text title]
-            
+
+
+drawErrorBox errorBox =
+    div [css [zIndex (int 2)
+             ,borderRadius (px 15)
+             ,backgroundColor ViewVariables.errorColor
+             ,position fixed
+             ,opacity (num 0.75)
+             ,pointerEvents none]
+        ]
+    [
+     div [css [margin (px 10)
+              ]]
+         [text errorBox.error]
+    ]
+    
+    
 programPage : Model -> Html Msg
 programPage model =
     let programWidth = ViewVariables.programWidth model.windowWidth
         programSectionHeight = ViewVariables.programHeight model.windowHeight
+        drawnProgram = (drawProgram
+                            model.program
+                            model.mouseState
+                            programWidth
+                            programSectionHeight)
     in
-        div [css[display (inlineBlock)
-                ,overflowY scroll
-                ,width (px (toFloat programWidth + ViewVariables.scrollbarWidth)) 
-                ,height (px (toFloat programSectionHeight))]]
-            [(drawProgram
-                  model.program
-                  model.mouseState
-                  programWidth
-                  programSectionHeight)
-            ]
+        div
+        [css[display (inlineBlock)
+            ,overflowY scroll
+            ,width (px (toFloat programWidth + ViewVariables.scrollbarWidth)) 
+            ,height (px (toFloat programSectionHeight))]]
+        (case model.errorBoxMaybe of
+             Nothing -> [drawnProgram]
+             Just errorBox ->
+                 [drawErrorBox errorBox
+                 ,drawnProgram])
+            
+                

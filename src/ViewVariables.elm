@@ -50,5 +50,4 @@ indexToNodeX index = index * nodeSpacing + nodePadding
 toolbarProportion = 0.25
 
 blockColor = "rgb(50, 214, 232)"
-              
-
+errorColor = (rgb 255 150 150)
