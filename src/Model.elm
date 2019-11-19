@@ -110,14 +110,13 @@ type alias Flags = {innerWindowWidth : Int,
        
 -- play is assumed to be at the end
 initialProgram : Onion
-initialProgram = [[(Call 80 [Const 1, Const 2] "sine")
-                  ,(Call 98 [Output 80, Const 2] "sine")
-                  ,(Call 82 [Output 80, Const 2] "sine")
-                  ,(Call 23 [Output 98, Output 98] "sine")
-                  ,(Call 12 [Output 80, Output 23] "sine")
+initialProgram = [[(Call 80 [Const 0, Const 440, Const 2] "sine")
+                  ,(Call 98 [Output 80, Const 600, Const 1] "sine")
+                  ,(Call 82 [Output 80, Const 400, Const 1] "sine")
+                  ,(Call 23 [Output 98, Const 300, Const 1] "sine")
                   ]
-                 ] 
- 
+                 ]
+
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model
                                    (urlToPageName url)

@@ -11,13 +11,11 @@ type alias BuiltInList = List BuiltInSpec
 
 waveList : List BuiltInSpec
 waveList =
-           [("sine", Finite ["duration", "frequency"])
-           ,("sleep", Finite [])
-           ,("play", Finite ["sound"])]
+           [("sine", Finite ["time", "duration", "frequency"])]
 
     
 specialFunctionList = [("join", Infinite 0)
-                      ,("sequence", Infinite 0)]
+                      ,("play", Finite ["sound"])] -- play will be removed
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ specialFunctionList
                       
