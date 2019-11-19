@@ -1,5 +1,3 @@
-
-
 var app = Elm.Main.init({
     node: document.getElementById('elm'),
     flags: {innerWindowWidth : window.innerWidth,
@@ -9,50 +7,67 @@ var app = Elm.Main.init({
     });
 
 
-/*
-function process_notes(data, time) {
-	console.log(data, time);
 
-	var end_time = time;
-	if(data.type == "note" || data.type == "sine") {
-		var synth = new Tone.Synth().toMaster();
-		Tone.Transport.schedule(
-				function(s_time) {
-					console.log(data.frequency, data.duration, s_time);
-					synth.triggerAttackRelease(data.frequency, data.duration, s_time);},
-				time);
-		end_time += parseInt(data.duration);
+// a note object has a frequency field, and nothing else
+
+// a synth array is an array of currently playing synths- play indefinately without intervention
+function makeInitialState(stackIn) {
+    return  {synths : []};
+}
+
+function getTime() {
+    return (new Date()).getTime()/1000;
+}
+
+function update(state, notes) {
+    for(var i = 0; i < notes.length; i++) {
+	if (state.synths.length <= i) {
+	    var newSynth = new Tone.Synth().toMaster();
+	    newSynth.triggerAttack(notes[i].frequency);
+	    state.synths.push(newSynth);
+	} else {
+	    state.synths[i].setNote(notes[i].frequency);
 	}
-	else if(data.type == "inorder") {
-		for(note in data.notes) {
-			end_time = process_notes(data.notes[note], end_time);
-		}
+    }
+    if(state.synths.length > notes.length) {
+	for(var i = notes.length; i < state.synths.length; i++) {
+	    state.synths[i].dispose();
 	}
-	else if(data.type == "together") {
-		for(note in data.notes) {
-			var elapsed = process_notes(data.notes[note], time);
-			if(end_time < elapsed) {
-				end_time = elapsed;
-			}
-		}
-	}
-
-	return end_time;
-};
+	state.synths = state.synths.slice(0, notes.length);
+    }
+}
 
 
-app.ports.runSound.subscribe(function(msg) {
-	console.log("aasdfasdfasdf");
-	console.log(msg);
-
-	Tone.Transport.stop();
-	Tone.Transport.cancel();
-	process_notes(msg, 0);
-	Tone.Transport.start("+0", "0");
-});
-
-*/
 
 app.ports.evalJavascript.subscribe(function(javascriptCode) {
-    eval(javascriptCode);
+    return Function('update', 'getTime', 'makeInitialState', '"use strict";' + javascriptCode)(
+        update, getTime, makeInitialState
+    );
 });
+
+
+// example program
+function exampleCompiledProgram() {
+    var startTime = getTime();
+    function step(state){
+	var stack = [];
+	var notes = [];
+	var time = getTime();
+
+	// sine 1
+	var myEnd = startTime+2;
+	stack.push(myEnd);
+	if(time > startTime && time < myEnd) {
+	    notes.push({frequency: 440});
+	}
+
+
+	update(state, notes);
+	function recur() {
+	    step(state);
+	}
+	window.requestAnimationFrame(recur);
+    }
+
+    step(makeInitialState());
+}
