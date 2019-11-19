@@ -32,6 +32,7 @@ type Msg = MouseOver PageName
          | InputClick Id Int
          | OutputClick Id
          | SetError String
+         | InputUpdate Id Int String
 
 pageNames : List String
 pageNames = ["Home", "Unused"]
@@ -51,10 +52,10 @@ type alias PageName = String
 --type alias MousePos = (Float, Float)
 
 type alias Id = Int
-type alias Constant = Float
+
 -- id of function output or a constant
 type Input = Output Id
-           | Const Constant
+           | Text String
            | Hole
 
 type alias Onion = List Function
@@ -110,10 +111,10 @@ type alias Flags = {innerWindowWidth : Int,
        
 -- play is assumed to be at the end
 initialProgram : Onion
-initialProgram = [[(Call 80 [Const 0, Const 440, Const 2] "sine")
-                  ,(Call 98 [Output 80, Const 600, Const 1] "sine")
-                  ,(Call 82 [Output 80, Const 400, Const 1] "sine")
-                  ,(Call 23 [Output 98, Const 300, Const 1] "sine")
+initialProgram = [[(Call 80 [Text "0", Text "440", Text "2"] "sine")
+                  ,(Call 98 [Output 80, Text "600", Text "1"] "sine")
+                  ,(Call 82 [Output 80, Text "400", Text "1"] "sine")
+                  ,(Call 23 [Output 98, Text "300", Text "1"] "sine")
                   ]
                  ]
 

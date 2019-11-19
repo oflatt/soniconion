@@ -1,4 +1,4 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawConst)
+module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -8,6 +8,7 @@ import Utils
 
 import ViewPositions exposing (BlockPositions)
 
+import Css exposing (px)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
@@ -68,20 +69,33 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawConst const xpos ypos =
-    Svg.g
-        []
-        [rect [x (String.fromInt (xpos-ViewVariables.nodeRadius*2))
-              ,y (String.fromInt (ypos-ViewVariables.nodeRadius))
-              ,width (String.fromInt (ViewVariables.nodeRadius * 4))
-              ,height (String.fromInt (ViewVariables.nodeRadius * 2))
-              ,fill "white"
-              ,stroke "black"]
-             []
-        ,svgText xpos ypos (String.fromFloat const) ViewVariables.nodeRadius "black"]
-    
+drawTextInput : String -> Int -> Int -> Id -> Int -> (Svg Msg)
+drawTextInput str xpos ypos id index =
+    let w = (String.fromInt (ViewVariables.nodeSpacing - ViewVariables.nodeRadius))
+        h = (String.fromInt (ViewVariables.nodeRadius * 2))
+    in
+        Svg.foreignObject
+            [x (String.fromInt (xpos-ViewVariables.nodeRadius*2))
+            ,y (String.fromInt (ypos-ViewVariables.nodeRadius))
+            ,width w
+            ,height h]
+            [toUnstyled
+                 (input
+                      [Html.Styled.Attributes.value str
+                      ,Html.Styled.Events.onInput (InputUpdate id index)
+                      ,css [Css.width
+                                (px
+                                 ((Basics.toFloat (ViewVariables.nodeRadius * 4))-4.0))
+                           ,Css.height
+                               (px
+                                ((Basics.toFloat (ViewVariables.nodeRadius * 2))-4.0))
+                           ,Css.textAlign Css.center
+                           ,Css.padding (px 0)
+                           ,Css.border (px 2)]]
+                      [])]
 
-drawNode xpos ypos event isHighlighted =
+-- nodes has inputs underneath them so that they can be tabbed
+drawNode xpos ypos event isHighlighted id index =
     if isHighlighted
     then
         (circle [r (String.fromInt ViewVariables.nodeRadius)
@@ -91,12 +105,12 @@ drawNode xpos ypos event isHighlighted =
             , event] [])
     else
         (circle [r (String.fromInt ViewVariables.nodeRadius)
-            , cx (String.fromInt xpos)
-            , cy (String.fromInt ypos)
-            , fill "black"
-            , event] [])
-    
-                      
+                , cx (String.fromInt xpos)
+                , cy (String.fromInt ypos)
+                , fill "black"
+                , event] [])
+            
+            
             
         
 drawNames l = []

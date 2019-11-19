@@ -49,42 +49,41 @@ mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 
-setOutputInputs : List Input -> Id -> Int -> List Input
-setOutputInputs inputs outputId index =
+setInputInputs : List Input -> Int -> Input -> List Input
+setInputInputs inputs index input =
     case inputs of
-        [] -> [Output outputId]
-        (input::rest) ->
+        [] -> [input]
+        (thisinput::rest) ->
             if index == 0
-            then Output outputId :: rest
+            then input :: rest
             else
-                input :: setOutputInputs rest outputId (index - 1)
-                        
+                thisinput :: setInputInputs rest (index - 1) input
 
-setOutputCall call id outputId index =
+setInputCall call id index input =
     if id == call.id
     then
-        {call | inputs = setOutputInputs call.inputs outputId index}
+        {call | inputs = setInputInputs call.inputs index input}
     else
         call
                         
-setOutputFunc func id outputId index =
+setInputFunc func id index input =
     case func of
         [] -> []
-        (call::calls) -> setOutputCall call id outputId index :: setOutputFunc calls id outputId index
+        (call::calls) -> setInputCall call id index input :: setInputFunc calls id index input
 
-setOutputOnion : Onion -> Id -> Id -> Int -> Onion
-setOutputOnion onion id outputId index =
+setInputOnion : Onion -> Id -> Int -> Input -> Onion
+setInputOnion onion id index input =
     case onion of
         [] -> []
-        (func::funcs) -> fixInvalidInputs (setOutputFunc func id outputId index) :: setOutputOnion funcs id outputId index
+        (func::funcs) -> fixInvalidInputs (setInputFunc func id index input) :: setInputOnion funcs id index input
     
                         
-setOutput : Model -> Id -> Id -> Int -> (Model, Cmd Msg)
-setOutput model id outputId index =
+setInput : Model -> Id -> Int -> Input  -> (Model, Cmd Msg)
+setInput model id index input =
     let oldMouse = model.mouseState
         newMouse =
             {oldMouse | mouseSelection = NoneSelected}
-        newOnion = setOutputOnion model.program id outputId index
+        newOnion = setInputOnion model.program id index input
     in
         ({model |
               mouseState = newMouse
@@ -96,7 +95,7 @@ inputClickModel model id index =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
-            OutputSelected outputId -> setOutput model id outputId index
+            OutputSelected outputId -> setInput model id index (Output outputId)
             _ ->
                 let
                     newMouse =
@@ -111,7 +110,7 @@ outputClickModel model id =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
-            InputSelected inputId index -> setOutput model inputId id index
+            InputSelected inputId index -> setInput model inputId index (Output id)
             _ ->
                 let
                     newMouse =
@@ -120,6 +119,9 @@ outputClickModel model id =
                     ({model |
                           mouseState = newMouse}
                     ,Cmd.none)
+
+inputUpdateModel model id index str =
+    setInput model id index (Text str)
 
 modelNoneSelected model =
     let oldMouse = model.mouseState
@@ -277,6 +279,9 @@ update msg model =
         InputClick id index ->
             log (String.fromInt id)
                 inputClickModel model id index
+
+        InputUpdate id index str ->
+            inputUpdateModel model id index str
 
         OutputClick id ->
             outputClickModel model id

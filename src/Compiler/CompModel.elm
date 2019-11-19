@@ -1,5 +1,5 @@
 module Compiler.CompModel exposing (..)
-import Model exposing (Constant)
+
 import Model exposing (Id)
 import Array exposing (Array)
 
@@ -7,7 +7,7 @@ import Array exposing (Array)
 
 
 type Value = StackIndex Int
-           | ConstV Constant
+           | ConstV Float
 
 type alias CompModel = List Method
 

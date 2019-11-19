@@ -29,7 +29,10 @@ inputToValue input idToIndex =
             case Dict.get o idToIndex of
                 Just index -> Ok (StackIndex index)
                 Nothing -> Err "Invalid input found" -- this should never happen, since the ui should disallow actions that lead to it
-        Const c -> Ok (ConstV c)
+        Text t ->
+            case String.toFloat t of
+                Nothing -> Err "Could not parse number"
+                Just f -> Ok (ConstV f)
         Hole -> Err "No argument supplied to a function call"
 
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)
