@@ -10,6 +10,7 @@ install:
 
 script:
   - bash build.sh
+  - elm-test
 
 
 deploy:
