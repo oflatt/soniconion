@@ -5123,10 +5123,27 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Model$Model = F9(
-	function (currentPage, highlightedButton, urlkey, url, indexurl, windowWidth, windowHeight, program, mouseState) {
-		return {currentPage: currentPage, highlightedButton: highlightedButton, indexurl: indexurl, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
-	});
+var $author$project$Model$Model = function (currentPage) {
+	return function (highlightedButton) {
+		return function (urlkey) {
+			return function (url) {
+				return function (indexurl) {
+					return function (windowWidth) {
+						return function (windowHeight) {
+							return function (program) {
+								return function (mouseState) {
+									return function (errorBoxMaybe) {
+										return {currentPage: currentPage, errorBoxMaybe: errorBoxMaybe, highlightedButton: highlightedButton, indexurl: indexurl, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var $author$project$Model$MouseState = F3(
 	function (mouseX, mouseY, mouseSelection) {
 		return {mouseSelection: mouseSelection, mouseX: mouseX, mouseY: mouseY};
@@ -5185,8 +5202,8 @@ var $author$project$Model$getindexurl = function (url) {
 		str);
 };
 var $author$project$Model$Call = F3(
-	function (id, inputs, waveType) {
-		return {id: id, inputs: inputs, waveType: waveType};
+	function (id, inputs, functionName) {
+		return {functionName: functionName, id: id, inputs: inputs};
 	});
 var $author$project$Model$Const = function (a) {
 	return {$: 'Const', a: a};
@@ -5203,7 +5220,8 @@ var $author$project$Model$initialProgram = _List_fromArray(
 			80,
 			_List_fromArray(
 				[
-					$author$project$Model$Const(1),
+					$author$project$Model$Const(0),
+					$author$project$Model$Const(440),
 					$author$project$Model$Const(2)
 				]),
 			'sine'),
@@ -5213,7 +5231,8 @@ var $author$project$Model$initialProgram = _List_fromArray(
 			_List_fromArray(
 				[
 					$author$project$Model$Output(80),
-					$author$project$Model$Const(2)
+					$author$project$Model$Const(600),
+					$author$project$Model$Const(1)
 				]),
 			'sine'),
 			A3(
@@ -5222,7 +5241,8 @@ var $author$project$Model$initialProgram = _List_fromArray(
 			_List_fromArray(
 				[
 					$author$project$Model$Output(80),
-					$author$project$Model$Const(2)
+					$author$project$Model$Const(400),
+					$author$project$Model$Const(1)
 				]),
 			'sine'),
 			A3(
@@ -5231,16 +5251,8 @@ var $author$project$Model$initialProgram = _List_fromArray(
 			_List_fromArray(
 				[
 					$author$project$Model$Output(98),
-					$author$project$Model$Output(98)
-				]),
-			'sine'),
-			A3(
-			$author$project$Model$Call,
-			12,
-			_List_fromArray(
-				[
-					$author$project$Model$Output(80),
-					$author$project$Model$Output(23)
+					$author$project$Model$Const(300),
+					$author$project$Model$Const(1)
 				]),
 			'sine')
 		])
@@ -5294,17 +5306,10 @@ var $author$project$Model$urlToPageName = function (url) {
 var $author$project$Model$initialModel = F3(
 	function (flags, url, key) {
 		return _Utils_Tuple2(
-			A9(
-				$author$project$Model$Model,
-				$author$project$Model$urlToPageName(url),
-				'none',
-				key,
-				url,
-				$author$project$Model$getindexurl(url),
-				flags.innerWindowWidth,
-				flags.innerWindowHeight,
-				$author$project$Model$initialProgram,
-				A3($author$project$Model$MouseState, 0, 0, $author$project$Model$NoneSelected)),
+			$author$project$Model$Model(
+				$author$project$Model$urlToPageName(url))('none')(key)(url)(
+				$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)(
+				A3($author$project$Model$MouseState, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
@@ -6329,277 +6334,174 @@ var $author$project$Update$modelMouseRelease = function (model) {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	}
 };
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
+var $author$project$Model$ErrorBox = function (error) {
+	return {error: error};
 };
-var $author$project$OnionToJson$callHash = F2(
-	function (func, dict) {
-		callHash:
-		while (true) {
-			if (!func.b) {
-				return dict;
-			} else {
-				var e = func.a;
-				var es = func.b;
-				var $temp$func = es,
-					$temp$dict = A3($elm$core$Dict$insert, e.id, e, dict);
-				func = $temp$func;
-				dict = $temp$dict;
-				continue callHash;
-			}
-		}
+var $author$project$Update$modelWithError = F2(
+	function (model, errorString) {
+		return _Utils_update(
+			model,
+			{
+				errorBoxMaybe: $elm$core$Maybe$Just(
+					$author$project$Model$ErrorBox(errorString))
+			});
 	});
-var $author$project$Model$Infinite = function (a) {
-	return {$: 'Infinite', a: a};
+var $author$project$Model$OutputSelected = function (a) {
+	return {$: 'OutputSelected', a: a};
 };
-var $author$project$Model$specialFunctionList = _List_fromArray(
-	[
-		_Utils_Tuple2(
-		'join',
-		$author$project$Model$Infinite(0)),
-		_Utils_Tuple2(
-		'sequence',
-		$author$project$Model$Infinite(0))
-	]);
-var $author$project$Model$Finite = function (a) {
-	return {$: 'Finite', a: a};
-};
-var $author$project$Model$waveList = _List_fromArray(
-	[
-		_Utils_Tuple2(
-		'sine',
-		$author$project$Model$Finite(
-			_List_fromArray(
-				['duration', 'frequency']))),
-		_Utils_Tuple2(
-		'sleep',
-		$author$project$Model$Finite(_List_Nil)),
-		_Utils_Tuple2(
-		'play',
-		$author$project$Model$Finite(
-			_List_fromArray(
-				['sound'])))
-	]);
-var $author$project$Model$builtInFunctionList = _Utils_ap($author$project$Model$waveList, $author$project$Model$specialFunctionList);
-var $author$project$Model$specialFunctions = $elm$core$Dict$fromList($author$project$Model$builtInFunctionList);
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$OnionToJson$specialMatched = F4(
-	function (call, callDict, inputsJson, argumentNames) {
-		var _v0 = call.waveType;
-		switch (_v0) {
-			case 'join':
-				return $elm$core$Result$Ok(
-					$elm$json$Json$Encode$object(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(
-								'type',
-								$elm$json$Json$Encode$string('together')),
-								_Utils_Tuple2(
-								'notes',
-								A2($elm$json$Json$Encode$list, $elm$core$Basics$identity, inputsJson))
-							])));
-			case 'sequence':
-				return $elm$core$Result$Ok(
-					$elm$json$Json$Encode$object(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(
-								'type',
-								$elm$json$Json$Encode$string('inorder')),
-								_Utils_Tuple2(
-								'notes',
-								A2($elm$json$Json$Encode$list, $elm$core$Basics$identity, inputsJson))
-							])));
-			default:
-				return $elm$core$Result$Err('Undefined for special built in');
-		}
-	});
-var $author$project$Model$waveFunctions = $elm$core$Dict$fromList($author$project$Model$waveList);
-var $elm$core$Result$andThen = F2(
-	function (callback, result) {
-		if (result.$ === 'Ok') {
-			var value = result.a;
-			return callback(value);
+var $author$project$Update$outputClickModel = F2(
+	function (model, id) {
+		var oldMouse = model.mouseState;
+		var _v0 = oldMouse.mouseSelection;
+		if (_v0.$ === 'InputSelected') {
+			var inputId = _v0.a;
+			var index = _v0.b;
+			return A4($author$project$Update$setOutput, model, inputId, id, index);
 		} else {
-			var msg = result.a;
-			return $elm$core$Result$Err(msg);
-		}
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
-var $elm$core$Maybe$map3 = F4(
-	function (func, ma, mb, mc) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				if (mc.$ === 'Nothing') {
-					return $elm$core$Maybe$Nothing;
-				} else {
-					var c = mc.a;
-					return $elm$core$Maybe$Just(
-						A3(func, a, b, c));
-				}
-			}
-		}
-	});
-var $elm$core$List$tail = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(xs);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Result$toMaybe = function (result) {
-	if (result.$ === 'Ok') {
-		var v = result.a;
-		return $elm$core$Maybe$Just(v);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$OnionToJson$inputTuples = F2(
-	function (inputs, names) {
-		var mbRest = A3(
-			$elm$core$Maybe$map2,
-			F2(
-				function (a, b) {
-					return $elm$core$Result$toMaybe(
-						A2($author$project$OnionToJson$inputTuples, a, b));
-				}),
-			$elm$core$List$tail(inputs),
-			$elm$core$List$tail(names));
-		if (mbRest.$ === 'Nothing') {
-			return $elm$core$Result$Ok(_List_Nil);
-		} else {
-			var rest = mbRest.a;
-			var res = A4(
-				$elm$core$Maybe$map3,
-				F3(
-					function (a, b, c) {
-						return A2(
-							$elm$core$List$cons,
-							_Utils_Tuple2(b, a),
-							c);
-					}),
-				$elm$core$List$head(inputs),
-				$elm$core$List$head(names),
-				rest);
-			if (res.$ === 'Nothing') {
-				return $elm$core$Result$Err('Bad input tuples');
-			} else {
-				var r = res.a;
-				return $elm$core$Result$Ok(r);
-			}
-		}
-	});
-var $author$project$OnionToJson$waveMatched = F4(
-	function (call, callDict, inputsJson, argumentNames) {
-		if (argumentNames.$ === 'Finite') {
-			var argStrings = argumentNames.a;
-			return A2(
-				$elm$core$Result$andThen,
-				function (tuples) {
-					return $elm$core$Result$Ok(
-						$elm$json$Json$Encode$object(
-							_Utils_ap(
-								_List_fromArray(
-									[
-										_Utils_Tuple2(
-										'type',
-										$elm$json$Json$Encode$string('note')),
-										_Utils_Tuple2(
-										'wave',
-										$elm$json$Json$Encode$string(call.waveType))
-									]),
-								tuples)));
-				},
-				A2($author$project$OnionToJson$inputTuples, inputsJson, argStrings));
-		} else {
-			var n = argumentNames.a;
-			return (_Utils_cmp(
-				n,
-				$elm$core$List$length(inputsJson)) < 1) ? $elm$core$Result$Ok(
-				$elm$json$Json$Encode$object(
-					_List_fromArray(
-						[
-							_Utils_Tuple2(
-							'type',
-							$elm$json$Json$Encode$string('note')),
-							_Utils_Tuple2(
-							'wave',
-							$elm$json$Json$Encode$string(call.waveType)),
-							_Utils_Tuple2(
-							'args',
-							A2($elm$json$Json$Encode$list, $elm$core$Basics$identity, inputsJson))
-						]))) : $elm$core$Result$Err('Not enough arguments');
-		}
-	});
-var $author$project$OnionToJson$callWithInputs = F3(
-	function (call, callDict, inputsJson) {
-		var getWave = A2($elm$core$Dict$get, call.waveType, $author$project$Model$waveFunctions);
-		if (getWave.$ === 'Nothing') {
-			var getSpecial = A2($elm$core$Dict$get, call.waveType, $author$project$Model$specialFunctions);
-			if (getSpecial.$ === 'Nothing') {
-				return $elm$core$Result$Err('Not a built in function');
-			} else {
-				var specialArgs = getSpecial.a;
-				return A4($author$project$OnionToJson$specialMatched, call, callDict, inputsJson, specialArgs);
-			}
-		} else {
-			var waveArgs = getWave.a;
-			return A4($author$project$OnionToJson$waveMatched, call, callDict, inputsJson, waveArgs);
+			var newMouse = _Utils_update(
+				oldMouse,
+				{
+					mouseSelection: $author$project$Model$OutputSelected(id)
+				});
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{mouseState: newMouse}),
+				$elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Compiler$Compile$buildValue = function (val) {
+	if (val.$ === 'StackIndex') {
+		var i = val.a;
+		return 'stack[' + ($elm$core$String$fromInt(i) + ']');
+	} else {
+		var c = val.a;
+		return $elm$core$String$fromFloat(c);
+	}
+};
+var $author$project$Compiler$Compile$buildWave = function (valList) {
+	if (((valList.b && valList.b.b) && valList.b.b.b) && (!valList.b.b.b.b)) {
+		var time = valList.a;
+		var _v1 = valList.b;
+		var frequency = _v1.a;
+		var _v2 = _v1.b;
+		var duration = _v2.a;
+		var timeStr = $author$project$Compiler$Compile$buildValue(time);
+		var frequencyStr = $author$project$Compiler$Compile$buildValue(frequency);
+		var durationStr = $author$project$Compiler$Compile$buildValue(duration);
+		var endStr = '(' + (timeStr + ('+' + (durationStr + ')')));
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				['stack.push(', endStr, ');', 'if(time>', timeStr, ' && time<', endStr, '){', 'notes.push({frequency: ', frequencyStr, '});', '}']));
+	} else {
+		return '';
+	}
+};
+var $author$project$BuiltIn$Finite = function (a) {
+	return {$: 'Finite', a: a};
+};
+var $author$project$BuiltIn$waveList = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'sine',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['time', 'frequency', 'duration'])))
+	]);
+var $author$project$BuiltIn$waveFunctions = $elm$core$Dict$fromList($author$project$BuiltIn$waveList);
+var $author$project$Compiler$Compile$buildExpr = function (expr) {
+	var _v0 = A2($elm$core$Dict$get, expr.functionName, $author$project$BuiltIn$waveFunctions);
+	if (_v0.$ === 'Nothing') {
+		return '';
+	} else {
+		var val = _v0.a;
+		return $author$project$Compiler$Compile$buildWave(expr.children);
+	}
+};
+var $author$project$Compiler$Compile$buildMethod = function (method) {
+	if (!method.b) {
+		return _List_Nil;
+	} else {
+		var expr = method.a;
+		var exprs = method.b;
+		return A2(
+			$elm$core$List$cons,
+			$author$project$Compiler$Compile$buildExpr(expr),
+			$author$project$Compiler$Compile$buildMethod(exprs));
+	}
+};
+var $author$project$Compiler$Compile$buildMethodString = function (method) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		$author$project$Compiler$Compile$buildMethod(method));
+};
+var $author$project$Compiler$Compile$javascriptTail = A2(
+	$elm$core$String$join,
+	'',
+	_List_fromArray(
+		['update(state, notes);', 'function recur() {', 'step(state);', '}', 'window.requestAnimationFrame(recur);', '}', 'step(makeInitialState());']));
+var $author$project$Compiler$Compile$buildMethods = function (compModel) {
+	if (!compModel.b) {
+		return _List_fromArray(
+			[$author$project$Compiler$Compile$javascriptTail]);
+	} else {
+		var method = compModel.a;
+		var methods = compModel.b;
+		return A2(
+			$elm$core$List$cons,
+			$author$project$Compiler$Compile$buildMethodString(method),
+			$author$project$Compiler$Compile$buildMethods(methods));
+	}
+};
+var $author$project$Compiler$Compile$javascriptHead = A2(
+	$elm$core$String$join,
+	'',
+	_List_fromArray(
+		['var startTime = getTime();', 'function step(state){', 'var stack = [];', 'var notes = [];', 'var time = getTime()-startTime;']));
+var $author$project$Compiler$Compile$compile = function (compModel) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		A2(
+			$elm$core$List$cons,
+			$author$project$Compiler$Compile$javascriptHead,
+			$author$project$Compiler$Compile$buildMethods(compModel)));
+};
+var $author$project$Compiler$CompModel$Expr = F3(
+	function (functionName, id, children) {
+		return {children: children, functionName: functionName, id: id};
+	});
+var $author$project$Compiler$CompModel$ConstV = function (a) {
+	return {$: 'ConstV', a: a};
+};
+var $author$project$Compiler$CompModel$StackIndex = function (a) {
+	return {$: 'StackIndex', a: a};
+};
+var $author$project$Compiler$OnionToExpr$inputToValue = F2(
+	function (input, idToIndex) {
+		switch (input.$) {
+			case 'Output':
+				var o = input.a;
+				var _v1 = A2($elm$core$Dict$get, o, idToIndex);
+				if (_v1.$ === 'Just') {
+					var index = _v1.a;
+					return $elm$core$Result$Ok(
+						$author$project$Compiler$CompModel$StackIndex(index));
+				} else {
+					return $elm$core$Result$Err('Invalid input found');
+				}
+			case 'Const':
+				var c = input.a;
+				return $elm$core$Result$Ok(
+					$author$project$Compiler$CompModel$ConstV(c));
+			default:
+				return $elm$core$Result$Err('No argument supplied to a function call');
+		}
+	});
 var $elm$core$Result$map2 = F3(
 	function (func, ra, rb) {
 		if (ra.$ === 'Err') {
@@ -6617,150 +6519,159 @@ var $elm$core$Result$map2 = F3(
 			}
 		}
 	});
-var $author$project$OnionToJson$callToJson = F2(
-	function (call, callDict) {
-		var inputsJsonRes = A2($author$project$OnionToJson$inputsToJson, call.inputs, callDict);
-		if (inputsJsonRes.$ === 'Err') {
-			var e = inputsJsonRes.a;
-			return $elm$core$Result$Err(e);
-		} else {
-			var o = inputsJsonRes.a;
-			return A3($author$project$OnionToJson$callWithInputs, call, callDict, o);
-		}
-	});
-var $author$project$OnionToJson$inputToJson = F2(
-	function (input, callDict) {
-		switch (input.$) {
-			case 'Output':
-				var id = input.a;
-				var _v2 = A2($elm$core$Dict$get, id, callDict);
-				if (_v2.$ === 'Just') {
-					var call = _v2.a;
-					return A2($author$project$OnionToJson$callToJson, call, callDict);
-				} else {
-					return $elm$core$Result$Err('Invalid key in dict');
-				}
-			case 'Const':
-				var c = input.a;
-				return $elm$core$Result$Ok(
-					$elm$json$Json$Encode$string(
-						$elm$core$String$fromFloat(c)));
-			default:
-				return $elm$core$Result$Err('Incomplete program');
-		}
-	});
-var $author$project$OnionToJson$inputsToJson = F2(
-	function (inputs, callDict) {
+var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
+	function (inputs, idToIndex) {
 		if (!inputs.b) {
 			return $elm$core$Result$Ok(_List_Nil);
 		} else {
-			var i = inputs.a;
-			var is = inputs.b;
-			var rest = A2($author$project$OnionToJson$inputsToJson, is, callDict);
-			var ires = A2($author$project$OnionToJson$inputToJson, i, callDict);
+			var input = inputs.a;
+			var rest = inputs.b;
 			return A3(
 				$elm$core$Result$map2,
-				F2(
-					function (a, b) {
-						return A2($elm$core$List$cons, a, b);
-					}),
-				ires,
-				rest);
+				$elm$core$List$cons,
+				A2($author$project$Compiler$OnionToExpr$inputToValue, input, idToIndex),
+				A2($author$project$Compiler$OnionToExpr$inputsToValues, rest, idToIndex));
 		}
 	});
-var $author$project$Utils$last = function (func) {
-	last:
-	while (true) {
-		if (!func.b) {
-			return $elm$core$Maybe$Nothing;
+var $author$project$BuiltIn$Infinite = function (a) {
+	return {$: 'Infinite', a: a};
+};
+var $author$project$BuiltIn$specialFunctionList = _List_fromArray(
+	[
+		_Utils_Tuple2(
+		'join',
+		$author$project$BuiltIn$Infinite(0)),
+		_Utils_Tuple2(
+		'play',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['sound'])))
+	]);
+var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$specialFunctionList);
+var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList($author$project$BuiltIn$builtInFunctionList);
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
 		} else {
-			if (!func.b.b) {
-				var a = func.a;
-				return $elm$core$Maybe$Just(a);
+			return false;
+		}
+	});
+var $author$project$Compiler$OnionToExpr$isFunctionValid = function (funcName) {
+	return A2($elm$core$Dict$member, funcName, $author$project$BuiltIn$builtInFunctions);
+};
+var $author$project$Compiler$OnionToExpr$callToExpr = F2(
+	function (call, idToIndex) {
+		if ($author$project$Compiler$OnionToExpr$isFunctionValid(call.functionName)) {
+			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, call.inputs, idToIndex);
+			if (_v0.$ === 'Ok') {
+				var children = _v0.a;
+				return $elm$core$Result$Ok(
+					A3($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children));
 			} else {
-				var c = func.a;
-				var cs = func.b;
-				var $temp$func = cs;
+				var e = _v0.a;
+				return $elm$core$Result$Err(e);
+			}
+		} else {
+			return $elm$core$Result$Err('Not a built in function');
+		}
+	});
+var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
+	function (_function, idToIndex) {
+		if (!_function.b) {
+			return $elm$core$Result$Ok(_List_Nil);
+		} else {
+			var call = _function.a;
+			var calls = _function.b;
+			return A3(
+				$elm$core$Result$map2,
+				$elm$core$List$cons,
+				A2($author$project$Compiler$OnionToExpr$callToExpr, call, idToIndex),
+				A2($author$project$Compiler$OnionToExpr$functionToMethod, calls, idToIndex));
+		}
+	});
+var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
+	function (func, dict, index) {
+		makeIdToIndex:
+		while (true) {
+			if (!func.b) {
+				return dict;
+			} else {
+				var e = func.a;
+				var es = func.b;
+				var $temp$func = es,
+					$temp$dict = A3($elm$core$Dict$insert, e.id, index, dict),
+					$temp$index = index + 1;
 				func = $temp$func;
-				continue last;
+				dict = $temp$dict;
+				index = $temp$index;
+				continue makeIdToIndex;
 			}
 		}
-	}
-};
-var $author$project$OnionToJson$functionToJson = function (_function) {
-	var callDict = A2($author$project$OnionToJson$callHash, _function, $elm$core$Dict$empty);
-	var _v0 = $author$project$Utils$last(_function);
-	if (_v0.$ === 'Just') {
-		var playCall = _v0.a;
-		return A2($author$project$OnionToJson$callToJson, playCall, callDict);
-	} else {
-		return $elm$core$Result$Err('Last element missing');
-	}
-};
-var $author$project$OnionToJson$onionToJsonList = function (onion) {
+	});
+var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
 	if (!onion.b) {
-		return $elm$core$Result$Err('Empty program');
+		return $elm$core$Result$Ok(_List_Nil);
 	} else {
 		var f = onion.a;
 		var fs = onion.b;
-		return $author$project$OnionToJson$functionToJson(f);
-	}
-};
-var $author$project$OnionToJson$onionToJson = function (onion) {
-	var json = $author$project$OnionToJson$onionToJsonList(onion);
-	var printignore = function () {
-		if (json.$ === 'Err') {
-			var e = json.a;
-			return A2($elm$core$Debug$log, 'Compile error: ', e);
+		var _v1 = A2(
+			$author$project$Compiler$OnionToExpr$functionToMethod,
+			f,
+			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f, $elm$core$Dict$empty, 0));
+		if (_v1.$ === 'Ok') {
+			var method = _v1.a;
+			var _v2 = $author$project$Compiler$OnionToExpr$onionToCompModel(fs);
+			if (_v2.$ === 'Ok') {
+				var rest = _v2.a;
+				return $elm$core$Result$Ok(
+					A2($elm$core$List$cons, method, rest));
+			} else {
+				var e = _v2.a;
+				return $elm$core$Result$Err(e);
+			}
 		} else {
-			var o = json.a;
-			return 'Dummy';
+			var e = _v1.a;
+			return $elm$core$Result$Err(e);
 		}
-	}();
-	if (json.$ === 'Err') {
-		var e = json.a;
-		return $elm$json$Json$Encode$object(_List_Nil);
-	} else {
-		var o = json.a;
-		return $elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'type',
-					$elm$json$Json$Encode$string('inorder')),
-					_Utils_Tuple2(
-					'notes',
-					A2(
-						$elm$json$Json$Encode$list,
-						$elm$core$Basics$identity,
-						_List_fromArray(
-							[o])))
-				]));
 	}
 };
-var $author$project$Model$OutputSelected = function (a) {
-	return {$: 'OutputSelected', a: a};
+var $author$project$Compiler$Compile$compileOnion = function (onion) {
+	var _v0 = $author$project$Compiler$OnionToExpr$onionToCompModel(onion);
+	if (_v0.$ === 'Ok') {
+		var compModel = _v0.a;
+		return $elm$core$Result$Ok(
+			$author$project$Compiler$Compile$compile(compModel));
+	} else {
+		var e = _v0.a;
+		return $elm$core$Result$Err(e);
+	}
 };
-var $author$project$Update$outputClickModel = F2(
-	function (model, id) {
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$OutputSelected(id)
-			});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Update$evalJavascript = _Platform_outgoingPort('evalJavascript', $elm$json$Json$Encode$string);
+var $author$project$Update$playSoundResult = function (model) {
+	var _v0 = $author$project$Compiler$Compile$compileOnion(model.program);
+	if (_v0.$ === 'Err') {
+		var e = _v0.a;
 		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse}),
+			A2($author$project$Update$modelWithError, model, e),
 			$elm$core$Platform$Cmd$none);
-	});
-var $author$project$Update$runSound = _Platform_outgoingPort('runSound', $elm$core$Basics$identity);
-var $elm$json$Json$Encode$int = _Json_wrap;
-var $author$project$Update$testprint = _Platform_outgoingPort('testprint', $elm$json$Json$Encode$int);
+	} else {
+		var s = _v0.a;
+		return _Utils_Tuple2(
+			model,
+			$author$project$Update$evalJavascript(s));
+	}
+};
 var $author$project$Update$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'SetError':
+				var errorString = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$Update$modelWithError, model, errorString),
+					$elm$core$Platform$Cmd$none);
 			case 'MouseRelease':
 				return $author$project$Update$modelMouseRelease(model);
 			case 'MouseMoved':
@@ -6806,10 +6717,7 @@ var $author$project$Update$update = F2(
 				var id = msg.a;
 				return A2($author$project$Update$outputClickModel, model, id);
 			case 'PlaySound':
-				return _Utils_Tuple2(
-					model,
-					$author$project$Update$runSound(
-						$author$project$OnionToJson$onionToJson(model.program)));
+				return $author$project$Update$playSoundResult(model);
 			case 'WindowResize':
 				var newWidth = msg.a;
 				var newHeight = msg.b;
@@ -6850,7 +6758,7 @@ var $author$project$Update$update = F2(
 					_Utils_update(
 						model,
 						{highlightedButton: pageName}),
-					$author$project$Update$testprint(2));
+					$elm$core$Platform$Cmd$none);
 			default:
 				var pageName = msg.a;
 				return _Utils_eq(pageName, model.highlightedButton) ? _Utils_Tuple2(
@@ -7918,6 +7826,15 @@ var $rtfeldman$elm_css$Hash$fromString = function (str) {
 		$rtfeldman$elm_hex$Hex$toString(
 			A2($Skinney$murmur3$Murmur3$hashString, $rtfeldman$elm_css$Hash$murmurSeed, str)));
 };
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$last = function (list) {
 	last:
 	while (true) {
@@ -8013,6 +7930,15 @@ var $rtfeldman$elm_css$Css$Structure$styleBlockToMediaRule = F2(
 			return declaration;
 		}
 	});
+var $elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(xs);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -9024,6 +8950,80 @@ var $author$project$View$pagebutton = F2(
 					$rtfeldman$elm_css$Html$Styled$text(pageName)
 				]));
 	});
+var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
+var $author$project$ViewVariables$errorColor = A3($rtfeldman$elm_css$Css$rgb, 255, 150, 150);
+var $rtfeldman$elm_css$Css$fixed = {backgroundAttachment: $rtfeldman$elm_css$Css$Structure$Compatible, position: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'fixed'};
+var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
+var $rtfeldman$elm_css$Css$int = function (val) {
+	return {
+		fontWeight: $rtfeldman$elm_css$Css$Structure$Compatible,
+		intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
+		number: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: $rtfeldman$elm_css$Css$UnitlessInteger,
+		value: $elm$core$String$fromInt(val)
+	};
+};
+var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
+var $rtfeldman$elm_css$Css$UnitlessFloat = {$: 'UnitlessFloat'};
+var $rtfeldman$elm_css$Css$num = function (val) {
+	return {
+		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
+		number: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: $rtfeldman$elm_css$Css$UnitlessFloat,
+		value: $elm$core$String$fromFloat(val)
+	};
+};
+var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
+var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
+var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
+var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
+var $author$project$View$drawErrorBox = function (errorBox) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$zIndex(
+						$rtfeldman$elm_css$Css$int(2)),
+						$rtfeldman$elm_css$Css$borderRadius(
+						$rtfeldman$elm_css$Css$px(15)),
+						$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$errorColor),
+						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$fixed),
+						$rtfeldman$elm_css$Css$opacity(
+						$rtfeldman$elm_css$Css$num(0.75)),
+						$rtfeldman$elm_css$Css$pointerEvents($rtfeldman$elm_css$Css$none)
+					]))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$margin(
+								$rtfeldman$elm_css$Css$px(10))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(errorBox.error)
+					]))
+			]));
+};
 var $author$project$ViewPositions$createViewboxDimensions = F2(
 	function (w, h) {
 		var width = $elm$core$String$fromInt(w);
@@ -9031,7 +9031,7 @@ var $author$project$ViewPositions$createViewboxDimensions = F2(
 		return width + (' ' + height);
 	});
 var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
-var $author$project$Model$builtInFunctions = $elm$core$Dict$fromList($author$project$Model$builtInFunctionList);
+var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
@@ -9039,6 +9039,7 @@ var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
 		_VirtualDom_noScript(tag));
 };
 var $elm$svg$Svg$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$Attributes$pointerEvents = _VirtualDom_attribute('pointer-events');
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
@@ -9073,7 +9074,9 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 						$elm$svg$Svg$Attributes$x('0'),
 						$elm$svg$Svg$Attributes$y('50'),
 						$elm$svg$Svg$Attributes$fill('white'),
-						$elm$svg$Svg$Attributes$stroke('white')
+						$elm$svg$Svg$Attributes$stroke('white'),
+						$elm$svg$Svg$Attributes$pointerEvents('none'),
+						$elm$svg$Svg$Attributes$cursor('default')
 					]),
 				_List_fromArray(
 					[
@@ -9085,8 +9088,6 @@ var $author$project$Model$BlockClick = function (a) {
 	return {$: 'BlockClick', a: a};
 };
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
-var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 8) | 0;
 var $elm$html$Html$Events$on = F2(
@@ -9104,7 +9105,34 @@ var $elm$svg$Svg$Events$onMouseDown = function (msg) {
 };
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
 var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $author$project$SvgDraw$svgText = F5(
+	function (xpos, ypos, textIn, fontSizeIn, fillIn) {
+		return A2(
+			$elm$svg$Svg$text_,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$x(
+					$elm$core$String$fromInt(xpos)),
+					$elm$svg$Svg$Attributes$y(
+					$elm$core$String$fromInt(ypos)),
+					$elm$svg$Svg$Attributes$textAnchor('middle'),
+					$elm$svg$Svg$Attributes$dominantBaseline('central'),
+					$elm$svg$Svg$Attributes$fontSize(
+					$elm$core$String$fromInt(fontSizeIn)),
+					$elm$svg$Svg$Attributes$pointerEvents('none'),
+					$elm$svg$Svg$Attributes$cursor('default'),
+					$elm$svg$Svg$Attributes$style('user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;'),
+					$elm$svg$Svg$Attributes$fill(fillIn)
+				]),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$text(textIn)
+				]));
+	});
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $author$project$SvgDraw$functionNameshape = F5(
 	function (name, argList, inputs, blockPositions, id) {
@@ -9142,24 +9170,7 @@ var $author$project$SvgDraw$functionNameshape = F5(
 								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
 							]),
 						_List_Nil),
-						A2(
-						$elm$svg$Svg$text_,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$x(
-								$elm$core$String$fromInt(($author$project$ViewVariables$blockWidth / 2) | 0)),
-								$elm$svg$Svg$Attributes$y(
-								$elm$core$String$fromInt(($author$project$ViewVariables$blockHeight / 2) | 0)),
-								$elm$svg$Svg$Attributes$fill('white'),
-								$elm$svg$Svg$Attributes$fontSize(
-								$elm$core$String$fromInt($author$project$ViewVariables$funcNameFontHeight)),
-								$elm$svg$Svg$Attributes$textAnchor('middle'),
-								$elm$svg$Svg$Attributes$dominantBaseline('central')
-							]),
-						_List_fromArray(
-							[
-								$elm$svg$Svg$text(name)
-							]))
+						A5($author$project$SvgDraw$svgText, ($author$project$ViewVariables$blockWidth / 2) | 0, ($author$project$ViewVariables$blockHeight / 2) | 0, name, $author$project$ViewVariables$funcNameFontHeight, 'white')
 					]));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
@@ -9167,10 +9178,10 @@ var $author$project$SvgDraw$functionNameshape = F5(
 	});
 var $author$project$SvgDraw$drawBuiltIn = F3(
 	function (call, index, blockPositions) {
-		var get = A2($elm$core$Dict$get, call.waveType, $author$project$Model$builtInFunctions);
+		var get = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
 		if (get.$ === 'Just') {
 			var names = get.a;
-			return A5($author$project$SvgDraw$functionNameshape, call.waveType, names, call.inputs, blockPositions, call.id);
+			return A5($author$project$SvgDraw$functionNameshape, call.functionName, names, call.inputs, blockPositions, call.id);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('call without block position');
 		}
@@ -9223,24 +9234,13 @@ var $author$project$SvgDraw$drawConst = F3(
 							$elm$svg$Svg$Attributes$stroke('black')
 						]),
 					_List_Nil),
-					A2(
-					$elm$svg$Svg$text_,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x(
-							$elm$core$String$fromInt(xpos)),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromInt(ypos)),
-							$elm$svg$Svg$Attributes$textAnchor('middle'),
-							$elm$svg$Svg$Attributes$dominantBaseline('central'),
-							$elm$svg$Svg$Attributes$fontSize(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-						]),
-					_List_fromArray(
-						[
-							$elm$svg$Svg$text(
-							$elm$core$String$fromFloat(_const))
-						]))
+					A5(
+					$author$project$SvgDraw$svgText,
+					xpos,
+					ypos,
+					$elm$core$String$fromFloat(_const),
+					$author$project$ViewVariables$nodeRadius,
+					'black')
 				]));
 	});
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
@@ -9903,6 +9903,7 @@ var $rtfeldman$elm_css$Css$scroll = {backgroundAttachment: $rtfeldman$elm_css$Cs
 var $author$project$View$programPage = function (model) {
 	var programWidth = $author$project$ViewVariables$programWidth(model.windowWidth);
 	var programSectionHeight = $author$project$ViewVariables$programHeight(model.windowHeight);
+	var drawnProgram = A4($author$project$DrawProgram$drawProgram, model.program, model.mouseState, programWidth, programSectionHeight);
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
@@ -9918,10 +9919,20 @@ var $author$project$View$programPage = function (model) {
 						$rtfeldman$elm_css$Css$px(programSectionHeight))
 					]))
 			]),
-		_List_fromArray(
-			[
-				A4($author$project$DrawProgram$drawProgram, model.program, model.mouseState, programWidth, programSectionHeight)
-			]));
+		function () {
+			var _v0 = model.errorBoxMaybe;
+			if (_v0.$ === 'Nothing') {
+				return _List_fromArray(
+					[drawnProgram]);
+			} else {
+				var errorBox = _v0.a;
+				return _List_fromArray(
+					[
+						$author$project$View$drawErrorBox(errorBox),
+						drawnProgram
+					]);
+			}
+		}());
 };
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
