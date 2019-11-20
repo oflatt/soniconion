@@ -21,7 +21,7 @@ onionToCompModelTest =
         ,test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [[(Call 0 [(Const 2)] "sine")]])
+                       (onionToCompModel [[(Call 0 [(Text "2")] "sine")]])
                        (Ok [[(Expr "sine" 0 [(ConstV 2)])]])))
 
         ,test "test function"
