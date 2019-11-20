@@ -18,3 +18,5 @@ find src -maxdepth 1 -name '*.html' -exec cp {} ./docs/ \;
 
 echo "--------- copying js files"
 find src -maxdepth 1 -name '*.js' -exec cp {} ./docs/ \;
+
+cp src/CNAME docs/CNAME
