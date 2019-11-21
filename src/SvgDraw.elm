@@ -95,7 +95,7 @@ drawTextInput str xpos ypos id index =
                       [])]
 
 -- nodes has inputs underneath them so that they can be tabbed
-drawNode xpos ypos event isHighlighted id index =
+drawNode xpos ypos event isHighlighted =
     if isHighlighted
     then
         (circle [r (String.fromInt ViewVariables.nodeRadius)

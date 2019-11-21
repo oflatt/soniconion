@@ -30,21 +30,12 @@ drawCall: Call -> Int ->  BlockPositions -> (Svg Msg)
 drawCall call counter blockPositions =
     SvgDraw.drawBuiltIn call counter blockPositions
 
-drawOutputLine : Id -> BlockPos -> Int -> BlockPositions -> Svg.Attribute Msg -> Bool -> Bool -> Maybe Int -> (Svg Msg)
-drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighlighted isOutputHighlighted routing =
+drawOutputLine : Id -> BlockPos -> Int -> BlockPositions -> Svg.Attribute Msg -> Bool -> Maybe Int -> (Svg Msg)
+drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighlighted routing =
     case Dict.get id blockPositions of
         Nothing -> SvgDraw.errorSvgNode "Can't find line output"
         Just otherBlockPos ->
-            Svg.g
-                []
-                [(SvgDraw.drawNode
-                      (ViewVariables.outputNodeX + (Tuple.first otherBlockPos))
-                      (ViewVariables.outputNodeY + (Tuple.second otherBlockPos))
-                      (Svg.Events.onMouseDown (OutputClick id))
-                      isOutputHighlighted
-                      id
-                      inputCounter)
-                ,SvgDraw.drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing]
+            SvgDraw.drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing
 
                 
 drawInput input blockPos inputCounter blockPositions blockId mouseState routing =
@@ -65,20 +56,14 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                             _ -> False
                     outputEvent =
                         (Svg.Events.onMouseDown (OutputClick id))
-                    isOutputHighlighted =
-                        case mouseState.mouseSelection of
-                            OutputSelected outputId -> (outputId == id)
-                            _ -> False
                 in
                     Svg.node "g" []
-                        [(drawOutputLine id blockPos inputCounter blockPositions outputEvent isLineHighlighted isOutputHighlighted routing)
+                        [(drawOutputLine id blockPos inputCounter blockPositions outputEvent isLineHighlighted routing)
                         ,(SvgDraw.drawNode
                               ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                               ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                               inputEvent
-                              isInputHighlighted
-                              blockId
-                              inputCounter)]
+                              isInputHighlighted)]
             Text str ->
                 (SvgDraw.drawTextInput
                      str
@@ -91,9 +76,7 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                     ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                     inputEvent
                     isInputHighlighted
-                    blockId
-                    inputCounter
-
+                    
                         
 drawInputLines inputs blockPos inputCounter blockPositions id mouseState lineRouting =
     case inputs of
@@ -108,26 +91,37 @@ drawInputLines inputs blockPos inputCounter blockPositions id mouseState lineRou
 
 drawCallInputs: Call -> BlockPositions -> MouseState -> CallLineRoute -> (Svg Msg)
 drawCallInputs call blockPositions mouseState routingList =
-    let isOutputHighlighted =
-            case mouseState.mouseSelection of
-                OutputSelected id -> id == call.id
-                _ -> False
-    in
-        case Dict.get call.id blockPositions of
-            Just blockPos ->
-                Svg.g
-                    []
-                    (drawInputLines
-                         call.inputs
-                         blockPos
-                         0
-                         blockPositions
-                         call.id
-                         mouseState
-                         routingList)
-            Nothing ->
-                SvgDraw.errorSvgNode "Call without a block position"
-
+    case Dict.get call.id blockPositions of
+        Just blockPos ->
+            Svg.g
+                []
+                (drawInputLines
+                     call.inputs
+                     blockPos
+                     0
+                     blockPositions
+                     call.id
+                     mouseState
+                     routingList)
+        Nothing ->
+            SvgDraw.errorSvgNode "Call without a block position"
+                            
+drawCallEnding call blockPositions mouseState =
+    case Dict.get call.id blockPositions of
+        Just blockPos ->
+            let isOutputHighlighted =
+                    case mouseState.mouseSelection of
+                        OutputSelected outputId -> (outputId == call.id)
+                        _ -> False
+            in
+                (SvgDraw.drawNode
+                     (ViewVariables.outputNodeX + (Tuple.first blockPos))
+                     (ViewVariables.outputNodeY + (Tuple.second blockPos))
+                     (Svg.Events.onMouseDown (OutputClick call.id))
+                     isOutputHighlighted)
+        Nothing ->
+            SvgDraw.errorSvgNode "Call without a block position when drawing endings"
+                
 -- there should be one line routing list per frame
 drawFuncInputs func blockPositions mouseState lineRouting=
     case func of
@@ -139,6 +133,12 @@ drawFuncInputs func blockPositions mouseState lineRouting=
                     (drawCallInputs call blockPositions mouseState routing)
                     :: (drawFuncInputs calls blockPositions mouseState restRouting)
 
+drawFuncEndings func blockPositions mouseState =
+    case func of
+        [] -> []
+        (call::calls) ->
+            (drawCallEnding call blockPositions mouseState) :: (drawFuncEndings calls blockPositions mouseState)
+                        
 -- function for drawing function records
 drawFunc: Function -> Int ->  BlockPositions -> MouseState -> List (Svg Msg)
 drawFunc func counter blockPositions mouseState =
@@ -151,7 +151,8 @@ drawFuncWithConnections viewStructure mouseState =
     Svg.g
         []
         [Svg.g [] (drawFunc viewStructure.sortedFunc 0 viewStructure.blockPositions mouseState)
-        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure.blockPositions mouseState viewStructure.lineRouting)]
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure.blockPositions mouseState viewStructure.lineRouting)
+        ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc viewStructure.blockPositions mouseState)]
 
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> List (Svg Msg)

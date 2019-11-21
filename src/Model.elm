@@ -73,7 +73,13 @@ getCallById id func =
                
 type alias Call = {id: Id
                   ,inputs: List Input
-                  ,functionName: String}
+                  ,functionName: String
+                  ,outputText: String}
+
+-- id needs to be unique to the Onion
+constructCall : Id -> String -> Call
+constructCall id functionName =
+    (Call id [] functionName "")
     
 type MouseSelection = BlockSelected Id
                     | InputSelected Id Int -- id of block and index of input
@@ -111,10 +117,10 @@ type alias Flags = {innerWindowWidth : Int,
        
 -- play is assumed to be at the end
 initialProgram : Onion
-initialProgram = [[(Call 80 [Text "0", Text "440", Text "2"] "sine")
-                  ,(Call 98 [Output 80, Text "600", Text "1"] "sine")
-                  ,(Call 82 [Output 80, Text "400", Text "1"] "sine")
-                  ,(Call 23 [Output 98, Text "300", Text "1"] "sine")
+initialProgram = [[(Call 80 [Text "0", Text "440", Text "2"] "sine" "")
+                  ,(Call 98 [Output 80, Text "600", Text "1"] "sine" "")
+                  ,(Call 82 [Output 80, Text "400", Text "1"] "sine" "")
+                  ,(Call 23 [Output 98, Text "300", Text "1"] "sine" "")
                   ]
                  ]
 

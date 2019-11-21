@@ -16,12 +16,12 @@ onionToCompModelTest =
         [test "basic example"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [[(Call 0 [] "sine")]])
+                       (onionToCompModel [[(Call 0 [] "sine" "")]])
                        (Ok [[(Expr "sine" 0 [])]])))
         ,test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [[(Call 0 [(Text "2")] "sine")]])
+                       (onionToCompModel [[(Call 0 [(Text "2")] "sine" "")]])
                        (Ok [[(Expr "sine" 0 [(ConstV 2)])]])))
 
         ,test "test function"
