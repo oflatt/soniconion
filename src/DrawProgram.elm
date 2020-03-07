@@ -39,7 +39,7 @@ drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighligh
 
                 
 drawInput input blockPos inputCounter blockPositions blockId mouseState routing =
-    let inputEvent = (Svg.Events.onMouseDown (InputClick blockId inputCounter))
+    let inputEvent = (InputClick blockId inputCounter)
         isInputHighlighted =
             case mouseState.mouseSelection of
                 InputSelected inputId inputIndex ->
@@ -117,7 +117,7 @@ drawCallEnding call blockPositions mouseState =
                 (SvgDraw.drawNode
                      (ViewVariables.outputNodeX + (Tuple.first blockPos))
                      (ViewVariables.outputNodeY + (Tuple.second blockPos))
-                     (Svg.Events.onMouseDown (OutputClick call.id))
+                     (OutputClick call.id)
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"

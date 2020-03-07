@@ -11,7 +11,7 @@ import ViewPositions exposing (BlockPositions)
 import Css exposing (px)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
-import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
+import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave, onFocus)
 
 import Dict exposing (Dict)
 import Array exposing (Array)
@@ -83,6 +83,7 @@ drawTextInput str xpos ypos id index =
                  (input
                       [Html.Styled.Attributes.value str
                       ,Html.Styled.Events.onInput (InputUpdate id index)
+                      ,onFocus (InputClick id index)
                       ,css [Css.width
                                 (px
                                  ((Basics.toFloat (ViewVariables.nodeRadius * 4))-4.0))
@@ -96,21 +97,33 @@ drawTextInput str xpos ypos id index =
 
 -- nodes has inputs underneath them so that they can be tabbed
 drawNode xpos ypos event isHighlighted =
-    if isHighlighted
-    then
-        (circle [r (String.fromInt ViewVariables.nodeRadius)
-            , cx (String.fromInt xpos)
-            , cy (String.fromInt ypos)
-            , fill "blue"
-            , event] [])
-    else
-        (circle [r (String.fromInt ViewVariables.nodeRadius)
-                , cx (String.fromInt xpos)
-                , cy (String.fromInt ypos)
-                , fill "black"
-                , event] [])
-            
-            
+    Svg.g
+        []
+        [if isHighlighted
+         then
+             (circle [r (String.fromInt ViewVariables.nodeRadius)
+                     , Svg.Attributes.style "tabindex: 0;"
+                     , cx (String.fromInt xpos)
+                     , cy (String.fromInt ypos)
+                     , fill "blue"
+                     , (Svg.Events.onMouseDown event)] [])
+         else
+             (circle [r (String.fromInt ViewVariables.nodeRadius)
+                     , Svg.Attributes.style "tabindex: 0"
+                     , cx (String.fromInt xpos)
+                     , cy (String.fromInt ypos)
+                     , fill "black"
+                     , (Svg.Events.onMouseDown event)] [])
+        ,Svg.foreignObject
+            [x (String.fromInt xpos)
+            ,y (String.fromInt ypos)
+            ,width (String.fromInt ViewVariables.nodeRadius)
+            ,height (String.fromInt ViewVariables.nodeRadius)]
+             [toUnstyled
+                  (div
+                   [Html.Styled.Attributes.tabindex 0
+                   ,(onFocus event)]
+                   [])]]
             
         
 drawNames l = []
