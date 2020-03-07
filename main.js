@@ -9753,6 +9753,31 @@ var $author$project$SvgDraw$drawNode = F4(
 			_List_Nil,
 			_List_fromArray(
 				[
+					A2(
+					$elm$svg$Svg$foreignObject,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x(
+							$elm$core$String$fromInt(xpos)),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromInt(ypos)),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
+						]),
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$toUnstyled(
+							A2(
+								$rtfeldman$elm_css$Html$Styled$div,
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
+										$rtfeldman$elm_css$Html$Styled$Events$onFocus(event)
+									]),
+								_List_Nil))
+						])),
 					isHighlighted ? A2(
 					$elm$svg$Svg$circle,
 					_List_fromArray(
@@ -9781,32 +9806,7 @@ var $author$project$SvgDraw$drawNode = F4(
 							$elm$svg$Svg$Attributes$fill('black'),
 							$elm$svg$Svg$Events$onMouseDown(event)
 						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$foreignObject,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x(
-							$elm$core$String$fromInt(xpos)),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromInt(ypos)),
-							$elm$svg$Svg$Attributes$width(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-							$elm$svg$Svg$Attributes$height(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-						]),
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$toUnstyled(
-							A2(
-								$rtfeldman$elm_css$Html$Styled$div,
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
-										$rtfeldman$elm_css$Html$Styled$Events$onFocus(event)
-									]),
-								_List_Nil))
-						]))
+					_List_Nil)
 				]));
 	});
 var $author$project$ViewVariables$outputNodeX = ($author$project$ViewVariables$blockWidth / 2) | 0;
