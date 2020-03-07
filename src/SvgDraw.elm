@@ -99,7 +99,18 @@ drawTextInput str xpos ypos id index =
 drawNode xpos ypos event isHighlighted =
     Svg.g
         []
-        [if isHighlighted
+        [
+         Svg.foreignObject
+            [x (String.fromInt xpos)
+            ,y (String.fromInt ypos)
+            ,width (String.fromInt ViewVariables.nodeRadius)
+            ,height (String.fromInt ViewVariables.nodeRadius)]
+             [toUnstyled
+                  (div
+                   [Html.Styled.Attributes.tabindex 0
+                   ,(onFocus event)]
+                   [])]
+        ,if isHighlighted
          then
              (circle [r (String.fromInt ViewVariables.nodeRadius)
                      , Svg.Attributes.style "tabindex: 0;"
@@ -114,16 +125,7 @@ drawNode xpos ypos event isHighlighted =
                      , cy (String.fromInt ypos)
                      , fill "black"
                      , (Svg.Events.onMouseDown event)] [])
-        ,Svg.foreignObject
-            [x (String.fromInt xpos)
-            ,y (String.fromInt ypos)
-            ,width (String.fromInt ViewVariables.nodeRadius)
-            ,height (String.fromInt ViewVariables.nodeRadius)]
-             [toUnstyled
-                  (div
-                   [Html.Styled.Attributes.tabindex 0
-                   ,(onFocus event)]
-                   [])]]
+        ]
             
         
 drawNames l = []
