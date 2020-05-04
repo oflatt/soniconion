@@ -8,7 +8,7 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 
 import TestModel
-import ViewPositions exposing (..)
+import ViewPositions
 import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock)
 
 myexpect item1 item2 =
@@ -20,11 +20,11 @@ outputConnectedArrayTest func expected =
         svgScreenWidth = 1000
         svgScreenHeight = 1000
         mouseState = (MouseState 0 0 NoneSelected)
-        blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
-        madePos = makeIdToPos func blockPositions
+        blockPositions = (ViewPositions.getBlockPositions func mouseState svgScreenWidth svgScreenHeight 0 0)
+        madePos = ViewPositions.makeIdToPos func blockPositions
         sortedFunc = (Tuple.first madePos)
         idToPos = (Tuple.second madePos)
-        connectedArray = getOutputConnectedArray sortedFunc idToPos
+        connectedArray = ViewPositions.getOutputConnectedArray sortedFunc idToPos
     in
         (myexpect
              connectedArray
@@ -48,49 +48,47 @@ fixInvalidInputs =
         ]
                 
 
-
-getLineRouting : Test
-getLineRouting =
-    describe "getLineRouting"
+getLineRouting testModel =
+    (ViewPositions.getViewStructure testModel (MouseState 0 0 NoneSelected) 0 0 0 0).lineRouting
+        
+getLineRoutingTest : Test
+getLineRoutingTest =
+    describe "getLineRoutingTest"
         [test "no connections"
              (myexpect
-                  (ViewPositions.getViewStructure TestModel.testFunctionHoles
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
+                  (getLineRouting TestModel.testFunctionHoles)
                   [[Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Nothing]])
         ,test "basic example"
             (myexpect
-                 (ViewPositions.getViewStructure TestModel.testFunction
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
+                 (getLineRouting TestModel.testFunction)
                  [[Nothing, Nothing], [Nothing, Nothing], [Just -1, Just 0], [Just 0]])
         ,test "complex routing"
             (myexpect
-                 (ViewPositions.getViewStructure TestModel.complexRoutingFunc
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
+                 (getLineRouting TestModel.complexRoutingFunc)
                  [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])]
 
 
-
+callBlockPositions testFunc =
+    (ViewPositions.blockPositionsToPositionList testFunc
+         (ViewPositions.getViewStructure testFunc
+              (MouseState 0 0 NoneSelected) 1000 1000 0 0).blockPositions)
         
 blockPositionsTest : Test
 blockPositionsTest =
     describe "getBlockPositions"
         [test "test func"
              (myexpect
-                  (ViewPositions.blockPositionsToPositionList TestModel.testFunction
-                       (ViewPositions.getViewStructure TestModel.testFunction
-                            (MouseState 0 0 NoneSelected) 1000 1000).blockPositions)
-                  (Ok [(functionXSpacing, 0)
-                      ,(functionXSpacing, blockSpace)
-                      ,(functionXSpacing, blockSpace*2 + 2*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*3 + (1+2)*lineSpaceBeforeBlock)]))
+                  (callBlockPositions TestModel.testFunction)
+                  (Ok [(0, 0)
+                      ,(0, blockSpace)
+                      ,(0, blockSpace*2 + 2*lineSpaceBeforeBlock)
+                      ,(0, blockSpace*3 + (1+2)*lineSpaceBeforeBlock)]))
         ,test "complex connections"
              (myexpect
-                  (ViewPositions.blockPositionsToPositionList TestModel.complexRoutingFunc
-                       (ViewPositions.getViewStructure TestModel.complexRoutingFunc
-                            (MouseState 0 0 NoneSelected) 1000 1000).blockPositions)
-                  (Ok [(functionXSpacing, 0)
-                      ,(functionXSpacing, blockSpace + lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*2 + (1+1)*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*3 + (1+1+2)*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))]
+                  (callBlockPositions TestModel.complexRoutingFunc)
+                  (Ok [(0, 0)
+                      ,(0, blockSpace + lineSpaceBeforeBlock)
+                      ,(0, blockSpace*2 + (1+1)*lineSpaceBeforeBlock)
+                      ,(0, blockSpace*3 + (1+1+2)*lineSpaceBeforeBlock)
+                      ,(0, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))]
 

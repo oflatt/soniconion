@@ -14,7 +14,8 @@ waveList : List BuiltInSpec
 waveList = [("sine", Finite ["time", "frequency", "duration"])]
 
     
-specialFunctionList = [("join", Infinite 0)] -- join will be removed
+specialFunctionList = [("join", Infinite 0)
+                      ,("play", Finite ["arg"])] -- join will be removed
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ specialFunctionList
                       
