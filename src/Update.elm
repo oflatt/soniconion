@@ -166,7 +166,8 @@ funcBlockDropped func blockId oldMouse windowWidth windowHeight =
     let blockPositions =
             (ViewPositions.getBlockPositions func oldMouse
                  (ViewVariables.programWidth windowWidth)
-                 (ViewVariables.programHeight windowHeight))
+                 (ViewVariables.programHeight windowHeight)
+                 (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth windowWidth)) 0)
     in
         case Dict.get blockId blockPositions of
             Nothing -> log "No block in funcBlockDropped" func
@@ -192,7 +193,9 @@ modelBlockDropped model id =
     in
         ({model |
               mouseState = newMouse
-              ,program = programBlockDropped model.program id oldMouse model.windowWidth model.windowHeight}
+              ,program =
+                  (programBlockDropped model.program id oldMouse
+                       (ViewVariables.programWidth model.windowWidth) (ViewVariables.programHeight model.windowHeight))}
         ,Cmd.none)
 
 modelWithError : Model -> String -> Model

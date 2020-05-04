@@ -13,10 +13,10 @@ import Debug exposing (log)
 type alias MovedBlockInfo = {movedCall : Call
                              ,movedPos : (Int, Int)}
 
-mouseToSvgCoordinates: MouseState -> Int -> Int -> (Int, Int)
-mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
-    ((mouseState.mouseX * ViewVariables.viewportWidth) // svgScreenWidth
-    ,((mouseState.mouseY - ViewVariables.svgYpos) * (getViewportHeight svgScreenWidth svgScreenHeight)) // svgScreenHeight)
+mouseToSvgCoordinates: MouseState -> Int -> Int -> Int -> Int -> (Int, Int)
+mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
+    ((mouseState.mouseX * ViewVariables.viewportWidth) // svgScreenWidth - xoffset
+    ,((mouseState.mouseY - ViewVariables.svgYpos) * (getViewportHeight svgScreenWidth svgScreenHeight)) // svgScreenHeight - yoffset)
 
 svgYposToIndex: Int -> Int
 svgYposToIndex yPos =
@@ -43,7 +43,9 @@ type alias LineRouting = List CallLineRoute
 type alias BlockPositions = Dict Id BlockPos
 type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
-                           ,sortedFunc : Function}
+                           ,sortedFunc : Function
+                           ,funcxoffset : Int
+                           ,funcyoffset : Int}
 
 blockPositionsToPositionList func blockPositions =
     case func of
@@ -95,7 +97,7 @@ getAllBlockPositions maybeMoveInfo func mouseState currentY =
                                      mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
                         else
                             -- iterate normally
-                            Dict.insert call.id (ViewVariables.functionXSpacing, currentY+(callLinesSpace call))
+                            Dict.insert call.id (0, currentY+(callLinesSpace call))
                                 (getAllBlockPositions maybeMoveInfo calls
                                      mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
                                     
@@ -106,9 +108,9 @@ getAllBlockPositions maybeMoveInfo func mouseState currentY =
                              mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
 
                       
-getBlockPositions: Function -> MouseState -> Int -> Int -> BlockPositions
-getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
-    let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
+getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
+getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
+    let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
     in
         getAllBlockPositions moveInfo func mouseState 0
 
@@ -236,8 +238,8 @@ getLineRouting func connectedArray idToPos isLeft=
              (Tuple.first routing) ::
                 (getLineRouting calls connectedArray idToPos (Tuple.second routing))
 
-getViewStructure func mouseState svgScreenWidth svgScreenHeight =
-    let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
+getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
+    let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         madePos = makeIdToPos func blockPositions
         sortedFunc = (Tuple.first madePos)
         idToPos = (Tuple.second madePos)
@@ -247,7 +249,9 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight =
         (ViewStructure
              blockPositions
              lineRouting
-             sortedFunc)
+             sortedFunc
+             xoffset
+             yoffset)
 
 
 createViewboxDimensions w h =

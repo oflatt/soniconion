@@ -1,4 +1,5 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput, nodeEvent, drawNodeWithEvent)
+module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
+                             nodeEvent, drawNodeWithEvent, svgTranslate)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -46,14 +47,14 @@ errorSvgNode errorMsg=
         
 -- function for drawing builtIns
 drawBuiltIn: Call -> Int -> BlockPositions -> (Svg Msg)
-drawBuiltIn call index blockPositions=
+drawBuiltIn call index blockPositions =
     let get = Dict.get call.functionName builtInFunctions
     in
         case get of
             Just names ->
                 functionNameshape call.functionName names call.inputs blockPositions call.id
             Nothing ->
-                errorSvgNode "call without block position"
+                errorSvgNode ("not a built in function " ++ call.functionName)
 
 
 svgText xpos ypos textIn fontSizeIn fillIn =
@@ -129,6 +130,8 @@ drawNodeWithEvent xpos ypos event highlightevent eventId isHighlighted =
 drawNames l = []
                   
 
+svgTranslate xpos ypos =
+    transform ("translate(" ++ (String.fromInt xpos) ++ "," ++ (String.fromInt  ypos) ++ ")")
                     
 -- shape for functionName objects
 functionNameshape: String -> ArgList -> List Input -> BlockPositions -> Id -> (Svg Msg)
@@ -137,7 +140,7 @@ functionNameshape name argList inputs blockPositions id =
         Just blockPos ->
             Svg.node "g"
                 [(Svg.Events.onMouseDown (BlockClick id))
-                ,transform ("translate(" ++ (String.fromInt (Tuple.first blockPos)) ++ "," ++ (String.fromInt  (Tuple.second blockPos)) ++ ")")]
+                ,svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)]
                 [
                  rect
                      [ x "0"

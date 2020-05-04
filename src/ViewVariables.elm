@@ -11,7 +11,8 @@ scrollbarWidth = 40
 titleHeight = 90
 buttonHeight = 50
 svgYpos = titleHeight + buttonHeight
-programWidth windowWidth = windowWidth - (2 *scrollbarWidth)
+toolbarWidth windowWidth = windowWidth // 4 - (2 * scrollbarWidth)
+programWidth windowWidth = windowWidth - (2*scrollbarWidth)
 -- height of the html object, but might scroll bigger
 programHeight windowHeight = windowHeight - svgYpos - scrollbarWidth
 
