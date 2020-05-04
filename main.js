@@ -5317,6 +5317,9 @@ var $author$project$Model$initialModel = F3(
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Model$KeyboardInput = function (a) {
+	return {$: 'KeyboardInput', a: a};
+};
 var $author$project$Model$MouseMoved = function (a) {
 	return {$: 'MouseMoved', a: a};
 };
@@ -5326,6 +5329,335 @@ var $author$project$Model$WindowResize = F2(
 		return {$: 'WindowResize', a: a, b: b};
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $Gizra$elm_keyboard_event$Keyboard$Event$KeyboardEvent = F7(
+	function (altKey, ctrlKey, key, keyCode, metaKey, repeat, shiftKey) {
+		return {altKey: altKey, ctrlKey: ctrlKey, key: key, keyCode: keyCode, metaKey: metaKey, repeat: repeat, shiftKey: shiftKey};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $Gizra$elm_keyboard_event$Keyboard$Event$decodeKey = $elm$json$Json$Decode$maybe(
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (key) {
+			return $elm$core$String$isEmpty(key) ? $elm$json$Json$Decode$fail('empty key') : $elm$json$Json$Decode$succeed(key);
+		},
+		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string)));
+var $Gizra$elm_keyboard_event$Keyboard$Event$decodeNonZero = A2(
+	$elm$json$Json$Decode$andThen,
+	function (code) {
+		return (!code) ? $elm$json$Json$Decode$fail('code was zero') : $elm$json$Json$Decode$succeed(code);
+	},
+	$elm$json$Json$Decode$int);
+var $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyCode = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			A2($elm$json$Json$Decode$field, 'keyCode', $Gizra$elm_keyboard_event$Keyboard$Event$decodeNonZero),
+			A2($elm$json$Json$Decode$field, 'which', $Gizra$elm_keyboard_event$Keyboard$Event$decodeNonZero),
+			A2($elm$json$Json$Decode$field, 'charCode', $Gizra$elm_keyboard_event$Keyboard$Event$decodeNonZero),
+			$elm$json$Json$Decode$succeed(0)
+		]));
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$A = {$: 'A'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Add = {$: 'Add'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Alt = {$: 'Alt'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Ambiguous = function (a) {
+	return {$: 'Ambiguous', a: a};
+};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$B = {$: 'B'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Backspace = {$: 'Backspace'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$C = {$: 'C'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$CapsLock = {$: 'CapsLock'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$ChromeSearch = {$: 'ChromeSearch'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Command = {$: 'Command'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Ctrl = function (a) {
+	return {$: 'Ctrl', a: a};
+};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$D = {$: 'D'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Decimal = {$: 'Decimal'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Delete = {$: 'Delete'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Divide = {$: 'Divide'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Down = {$: 'Down'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$E = {$: 'E'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Eight = {$: 'Eight'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$End = {$: 'End'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Enter = {$: 'Enter'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Escape = {$: 'Escape'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F = {$: 'F'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F1 = {$: 'F1'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F10 = {$: 'F10'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F11 = {$: 'F11'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F12 = {$: 'F12'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F2 = {$: 'F2'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F3 = {$: 'F3'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F4 = {$: 'F4'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F5 = {$: 'F5'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F6 = {$: 'F6'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F7 = {$: 'F7'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F8 = {$: 'F8'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$F9 = {$: 'F9'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Five = {$: 'Five'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Four = {$: 'Four'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$G = {$: 'G'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$H = {$: 'H'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Home = {$: 'Home'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$I = {$: 'I'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Insert = {$: 'Insert'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$J = {$: 'J'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$K = {$: 'K'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$L = {$: 'L'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Left = {$: 'Left'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$M = {$: 'M'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Multiply = {$: 'Multiply'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$N = {$: 'N'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Nine = {$: 'Nine'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumLock = {$: 'NumLock'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadEight = {$: 'NumpadEight'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadFive = {$: 'NumpadFive'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadFour = {$: 'NumpadFour'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadNine = {$: 'NumpadNine'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadOne = {$: 'NumpadOne'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadSeven = {$: 'NumpadSeven'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadSix = {$: 'NumpadSix'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadThree = {$: 'NumpadThree'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadTwo = {$: 'NumpadTwo'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadZero = {$: 'NumpadZero'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$O = {$: 'O'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$One = {$: 'One'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$P = {$: 'P'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$PageDown = {$: 'PageDown'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$PageUp = {$: 'PageUp'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$PauseBreak = {$: 'PauseBreak'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$PrintScreen = {$: 'PrintScreen'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Q = {$: 'Q'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$R = {$: 'R'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Right = {$: 'Right'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$S = {$: 'S'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$ScrollLock = {$: 'ScrollLock'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Seven = {$: 'Seven'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Shift = function (a) {
+	return {$: 'Shift', a: a};
+};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Six = {$: 'Six'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Spacebar = {$: 'Spacebar'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Subtract = {$: 'Subtract'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$T = {$: 'T'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Tab = {$: 'Tab'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Three = {$: 'Three'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Two = {$: 'Two'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$U = {$: 'U'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Unknown = function (a) {
+	return {$: 'Unknown', a: a};
+};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Up = {$: 'Up'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$V = {$: 'V'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$W = {$: 'W'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Windows = {$: 'Windows'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$X = {$: 'X'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Y = {$: 'Y'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Z = {$: 'Z'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$Zero = {$: 'Zero'};
+var $SwiftsNamesake$proper_keyboard$Keyboard$Key$fromCode = function (keyCode) {
+	switch (keyCode) {
+		case 8:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Backspace;
+		case 9:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Tab;
+		case 13:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Enter;
+		case 16:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Shift($elm$core$Maybe$Nothing);
+		case 17:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Ctrl($elm$core$Maybe$Nothing);
+		case 18:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Alt;
+		case 19:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$PauseBreak;
+		case 20:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$CapsLock;
+		case 27:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Escape;
+		case 32:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Spacebar;
+		case 33:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$PageUp;
+		case 34:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$PageDown;
+		case 35:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$End;
+		case 36:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Home;
+		case 37:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Left;
+		case 38:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Up;
+		case 39:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Right;
+		case 40:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Down;
+		case 44:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$PrintScreen;
+		case 45:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Insert;
+		case 46:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Delete;
+		case 48:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Zero;
+		case 49:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$One;
+		case 50:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Two;
+		case 51:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Three;
+		case 52:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Four;
+		case 53:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Five;
+		case 54:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Six;
+		case 55:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Seven;
+		case 56:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Eight;
+		case 57:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Nine;
+		case 65:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$A;
+		case 66:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$B;
+		case 67:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$C;
+		case 68:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$D;
+		case 69:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$E;
+		case 70:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F;
+		case 71:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$G;
+		case 72:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$H;
+		case 73:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$I;
+		case 74:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$J;
+		case 75:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$K;
+		case 76:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$L;
+		case 77:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$M;
+		case 78:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$N;
+		case 79:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$O;
+		case 80:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$P;
+		case 81:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Q;
+		case 82:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$R;
+		case 83:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$S;
+		case 84:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$T;
+		case 85:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$U;
+		case 86:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$V;
+		case 87:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$W;
+		case 88:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$X;
+		case 89:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Y;
+		case 90:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Z;
+		case 91:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Ambiguous(
+				_List_fromArray(
+					[$SwiftsNamesake$proper_keyboard$Keyboard$Key$Windows, $SwiftsNamesake$proper_keyboard$Keyboard$Key$Command, $SwiftsNamesake$proper_keyboard$Keyboard$Key$ChromeSearch]));
+		case 96:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadZero;
+		case 97:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadOne;
+		case 98:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadTwo;
+		case 99:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadThree;
+		case 100:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadFour;
+		case 101:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadFive;
+		case 102:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadSix;
+		case 103:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadSeven;
+		case 104:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadEight;
+		case 105:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumpadNine;
+		case 106:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Multiply;
+		case 107:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Add;
+		case 109:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Subtract;
+		case 110:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Decimal;
+		case 111:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Divide;
+		case 112:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F1;
+		case 113:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F2;
+		case 114:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F3;
+		case 115:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F4;
+		case 116:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F5;
+		case 117:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F6;
+		case 118:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F7;
+		case 119:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F8;
+		case 120:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F9;
+		case 121:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F10;
+		case 122:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F11;
+		case 123:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$F12;
+		case 144:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$NumLock;
+		case 145:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$ScrollLock;
+		default:
+			return $SwiftsNamesake$proper_keyboard$Keyboard$Key$Unknown(keyCode);
+	}
+};
+var $elm$json$Json$Decode$map7 = _Json_map7;
+var $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent = A8(
+	$elm$json$Json$Decode$map7,
+	$Gizra$elm_keyboard_event$Keyboard$Event$KeyboardEvent,
+	A2($elm$json$Json$Decode$field, 'altKey', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'ctrlKey', $elm$json$Json$Decode$bool),
+	$Gizra$elm_keyboard_event$Keyboard$Event$decodeKey,
+	A2($elm$json$Json$Decode$map, $SwiftsNamesake$proper_keyboard$Keyboard$Key$fromCode, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyCode),
+	A2($elm$json$Json$Decode$field, 'metaKey', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'repeat', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'shiftKey', $elm$json$Json$Decode$bool));
 var $author$project$Model$MousePos = F2(
 	function (x, y) {
 		return {x: x, y: y};
@@ -5735,6 +6067,7 @@ var $elm$browser$Browser$Events$on = F3(
 		return $elm$browser$Browser$Events$subscription(
 			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
 	});
+var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
 var $elm$browser$Browser$Events$onMouseMove = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mousemove');
 var $elm$browser$Browser$Events$onMouseUp = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'mouseup');
 var $elm$browser$Browser$Events$Window = {$: 'Window'};
@@ -5760,7 +6093,9 @@ var $author$project$Main$subscriptions = function (model) {
 				$elm$browser$Browser$Events$onMouseMove(
 				A2($elm$json$Json$Decode$map, $author$project$Model$MouseMoved, $author$project$Model$mouseDecoder)),
 				$elm$browser$Browser$Events$onMouseUp(
-				$elm$json$Json$Decode$succeed($author$project$Model$MouseRelease))
+				$elm$json$Json$Decode$succeed($author$project$Model$MouseRelease)),
+				$elm$browser$Browser$Events$onKeyDown(
+				A2($elm$json$Json$Decode$map, $author$project$Model$KeyboardInput, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent))
 			]));
 };
 var $author$project$Model$BlockSelected = function (a) {
@@ -5856,7 +6191,7 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $author$project$Update$fixInputs = F3(
+var $author$project$ModelHelpers$fixInputs = F3(
 	function (inputs, idToPos, currentIndex) {
 		if (!inputs.b) {
 			return _List_Nil;
@@ -5870,34 +6205,34 @@ var $author$project$Update$fixInputs = F3(
 					return A2(
 						$elm$core$List$cons,
 						$author$project$Model$Hole,
-						A3($author$project$Update$fixInputs, rest, idToPos, currentIndex));
+						A3($author$project$ModelHelpers$fixInputs, rest, idToPos, currentIndex));
 				} else {
 					var index = _v2.a;
 					return (_Utils_cmp(index, currentIndex) > -1) ? A2(
 						$elm$core$List$cons,
 						$author$project$Model$Hole,
-						A3($author$project$Update$fixInputs, rest, idToPos, currentIndex)) : A2(
+						A3($author$project$ModelHelpers$fixInputs, rest, idToPos, currentIndex)) : A2(
 						$elm$core$List$cons,
 						input,
-						A3($author$project$Update$fixInputs, rest, idToPos, currentIndex));
+						A3($author$project$ModelHelpers$fixInputs, rest, idToPos, currentIndex));
 				}
 			} else {
 				return A2(
 					$elm$core$List$cons,
 					input,
-					A3($author$project$Update$fixInputs, rest, idToPos, currentIndex));
+					A3($author$project$ModelHelpers$fixInputs, rest, idToPos, currentIndex));
 			}
 		}
 	});
-var $author$project$Update$fixCallInputs = F3(
+var $author$project$ModelHelpers$fixCallInputs = F3(
 	function (call, idToPos, currentIndex) {
 		return _Utils_update(
 			call,
 			{
-				inputs: A3($author$project$Update$fixInputs, call.inputs, idToPos, currentIndex)
+				inputs: A3($author$project$ModelHelpers$fixInputs, call.inputs, idToPos, currentIndex)
 			});
 	});
-var $author$project$Update$fixInvalidInputsHelper = F3(
+var $author$project$ModelHelpers$fixInvalidInputsHelper = F3(
 	function (func, idToPos, currentIndex) {
 		if (!func.b) {
 			return _List_Nil;
@@ -5906,11 +6241,11 @@ var $author$project$Update$fixInvalidInputsHelper = F3(
 			var calls = func.b;
 			return A2(
 				$elm$core$List$cons,
-				A3($author$project$Update$fixCallInputs, call, idToPos, currentIndex),
-				A3($author$project$Update$fixInvalidInputsHelper, calls, idToPos, currentIndex + 1));
+				A3($author$project$ModelHelpers$fixCallInputs, call, idToPos, currentIndex),
+				A3($author$project$ModelHelpers$fixInvalidInputsHelper, calls, idToPos, currentIndex + 1));
 		}
 	});
-var $author$project$Update$idToPosition = F3(
+var $author$project$ModelHelpers$idToPosition = F3(
 	function (func, dict, pos) {
 		idToPosition:
 		while (true) {
@@ -5929,34 +6264,36 @@ var $author$project$Update$idToPosition = F3(
 			}
 		}
 	});
-var $author$project$Update$fixInvalidInputs = function (func) {
-	var idToPos = A3($author$project$Update$idToPosition, func, $elm$core$Dict$empty, 0);
-	return A3($author$project$Update$fixInvalidInputsHelper, func, idToPos, 0);
+var $author$project$ModelHelpers$fixInvalidInputs = function (func) {
+	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
+	return A3($author$project$ModelHelpers$fixInvalidInputsHelper, func, idToPos, 0);
 };
-var $author$project$Update$setInputInputs = F3(
-	function (inputs, index, input) {
+var $author$project$ModelHelpers$updateInputInputs = F3(
+	function (inputs, index, inputFunc) {
 		if (!inputs.b) {
-			return _List_fromArray(
-				[input]);
+			return _List_Nil;
 		} else {
 			var thisinput = inputs.a;
 			var rest = inputs.b;
-			return (!index) ? A2($elm$core$List$cons, input, rest) : A2(
+			return (!index) ? A2(
+				$elm$core$List$cons,
+				inputFunc(thisinput),
+				rest) : A2(
 				$elm$core$List$cons,
 				thisinput,
-				A3($author$project$Update$setInputInputs, rest, index - 1, input));
+				A3($author$project$ModelHelpers$updateInputInputs, rest, index - 1, inputFunc));
 		}
 	});
-var $author$project$Update$setInputCall = F4(
-	function (call, id, index, input) {
+var $author$project$ModelHelpers$updateInputCall = F4(
+	function (call, id, index, inputFunc) {
 		return _Utils_eq(id, call.id) ? _Utils_update(
 			call,
 			{
-				inputs: A3($author$project$Update$setInputInputs, call.inputs, index, input)
+				inputs: A3($author$project$ModelHelpers$updateInputInputs, call.inputs, index, inputFunc)
 			}) : call;
 	});
-var $author$project$Update$setInputFunc = F4(
-	function (func, id, index, input) {
+var $author$project$ModelHelpers$updateInputFunc = F4(
+	function (func, id, index, inputFunc) {
 		if (!func.b) {
 			return _List_Nil;
 		} else {
@@ -5964,12 +6301,12 @@ var $author$project$Update$setInputFunc = F4(
 			var calls = func.b;
 			return A2(
 				$elm$core$List$cons,
-				A4($author$project$Update$setInputCall, call, id, index, input),
-				A4($author$project$Update$setInputFunc, calls, id, index, input));
+				A4($author$project$ModelHelpers$updateInputCall, call, id, index, inputFunc),
+				A4($author$project$ModelHelpers$updateInputFunc, calls, id, index, inputFunc));
 		}
 	});
-var $author$project$Update$setInputOnion = F4(
-	function (onion, id, index, input) {
+var $author$project$ModelHelpers$updateInputOnion = F4(
+	function (onion, id, index, inputFunc) {
 		if (!onion.b) {
 			return _List_Nil;
 		} else {
@@ -5977,23 +6314,21 @@ var $author$project$Update$setInputOnion = F4(
 			var funcs = onion.b;
 			return A2(
 				$elm$core$List$cons,
-				$author$project$Update$fixInvalidInputs(
-					A4($author$project$Update$setInputFunc, func, id, index, input)),
-				A4($author$project$Update$setInputOnion, funcs, id, index, input));
+				$author$project$ModelHelpers$fixInvalidInputs(
+					A4($author$project$ModelHelpers$updateInputFunc, func, id, index, inputFunc)),
+				A4($author$project$ModelHelpers$updateInputOnion, funcs, id, index, inputFunc));
 		}
 	});
-var $author$project$Update$setInput = F4(
-	function (model, id, index, input) {
+var $author$project$ModelHelpers$updateInput = F4(
+	function (model, id, index, inputFunc) {
 		var oldMouse = model.mouseState;
-		var newOnion = A4($author$project$Update$setInputOnion, model.program, id, index, input);
+		var newOnion = A4($author$project$ModelHelpers$updateInputOnion, model.program, id, index, inputFunc);
 		var newMouse = _Utils_update(
 			oldMouse,
 			{mouseSelection: $author$project$Model$NoneSelected});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newOnion}),
-			$elm$core$Platform$Cmd$none);
+		return _Utils_update(
+			model,
+			{mouseState: newMouse, program: newOnion});
 	});
 var $author$project$Update$inputClickModel = F3(
 	function (model, id, index) {
@@ -6001,12 +6336,16 @@ var $author$project$Update$inputClickModel = F3(
 		var _v0 = oldMouse.mouseSelection;
 		if (_v0.$ === 'OutputSelected') {
 			var outputId = _v0.a;
-			return A4(
-				$author$project$Update$setInput,
-				model,
-				id,
-				index,
-				$author$project$Model$Output(outputId));
+			return _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					id,
+					index,
+					function (input) {
+						return $author$project$Model$Output(outputId);
+					}),
+				$elm$core$Platform$Cmd$none);
 		} else {
 			var newMouse = _Utils_update(
 				oldMouse,
@@ -6048,10 +6387,17 @@ var $elm$core$Task$attempt = F2(
 						task))));
 	});
 var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Update$nodeInputId = F2(
 	function (callid, inputindex) {
 		return $elm$core$String$fromInt(callid) + ('-' + $elm$core$String$fromInt(inputindex));
+	});
+var $author$project$Update$focusInputCommand = F2(
+	function (id, index) {
+		return A2(
+			$elm$core$Task$attempt,
+			$author$project$Model$SilentDomError,
+			$elm$browser$Browser$Dom$focus(
+				A2($author$project$Update$nodeInputId, id, index)));
 	});
 var $author$project$Update$inputHighlightModel = F3(
 	function (model, id, index) {
@@ -6065,25 +6411,97 @@ var $author$project$Update$inputHighlightModel = F3(
 			_Utils_update(
 				model,
 				{mouseState: newMouse}),
-			A2(
-				$elm$core$Debug$log,
-				A2($author$project$Update$nodeInputId, id, index),
-				A2(
-					$elm$core$Task$attempt,
-					$author$project$Model$SilentDomError,
-					$elm$browser$Browser$Dom$focus(
-						A2($author$project$Update$nodeInputId, id, index)))));
+			A2($author$project$Update$focusInputCommand, id, index));
 	});
 var $author$project$Update$inputUpdateModel = F4(
 	function (model, id, index, str) {
-		return A4(
-			$author$project$Update$setInput,
-			model,
-			id,
-			index,
-			$author$project$Model$Text(str));
+		if (str === '') {
+			return _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					id,
+					index,
+					function (i) {
+						return $author$project$Model$Hole;
+					}),
+				A2($author$project$Update$focusInputCommand, id, index));
+		} else {
+			return _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					id,
+					index,
+					function (i) {
+						return $author$project$Model$Text(str);
+					}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $author$project$Update$updateWithChar = F2(
+	function (_char, input) {
+		if (input.$ === 'Text') {
+			var str = input.a;
+			return $author$project$Model$Text(str);
+		} else {
+			return $author$project$Model$Text(
+				$elm$core$String$fromChar(_char));
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Update$keyboardUpdateInput = F4(
+	function (model, keyevent, id, index) {
+		var _v0 = $elm$core$String$uncons(
+			A2($elm$core$Maybe$withDefault, '', keyevent.key));
+		if ((_v0.$ === 'Just') && (_v0.a.b === '')) {
+			var _v1 = _v0.a;
+			var _char = _v1.a;
+			return $elm$core$Char$isAlphaNum(_char) ? _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					id,
+					index,
+					$author$project$Update$updateWithChar(_char)),
+				A2($author$project$Update$focusInputCommand, id, index)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Update$keyboardUpdateOutput = F3(
+	function (model, keyevent, id) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$keyboardUpdate = F2(
+	function (model, keyevent) {
+		var _v0 = model.mouseState.mouseSelection;
+		switch (_v0.$) {
+			case 'InputSelected':
+				var id = _v0.a;
+				var index = _v0.b;
+				return A4($author$project$Update$keyboardUpdateInput, model, keyevent, id, index);
+			case 'OutputSelected':
+				var id = _v0.a;
+				return A3($author$project$Update$keyboardUpdateOutput, model, keyevent, id);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$ViewVariables$blockWidth = 200;
 var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 3) | 0;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 3) | 0;
@@ -6351,7 +6769,7 @@ var $author$project$Update$funcBlockDropped = F5(
 				return A2($elm$core$Debug$log, 'No block in func in funcBlockDropped', func);
 			} else {
 				var call = _v1.a;
-				return $author$project$Update$fixInvalidInputs(
+				return $author$project$ModelHelpers$fixInvalidInputs(
 					A5($author$project$Update$placeBlockAtPos, func, blockId, blockPos, blockPositions, call));
 			}
 		}
@@ -6422,12 +6840,16 @@ var $author$project$Update$outputClickModel = F2(
 		if (_v0.$ === 'InputSelected') {
 			var inputId = _v0.a;
 			var index = _v0.b;
-			return A4(
-				$author$project$Update$setInput,
-				model,
-				inputId,
-				index,
-				$author$project$Model$Output(id));
+			return _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					inputId,
+					index,
+					function (i) {
+						return $author$project$Model$Output(id);
+					}),
+				$elm$core$Platform$Cmd$none);
 		} else {
 			var newMouse = _Utils_update(
 				oldMouse,
@@ -6790,6 +7212,9 @@ var $author$project$Update$update = F2(
 						model,
 						{mouseState: newMouse}),
 					$elm$core$Platform$Cmd$none);
+			case 'KeyboardInput':
+				var keyevent = msg.a;
+				return A2($author$project$Update$keyboardUpdate, model, keyevent);
 			case 'BlockClick':
 				var id = msg.a;
 				var oldMouse = model.mouseState;
@@ -7058,15 +7483,6 @@ var $elm$core$Maybe$map = F2(
 				f(value));
 		} else {
 			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
 		}
 	});
 var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset) {
@@ -7767,7 +8183,6 @@ var $rtfeldman$elm_css$Css$Structure$concatMapLastStyleBlock = F2(
 			first,
 			A2($rtfeldman$elm_css$Css$Structure$concatMapLastStyleBlock, update, rest));
 	});
-var $elm$core$String$cons = _String_cons;
 var $Skinney$murmur3$Murmur3$HashData = F4(
 	function (shift, seed, hash, charsProcessed) {
 		return {charsProcessed: charsProcessed, hash: hash, seed: seed, shift: shift};
@@ -9887,7 +10302,7 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
 var $author$project$SvgDraw$nodeEvent = F4(
-	function (xpos, ypos, event, elementId) {
+	function (xpos, ypos, event, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
@@ -9909,7 +10324,7 @@ var $author$project$SvgDraw$nodeEvent = F4(
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
-								$rtfeldman$elm_css$Html$Styled$Attributes$id(elementId),
+								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
 								$rtfeldman$elm_css$Html$Styled$Events$onFocus(event)
 							]),
 						_List_Nil))
@@ -10016,6 +10431,8 @@ var $author$project$Model$InputUpdate = F3(
 		return {$: 'InputUpdate', a: a, b: b, c: c};
 	});
 var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
+var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
+var $author$project$ViewVariables$inputWidth = $author$project$ViewVariables$nodeSpacing - $author$project$ViewVariables$nodeRadius;
 var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -10033,7 +10450,6 @@ var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
 	_List_fromArray(
@@ -10049,20 +10465,20 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
-var $author$project$SvgDraw$drawTextInput = F5(
-	function (str, xpos, ypos, id, index) {
-		var w = $elm$core$String$fromInt($author$project$ViewVariables$nodeSpacing - $author$project$ViewVariables$nodeRadius);
-		var h = $elm$core$String$fromInt($author$project$ViewVariables$nodeRadius * 2);
+var $author$project$SvgDraw$drawTextInput = F6(
+	function (str, xpos, ypos, id, index, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(xpos - ($author$project$ViewVariables$nodeRadius * 2))),
+					$elm$core$String$fromInt(xpos - (($author$project$ViewVariables$inputWidth / 2) | 0))),
 					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromInt(ypos - $author$project$ViewVariables$nodeRadius)),
-					$elm$svg$Svg$Attributes$width(w),
-					$elm$svg$Svg$Attributes$height(h)
+					$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
+					$elm$svg$Svg$Attributes$width(
+					$elm$core$String$fromInt($author$project$ViewVariables$inputWidth)),
+					$elm$svg$Svg$Attributes$height(
+					$elm$core$String$fromInt($author$project$ViewVariables$inputHeight))
 				]),
 			_List_fromArray(
 				[
@@ -10074,6 +10490,7 @@ var $author$project$SvgDraw$drawTextInput = F5(
 								$rtfeldman$elm_css$Html$Styled$Attributes$value(str),
 								$rtfeldman$elm_css$Html$Styled$Events$onInput(
 								A2($author$project$Model$InputUpdate, id, index)),
+								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
 								$rtfeldman$elm_css$Html$Styled$Events$onFocus(
 								A2($author$project$Model$InputHighlight, id, index)),
 								$rtfeldman$elm_css$Html$Styled$Events$onClick(
@@ -10082,9 +10499,9 @@ var $author$project$SvgDraw$drawTextInput = F5(
 								_List_fromArray(
 									[
 										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$px(($author$project$ViewVariables$nodeRadius * 4) - 4.0)),
+										$rtfeldman$elm_css$Css$px($author$project$ViewVariables$inputWidth - 4.0)),
 										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$px(($author$project$ViewVariables$nodeRadius * 2) - 4.0)),
+										$rtfeldman$elm_css$Css$px($author$project$ViewVariables$inputHeight - 4.0)),
 										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
 										$rtfeldman$elm_css$Css$padding(
 										$rtfeldman$elm_css$Css$px(0)),
@@ -10147,13 +10564,14 @@ var $author$project$DrawProgram$drawInput = F7(
 						]));
 			case 'Text':
 				var str = input.a;
-				return A5(
+				return A6(
 					$author$project$SvgDraw$drawTextInput,
 					str,
 					blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
 					blockPos.b + $author$project$ViewVariables$nodeRadius,
 					blockId,
-					inputCounter);
+					inputCounter,
+					inputStringId);
 			default:
 				return A6(
 					$author$project$SvgDraw$drawNodeWithEvent,
