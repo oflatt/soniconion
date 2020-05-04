@@ -71,31 +71,26 @@ svgText xpos ypos textIn fontSizeIn fillIn =
 
 drawTextInput : String -> Int -> Int -> Id -> Int -> String -> (Svg Msg)
 drawTextInput str xpos ypos id index domId =
-    let w = (String.fromInt (ViewVariables.nodeSpacing - ViewVariables.nodeRadius))
-        h = (String.fromInt (ViewVariables.nodeRadius * 2))
-    in
-        Svg.foreignObject
-            [x (String.fromInt (xpos-ViewVariables.nodeRadius*2))
-            ,y (String.fromInt (ypos-ViewVariables.nodeRadius))
-            ,width w
-            ,height h]
-            [toUnstyled
-                 (input
-                      [Html.Styled.Attributes.value str
-                      ,Html.Styled.Events.onInput (InputUpdate id index)
-                      ,Html.Styled.Attributes.id domId
-                      ,onFocus (InputHighlight id index)
-                      ,onClick (InputClick id index)
-                      ,css [Css.width
-                                (px
-                                 ((Basics.toFloat (ViewVariables.nodeRadius * 4))-4.0))
-                           ,Css.height
-                               (px
-                                ((Basics.toFloat (ViewVariables.nodeRadius * 2))-4.0))
-                           ,Css.textAlign Css.center
-                           ,Css.padding (px 0)
-                           ,Css.border (px 2)]]
-                      [])]
+    Svg.foreignObject
+        [x (String.fromInt (xpos - (ViewVariables.inputWidth//2)))
+        ,y (String.fromInt (ypos-(ViewVariables.inputHeight//2)))
+        ,width (String.fromInt ViewVariables.inputWidth)
+        ,height (String.fromInt (ViewVariables.inputHeight))]
+        [toUnstyled
+             (input
+                  [Html.Styled.Attributes.value str
+                  ,Html.Styled.Events.onInput (InputUpdate id index)
+                  ,Html.Styled.Attributes.id domId
+                  ,onFocus (InputHighlight id index)
+                  ,onClick (InputClick id index)
+                  ,css [Css.width
+                            (px ((Basics.toFloat ViewVariables.inputWidth)-4.0))
+                       ,Css.height
+                            (px ((Basics.toFloat ViewVariables.inputHeight)-4.0))
+                       ,Css.textAlign Css.center
+                       ,Css.padding (px 0)
+                       ,Css.border (px 2)]]
+                  [])]
 
 
 nodeEvent xpos ypos event domId =

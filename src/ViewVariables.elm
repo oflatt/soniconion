@@ -47,6 +47,9 @@ outputNodeX = blockWidth // 2
 
 indexToNodeX index = index * nodeSpacing + nodePadding
 
+inputWidth = (nodeSpacing - nodeRadius)
+inputHeight = nodeRadius * 2
+                     
 toolbarProportion = 0.25
 
 blockColor = "rgb(50, 214, 232)"

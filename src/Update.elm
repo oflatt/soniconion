@@ -76,7 +76,8 @@ inputClickModel model id index =
 
 focusInputCommand id index =
     (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)
-                    
+
+
 inputHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputHighlightModel model id index =
     let oldMouse = model.mouseState
@@ -116,10 +117,14 @@ outputHighlightModel model id =
             ({model |
                   mouseState = newMouse}
             ,(Dom.focus (nodeOutputId id) |> Task.attempt SilentDomError))
-            
+
+
             
 inputUpdateModel model id index str =
-    (updateInput model id index (\i -> (Text str)), Cmd.none)
+    case str of
+        "" -> (updateInput model id index (\i -> Hole), focusInputCommand id index)
+        _  -> (updateInput model id index (\i -> (Text str)), Cmd.none)
+    
 
 modelNoneSelected model =
     let oldMouse = model.mouseState
