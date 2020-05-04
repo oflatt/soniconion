@@ -1,7 +1,8 @@
-port module Update exposing (update, fixInvalidInputs, nodeInputId, nodeOutputId)
+port module Update exposing (update, nodeInputId, nodeOutputId)
 import Debug exposing (log)
 
 import Task
+import Maybe exposing (withDefault)
 import Url
 import Url.Builder
 import Browser
@@ -9,12 +10,15 @@ import Browser.Events
 import Browser.Dom
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
+import Keyboard.Event exposing (KeyboardEvent, decodeKeyboardEvent)
 
 import Browser.Dom as Dom
 import ViewVariables
 import ViewPositions
+
 import Model exposing (..)
 import Compiler.Compile exposing (compileOnion)
+import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition)
 
 
 -- just need a port for javascript
@@ -55,53 +59,12 @@ mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 
-setInputInputs : List Input -> Int -> Input -> List Input
-setInputInputs inputs index input =
-    case inputs of
-        [] -> [input]
-        (thisinput::rest) ->
-            if index == 0
-            then input :: rest
-            else
-                thisinput :: setInputInputs rest (index - 1) input
-
-setInputCall call id index input =
-    if id == call.id
-    then
-        {call | inputs = setInputInputs call.inputs index input}
-    else
-        call
-                        
-setInputFunc func id index input =
-    case func of
-        [] -> []
-        (call::calls) -> setInputCall call id index input :: setInputFunc calls id index input
-
-setInputOnion : Onion -> Id -> Int -> Input -> Onion
-setInputOnion onion id index input =
-    case onion of
-        [] -> []
-        (func::funcs) -> fixInvalidInputs (setInputFunc func id index input) :: setInputOnion funcs id index input
-    
-                        
-setInput : Model -> Id -> Int -> Input  -> (Model, Cmd Msg)
-setInput model id index input =
-    let oldMouse = model.mouseState
-        newMouse =
-            {oldMouse | mouseSelection = NoneSelected}
-        newOnion = setInputOnion model.program id index input
-    in
-        ({model |
-              mouseState = newMouse
-              ,program = newOnion}
-        ,Cmd.none)
-
 inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
-            OutputSelected outputId -> setInput model id index (Output outputId)
+            OutputSelected outputId -> (updateInput model id index (\input -> (Output outputId)), Cmd.none)
             _ ->
                 let
                     newMouse =
@@ -111,6 +74,9 @@ inputClickModel model id index =
                           mouseState = newMouse}
                     ,Cmd.none)
 
+focusInputCommand id index =
+    (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)
+                    
 inputHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputHighlightModel model id index =
     let oldMouse = model.mouseState
@@ -121,8 +87,7 @@ inputHighlightModel model id index =
         in
             ({model |
                   mouseState = newMouse}
-            ,(log (nodeInputId id index)
-                  (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)))
+            ,focusInputCommand id index)
             
             
 outputClickModel : Model -> Id -> (Model, Cmd Msg)
@@ -130,7 +95,7 @@ outputClickModel model id =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
-            InputSelected inputId index -> setInput model inputId index (Output id)
+            InputSelected inputId index -> (updateInput model inputId index (\i -> (Output id)), Cmd.none)
             _ ->
                 let
                     newMouse =
@@ -154,7 +119,7 @@ outputHighlightModel model id =
             
             
 inputUpdateModel model id index str =
-    setInput model id index (Text str)
+    (updateInput model id index (\i -> (Text str)), Cmd.none)
 
 modelNoneSelected model =
     let oldMouse = model.mouseState
@@ -191,43 +156,7 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                             call :: (finishBlockAtPos func blockId)
                         else
                             currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
-
-idToPosition func dict pos =
-    case func of
-        [] -> dict
-        (e::es) -> idToPosition es
-                   (Dict.insert e.id pos dict)
-                   (pos + 1)
-
-fixInputs inputs idToPos currentIndex =
-    case inputs of
-        [] -> []
-        (input::rest) ->
-            case input of
-                Output id ->
-                    case Dict.get id idToPos of
-                        Nothing -> (Hole) :: fixInputs rest idToPos currentIndex
-                        Just index ->
-                            if index >= currentIndex
-                            then (Hole) :: fixInputs rest idToPos currentIndex
-                            else input :: fixInputs rest idToPos currentIndex
-                _ -> input :: fixInputs rest idToPos currentIndex
-                       
-fixCallInputs call idToPos currentIndex =
-    {call | inputs = fixInputs call.inputs idToPos currentIndex}
-                       
-fixInvalidInputsHelper func idToPos currentIndex =
-    case func of
-        [] -> []
-        (call::calls) ->
-            (fixCallInputs call idToPos currentIndex) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1)
- 
-fixInvalidInputs func =
-    let idToPos = idToPosition func Dict.empty 0
-    in
-        fixInvalidInputsHelper func idToPos 0
                                 
-
 funcBlockDropped func blockId oldMouse windowWidth windowHeight =
     let blockPositions =
             (ViewPositions.getBlockPositions func oldMouse
@@ -281,8 +210,39 @@ playSoundResult model =
         Err e ->
             ((modelWithError model e), Cmd.none)
         Ok s -> (model, (evalJavascript s))
-                             
-                             
+
+
+updateWithChar: Char -> Input -> Input
+updateWithChar char input =
+    case input of
+        Text str -> Text str
+        _ -> Text (String.fromChar char)
+
+                
+keyboardUpdateInput: Model -> KeyboardEvent -> Id -> Int -> (Model, Cmd Msg)
+keyboardUpdateInput model keyevent id index =
+    case String.uncons (withDefault "" keyevent.key) of
+        Just (char, "") ->
+            if Char.isAlphaNum char
+            then
+                (updateInput model id index (updateWithChar char),
+                focusInputCommand id index)
+            else (model, Cmd.none)
+        _ -> (model, Cmd.none)
+
+
+-- this will handle typing into outputs
+keyboardUpdateOutput model keyevent id =
+    (model, Cmd.none)
+                
+                
+keyboardUpdate : Model -> KeyboardEvent -> (Model, Cmd Msg)
+keyboardUpdate model keyevent =
+    case model.mouseState.mouseSelection of
+        InputSelected id index -> keyboardUpdateInput model keyevent id index
+        OutputSelected id -> keyboardUpdateOutput model keyevent id
+        _ -> (model, Cmd.none)
+                
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -303,6 +263,8 @@ update msg model =
                 ({model |
                       mouseState = newMouse}
                 , Cmd.none)
+        KeyboardInput keyevent ->
+            keyboardUpdate model keyevent
         BlockClick id ->
             (let oldMouse = model.mouseState
                  newMouse = {oldMouse |

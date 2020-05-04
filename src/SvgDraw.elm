@@ -69,8 +69,8 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : String -> Int -> Int -> Id -> Int -> (Svg Msg)
-drawTextInput str xpos ypos id index =
+drawTextInput : String -> Int -> Int -> Id -> Int -> String -> (Svg Msg)
+drawTextInput str xpos ypos id index domId =
     let w = (String.fromInt (ViewVariables.nodeSpacing - ViewVariables.nodeRadius))
         h = (String.fromInt (ViewVariables.nodeRadius * 2))
     in
@@ -83,6 +83,7 @@ drawTextInput str xpos ypos id index =
                  (input
                       [Html.Styled.Attributes.value str
                       ,Html.Styled.Events.onInput (InputUpdate id index)
+                      ,Html.Styled.Attributes.id domId
                       ,onFocus (InputHighlight id index)
                       ,onClick (InputClick id index)
                       ,css [Css.width
@@ -97,7 +98,7 @@ drawTextInput str xpos ypos id index =
                       [])]
 
 
-nodeEvent xpos ypos event elementId =
+nodeEvent xpos ypos event domId =
     Svg.foreignObject
         [x (String.fromInt xpos)
         ,y (String.fromInt ypos)
@@ -106,7 +107,7 @@ nodeEvent xpos ypos event elementId =
         [toUnstyled
              (div
               [Html.Styled.Attributes.tabindex 0
-              ,Html.Styled.Attributes.id elementId
+              ,Html.Styled.Attributes.id domId
               ,(onFocus event)]
              [])]
 

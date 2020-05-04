@@ -5,6 +5,7 @@ import Url
 import Browser
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
+import Keyboard.Event exposing (KeyboardEvent)
 
 import Json.Decode as Decode
 
@@ -22,6 +23,7 @@ mouseDecoder =
 
 type Msg = MouseOver PageName
          | MouseLeave PageName
+         | KeyboardInput KeyboardEvent
          | LinkClicked Browser.UrlRequest
          | PageChange String
          | UrlChanged Url.Url

@@ -74,7 +74,8 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                      ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                      ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                      blockId
-                     inputCounter)
+                     inputCounter
+                     inputStringId)
             Hole -> SvgDraw.drawNodeWithEvent
                     ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                     ((Tuple.second blockPos) + ViewVariables.nodeRadius)
