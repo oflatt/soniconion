@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Browser.Dom as Dom
 import Url
 import Browser
 import Browser.Navigation as Nav
@@ -31,8 +32,12 @@ type Msg = MouseOver PageName
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
+         | InputHighlight Id Int
+         | OutputHighlight Id
          | SetError String
          | InputUpdate Id Int String
+         | SilentDomError (Result Dom.Error ())
+
 
 pageNames : List String
 pageNames = ["Home", "Unused"]

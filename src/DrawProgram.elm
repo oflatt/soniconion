@@ -3,7 +3,7 @@ import Model exposing (..)
 import ViewPositions exposing (BlockPositions, CallLineRoute, BlockPos, ViewStructure)
 import ViewVariables
 import SvgDraw
-
+import Update exposing (nodeInputId, nodeOutputId)
 
 import Browser
 
@@ -40,6 +40,8 @@ drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighligh
                 
 drawInput input blockPos inputCounter blockPositions blockId mouseState routing =
     let inputEvent = (InputClick blockId inputCounter)
+        highlightEvent = (InputHighlight blockId inputCounter)
+        inputStringId = nodeInputId blockId inputCounter
         isInputHighlighted =
             case mouseState.mouseSelection of
                 InputSelected inputId inputIndex ->
@@ -59,10 +61,12 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                 in
                     Svg.node "g" []
                         [(drawOutputLine id blockPos inputCounter blockPositions outputEvent isLineHighlighted routing)
-                        ,(SvgDraw.drawNode
+                        ,(SvgDraw.drawNodeWithEvent
                               ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                               ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                               inputEvent
+                              highlightEvent
+                              inputStringId
                               isInputHighlighted)]
             Text str ->
                 (SvgDraw.drawTextInput
@@ -71,16 +75,18 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                      ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                      blockId
                      inputCounter)
-            Hole -> SvgDraw.drawNode
+            Hole -> SvgDraw.drawNodeWithEvent
                     ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                     ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                     inputEvent
+                    highlightEvent
+                    inputStringId
                     isInputHighlighted
                     
                         
 drawInputLines inputs blockPos inputCounter blockPositions id mouseState lineRouting =
     case inputs of
-        [] -> []
+        [] -> [SvgDraw.nodeEvent 0 0 (OutputHighlight id) (nodeOutputId id)]
         (input::rest) ->
             case lineRouting of
                 [] -> [SvgDraw.errorSvgNode "not enough routings for call"]

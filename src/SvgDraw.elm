@@ -1,4 +1,4 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput)
+module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput, nodeEvent, drawNodeWithEvent)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -83,7 +83,8 @@ drawTextInput str xpos ypos id index =
                  (input
                       [Html.Styled.Attributes.value str
                       ,Html.Styled.Events.onInput (InputUpdate id index)
-                      ,onFocus (InputClick id index)
+                      ,onFocus (InputHighlight id index)
+                      ,onClick (InputClick id index)
                       ,css [Css.width
                                 (px
                                  ((Basics.toFloat (ViewVariables.nodeRadius * 4))-4.0))
@@ -95,41 +96,42 @@ drawTextInput str xpos ypos id index =
                            ,Css.border (px 2)]]
                       [])]
 
--- nodes has inputs underneath them so that they can be tabbed
+
+nodeEvent xpos ypos event elementId =
+    Svg.foreignObject
+        [x (String.fromInt xpos)
+        ,y (String.fromInt ypos)
+        ,width (String.fromInt ViewVariables.nodeRadius)
+        ,height (String.fromInt ViewVariables.nodeRadius)]
+        [toUnstyled
+             (div
+              [Html.Styled.Attributes.tabindex 0
+              ,Html.Styled.Attributes.id elementId
+              ,(onFocus event)]
+             [])]
+
 drawNode xpos ypos event isHighlighted =
+    (circle [r (String.fromInt ViewVariables.nodeRadius)
+            , cx (String.fromInt xpos)
+            , cy (String.fromInt ypos)
+            , fill (if isHighlighted then "blue" else "black")
+            , (Svg.Events.onMouseDown event)] [])
+
+        
+-- nodes has inputs underneath them so that they can be tabbed
+
+drawNodeWithEvent xpos ypos event highlightevent eventId isHighlighted =
     Svg.g
         []
         [
-         Svg.foreignObject
-            [x (String.fromInt xpos)
-            ,y (String.fromInt ypos)
-            ,width (String.fromInt ViewVariables.nodeRadius)
-            ,height (String.fromInt ViewVariables.nodeRadius)]
-             [toUnstyled
-                  (div
-                   [Html.Styled.Attributes.tabindex 0
-                   ,(onFocus event)]
-                   [])]
-        ,if isHighlighted
-         then
-             (circle [r (String.fromInt ViewVariables.nodeRadius)
-                     , Svg.Attributes.style "tabindex: 0;"
-                     , cx (String.fromInt xpos)
-                     , cy (String.fromInt ypos)
-                     , fill "blue"
-                     , (Svg.Events.onMouseDown event)] [])
-         else
-             (circle [r (String.fromInt ViewVariables.nodeRadius)
-                     , Svg.Attributes.style "tabindex: 0"
-                     , cx (String.fromInt xpos)
-                     , cy (String.fromInt ypos)
-                     , fill "black"
-                     , (Svg.Events.onMouseDown event)] [])
+         nodeEvent xpos ypos highlightevent eventId
+        ,drawNode xpos ypos event isHighlighted
         ]
-            
+
+        
         
 drawNames l = []
-        
+                  
 
                     
 -- shape for functionName objects

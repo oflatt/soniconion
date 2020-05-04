@@ -1,6 +1,7 @@
-port module Update exposing (update, fixInvalidInputs)
+port module Update exposing (update, fixInvalidInputs, nodeInputId, nodeOutputId)
 import Debug exposing (log)
 
+import Task
 import Url
 import Url.Builder
 import Browser
@@ -9,7 +10,7 @@ import Browser.Dom
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
 
-
+import Browser.Dom as Dom
 import ViewVariables
 import ViewPositions
 import Model exposing (..)
@@ -42,6 +43,11 @@ changeByName model pageName =
 
     in changeUrl model newurl pageName
 
+nodeInputId callid inputindex =
+    (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
+nodeOutputId callid =
+    "o" ++ (String.fromInt callid)
+        
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 
@@ -105,6 +111,20 @@ inputClickModel model id index =
                           mouseState = newMouse}
                     ,Cmd.none)
 
+inputHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
+inputHighlightModel model id index =
+    let oldMouse = model.mouseState
+    in
+        let
+            newMouse =
+                {oldMouse | mouseSelection = (InputSelected id index)}
+        in
+            ({model |
+                  mouseState = newMouse}
+            ,(log (nodeInputId id index)
+                  (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)))
+            
+            
 outputClickModel : Model -> Id -> (Model, Cmd Msg)
 outputClickModel model id =
     let oldMouse = model.mouseState
@@ -120,6 +140,19 @@ outputClickModel model id =
                           mouseState = newMouse}
                     ,Cmd.none)
 
+outputHighlightModel : Model -> Id -> (Model, Cmd Msg)
+outputHighlightModel model id =
+    let oldMouse = model.mouseState
+    in
+        let
+            newMouse =
+                {oldMouse | mouseSelection = (OutputSelected id)}
+        in
+            ({model |
+                  mouseState = newMouse}
+            ,(Dom.focus (nodeOutputId id) |> Task.attempt SilentDomError))
+            
+            
 inputUpdateModel model id index str =
     setInput model id index (Text str)
 
@@ -253,6 +286,9 @@ playSoundResult model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        SilentDomError dom_error->
+            log "domerror"
+                (model, Cmd.none)
         SetError errorString ->
             (modelWithError model errorString, Cmd.none)
         MouseRelease ->
@@ -268,17 +304,22 @@ update msg model =
                       mouseState = newMouse}
                 , Cmd.none)
         BlockClick id ->
-            log (String.fromInt id)
-                (let oldMouse = model.mouseState
-                     newMouse = {oldMouse |
-                                     mouseSelection = (BlockSelected id)}
-                 in
-                     ({model |
-                           mouseState = newMouse}
-                     ,Cmd.none))
+            (let oldMouse = model.mouseState
+                 newMouse = {oldMouse |
+                                 mouseSelection = (BlockSelected id)}
+             in
+                 ({model |
+                       mouseState = newMouse}
+                 ,Cmd.none))
+                
+        InputHighlight id index ->
+            (inputHighlightModel model id index)
+
+        OutputHighlight id->
+            outputHighlightModel model id
+                    
         InputClick id index ->
-            log (String.fromInt id)
-                inputClickModel model id index
+            inputClickModel model id index
 
         InputUpdate id index str ->
             inputUpdateModel model id index str
