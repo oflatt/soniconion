@@ -73,7 +73,11 @@ callBlockPositions testFunc mouse =
          (ViewPositions.getViewStructure testFunc
               mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0).blockPositions)
 emptyMouse = (MouseState 0 0 NoneSelected)
-        
+
+secondToLastMouse = (MouseState (ViewVariables.blockWidth//2)
+                         (blockSpace+2*lineSpaceBeforeBlock+ViewVariables.svgYpos+(ViewVariables.blockHeight//2))
+                         (BlockSelected 23))
+                    
 blockPositionsTest : Test
 blockPositionsTest =
     describe "getBlockPositions"
@@ -95,11 +99,22 @@ blockPositionsTest =
         ,test "move block two up"
              (myexpect
                   (callBlockPositions TestModel.complexRoutingFunc
-                       (MouseState (ViewVariables.blockWidth//2)
-                            (blockSpace+2*lineSpaceBeforeBlock+ViewVariables.svgYpos+(ViewVariables.blockHeight//2)) (BlockSelected 23)))
+                       secondToLastMouse)
                   (Ok [(0, 0)
                       ,(0, blockSpace*2 + (1+2)*lineSpaceBeforeBlock)
                       ,(0, blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock)
                       ,(0, blockSpace + 2*lineSpaceBeforeBlock)
                       ,(0, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))]
 
+
+movedInfoTest : Test
+movedInfoTest =
+    describe "getMovedInfo"
+        [test "test select second to last"
+             (myexpect
+                  (ViewPositions.getMovedInfo TestModel.complexRoutingFunc secondToLastMouse
+                       (ViewPositions.mouseToSvgCoordinates secondToLastMouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0))
+                  (Just (ViewPositions.MovedBlockInfo TestModel.secondToLastSine
+                             (0, blockSpace + 2*lineSpaceBeforeBlock))))
+                                       
+               ]

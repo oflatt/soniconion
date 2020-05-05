@@ -72,34 +72,30 @@ callLinesSpace call =
     (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
 
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Maybe MovedBlockInfo -> Function -> MouseState -> Int -> BlockPositions
-getAllBlockPositions maybeMoveInfo func mouseState currentY =
+getAllBlockPositions: Id -> Maybe MovedBlockInfo -> Function -> Int -> BlockPositions
+getAllBlockPositions idToSkip maybeMoveInfo func currentY =
     let iterate = (\call calls ->
                        Dict.insert call.id (0, currentY+(callLinesSpace call))
-                           (getAllBlockPositions maybeMoveInfo calls
-                                mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call))))
+                           (getAllBlockPositions idToSkip maybeMoveInfo calls
+                                (currentY+ViewVariables.blockSpace+(callLinesSpace call))))
     in
         case func of
             [] -> Dict.empty
             (call::calls) ->
-                case maybeMoveInfo of
-                    Just moveInfo ->
-                        if call.id == moveInfo.movedCall.id
-                        then
-                            -- skip the block position for the moved block
-                            getAllBlockPositions maybeMoveInfo calls mouseState currentY
-                        else
-                            -- add space for the moved block
+                if call.id == idToSkip
+                then (getAllBlockPositions idToSkip maybeMoveInfo calls currentY)
+                else
+                    case maybeMoveInfo of
+                        Just moveInfo ->
                             if currentY+ViewVariables.blockHeight > (Tuple.second moveInfo.movedPos)
                             then
-                                (getAllBlockPositions Nothing func -- continue with whole func
-                                     mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
+                                (getAllBlockPositions idToSkip Nothing func -- continue with whole func
+                                     (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
                             else
                                 -- iterate normally
                                 (iterate call calls)
-                            
                                     
-                    Nothing -> (iterate call calls)
+                        Nothing -> (iterate call calls)
 
 
 
@@ -107,7 +103,11 @@ getAllBlockPositions maybeMoveInfo func mouseState currentY =
 getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
     let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
-        positionsWithoutMoved = getAllBlockPositions moveInfo func mouseState 0
+        idToSkip =
+            case moveInfo of
+                Just info -> info.movedCall.id
+                Nothing -> -1
+        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func 0
     in
         case moveInfo of
             Just info -> Dict.insert info.movedCall.id info.movedPos positionsWithoutMoved
