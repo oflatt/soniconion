@@ -68,27 +68,38 @@ getLineRoutingTest =
                  [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])]
 
 
-callBlockPositions testFunc =
+callBlockPositions testFunc mouse =
     (ViewPositions.blockPositionsToPositionList testFunc
          (ViewPositions.getViewStructure testFunc
-              (MouseState 0 0 NoneSelected) 1000 1000 0 0).blockPositions)
+              mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0).blockPositions)
+emptyMouse = (MouseState 0 0 NoneSelected)
         
 blockPositionsTest : Test
 blockPositionsTest =
     describe "getBlockPositions"
         [test "test func"
              (myexpect
-                  (callBlockPositions TestModel.testFunction)
+                  (callBlockPositions TestModel.testFunction emptyMouse)
                   (Ok [(0, 0)
                       ,(0, blockSpace)
                       ,(0, blockSpace*2 + 2*lineSpaceBeforeBlock)
                       ,(0, blockSpace*3 + (1+2)*lineSpaceBeforeBlock)]))
         ,test "complex connections"
              (myexpect
-                  (callBlockPositions TestModel.complexRoutingFunc)
+                  (callBlockPositions TestModel.complexRoutingFunc emptyMouse)
                   (Ok [(0, 0)
                       ,(0, blockSpace + lineSpaceBeforeBlock)
                       ,(0, blockSpace*2 + (1+1)*lineSpaceBeforeBlock)
                       ,(0, blockSpace*3 + (1+1+2)*lineSpaceBeforeBlock)
+                      ,(0, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))
+        ,test "move block two up"
+             (myexpect
+                  (callBlockPositions TestModel.complexRoutingFunc
+                       (MouseState (ViewVariables.blockWidth//2)
+                            (blockSpace+2*lineSpaceBeforeBlock+ViewVariables.svgYpos+(ViewVariables.blockHeight//2)) (BlockSelected 23)))
+                  (Ok [(0, 0)
+                      ,(0, blockSpace*2 + (1+2)*lineSpaceBeforeBlock)
+                      ,(0, blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock)
+                      ,(0, blockSpace + 2*lineSpaceBeforeBlock)
                       ,(0, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))]
 
