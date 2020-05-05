@@ -9618,21 +9618,31 @@ var $author$project$Model$BlockClick = function (a) {
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
 var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 8) | 0;
-var $elm$html$Html$Events$on = F2(
+var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
 	function (event, decoder) {
 		return A2(
 			$elm$virtual_dom$VirtualDom$on,
 			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
 	});
-var $elm$svg$Svg$Events$onMouseDown = function (msg) {
+var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
+var $author$project$SvgDraw$svgLeftClick = function (msg) {
 	return A2(
-		$elm$html$Html$Events$on,
+		$elm$svg$Svg$Events$preventDefaultOn,
 		'mousedown',
-		$elm$json$Json$Decode$succeed(msg));
+		A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
 };
-var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
-var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
@@ -9677,7 +9687,7 @@ var $author$project$SvgDraw$functionNameshape = F5(
 				'g',
 				_List_fromArray(
 					[
-						$elm$svg$Svg$Events$onMouseDown(
+						$author$project$SvgDraw$svgLeftClick(
 						$author$project$Model$BlockClick(id)),
 						A2($author$project$SvgDraw$svgTranslate, blockPos.a, blockPos.b)
 					]),
@@ -9741,6 +9751,19 @@ var $author$project$Model$OutputClick = function (a) {
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$svg$Svg$Events$onMouseDown = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mousedown',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $author$project$SvgDraw$drawNode = F4(
 	function (xpos, ypos, event, isHighlighted) {
@@ -11043,7 +11066,7 @@ var $author$project$BuiltIn$makeAllFunction = F2(
 				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
 		}
 	});
-var $author$project$BuiltIn$allBuiltInAsFunction = A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -1);
+var $author$project$BuiltIn$allBuiltInAsFunction = A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100);
 var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
 		return A2(
