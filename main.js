@@ -6535,7 +6535,7 @@ var $elm$core$Tuple$second = function (_v0) {
 	return y;
 };
 var $author$project$ViewPositions$getAllBlockPositions = F4(
-	function (maybeMoveInfo, func, mouseState, currentY) {
+	function (idToSkip, maybeMoveInfo, func, currentY) {
 		getAllBlockPositions:
 		while (true) {
 			var iterate = F2(
@@ -6548,9 +6548,9 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 							currentY + $author$project$ViewPositions$callLinesSpace(call)),
 						A4(
 							$author$project$ViewPositions$getAllBlockPositions,
+							idToSkip,
 							maybeMoveInfo,
 							calls,
-							mouseState,
 							(currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewPositions$callLinesSpace(call)));
 				});
 			if (!func.b) {
@@ -6558,35 +6558,35 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 			} else {
 				var call = func.a;
 				var calls = func.b;
-				if (maybeMoveInfo.$ === 'Just') {
-					var moveInfo = maybeMoveInfo.a;
-					if (_Utils_eq(call.id, moveInfo.movedCall.id)) {
-						var $temp$maybeMoveInfo = maybeMoveInfo,
-							$temp$func = calls,
-							$temp$mouseState = mouseState,
-							$temp$currentY = currentY;
-						maybeMoveInfo = $temp$maybeMoveInfo;
-						func = $temp$func;
-						mouseState = $temp$mouseState;
-						currentY = $temp$currentY;
-						continue getAllBlockPositions;
-					} else {
+				if (_Utils_eq(call.id, idToSkip)) {
+					var $temp$idToSkip = idToSkip,
+						$temp$maybeMoveInfo = maybeMoveInfo,
+						$temp$func = calls,
+						$temp$currentY = currentY;
+					idToSkip = $temp$idToSkip;
+					maybeMoveInfo = $temp$maybeMoveInfo;
+					func = $temp$func;
+					currentY = $temp$currentY;
+					continue getAllBlockPositions;
+				} else {
+					if (maybeMoveInfo.$ === 'Just') {
+						var moveInfo = maybeMoveInfo.a;
 						if (_Utils_cmp(currentY + $author$project$ViewVariables$blockHeight, moveInfo.movedPos.b) > 0) {
-							var $temp$maybeMoveInfo = $elm$core$Maybe$Nothing,
+							var $temp$idToSkip = idToSkip,
+								$temp$maybeMoveInfo = $elm$core$Maybe$Nothing,
 								$temp$func = func,
-								$temp$mouseState = mouseState,
 								$temp$currentY = (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewPositions$callLinesSpace(moveInfo.movedCall);
+							idToSkip = $temp$idToSkip;
 							maybeMoveInfo = $temp$maybeMoveInfo;
 							func = $temp$func;
-							mouseState = $temp$mouseState;
 							currentY = $temp$currentY;
 							continue getAllBlockPositions;
 						} else {
 							return A2(iterate, call, calls);
 						}
+					} else {
+						return A2(iterate, call, calls);
 					}
-				} else {
-					return A2(iterate, call, calls);
 				}
 			}
 		}
@@ -6648,6 +6648,9 @@ var $author$project$ViewPositions$mouseToSvgCoordinates = F5(
 			(((mouseState.mouseX * $author$project$ViewVariables$viewportWidth) / svgScreenWidth) | 0) - xoffset,
 			((((mouseState.mouseY - $author$project$ViewVariables$svgYpos) * A2($author$project$ViewPositions$getViewportHeight, svgScreenWidth, svgScreenHeight)) / svgScreenHeight) | 0) - yoffset);
 	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $author$project$ViewPositions$getBlockPositions = F6(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
 		var moveInfo = A3(
@@ -6655,7 +6658,15 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 			func,
 			mouseState,
 			A5($author$project$ViewPositions$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset));
-		var positionsWithoutMoved = A4($author$project$ViewPositions$getAllBlockPositions, moveInfo, func, mouseState, 0);
+		var idToSkip = function () {
+			if (moveInfo.$ === 'Just') {
+				var info = moveInfo.a;
+				return info.movedCall.id;
+			} else {
+				return -1;
+			}
+		}();
+		var positionsWithoutMoved = A4($author$project$ViewPositions$getAllBlockPositions, idToSkip, moveInfo, func, 0);
 		if (moveInfo.$ === 'Just') {
 			var info = moveInfo.a;
 			return A3($elm$core$Dict$insert, info.movedCall.id, info.movedPos, positionsWithoutMoved);
@@ -8263,9 +8274,6 @@ var $Skinney$murmur3$Murmur3$hashString = F2(
 	});
 var $rtfeldman$elm_css$Hash$murmurSeed = 15739;
 var $elm$core$String$fromList = _String_fromList;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $rtfeldman$elm_hex$Hex$unsafeToDigit = function (num) {
 	unsafeToDigit:
