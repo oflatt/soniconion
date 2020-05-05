@@ -19,10 +19,10 @@ programHeight windowHeight = windowHeight - svgYpos - scrollbarWidth
                              
 -- svg attributes ------------------------------------------------
 viewportWidth = 1000 -- defines the coordinate space
-toolbarWidth windowWidth = viewportWidth // 4
--- viewport Height depends on the aspect ratio of the screen, so that the svg
--- aspect ratio matches
+-- viewport Height doesn't matter because we scroll down
 
+toolbarWidth windowWidth = viewportWidth // 4
+                                           
 functionXSpacing = 100
 
 blockWidth = 200

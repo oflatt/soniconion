@@ -38,4 +38,4 @@ makeAllFunction builtInList counter =
         [] -> []
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = makeAllFunction builtInFunctionList -1
+allBuiltInAsFunction = makeAllFunction builtInFunctionList -100

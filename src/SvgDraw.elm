@@ -9,6 +9,7 @@ import Utils
 
 import ViewPositions exposing (BlockPositions)
 
+import Json.Decode as Json
 import Css exposing (px)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (css, href, src, rel)
@@ -132,14 +133,21 @@ drawNames l = []
 
 svgTranslate xpos ypos =
     transform ("translate(" ++ (String.fromInt xpos) ++ "," ++ (String.fromInt  ypos) ++ ")")
-                    
+
+alwaysPreventDefault : msg -> ( msg, Bool )
+alwaysPreventDefault msg =
+  (msg, True)
+
+svgLeftClick msg =
+    Svg.Events.preventDefaultOn "mousedown" (Json.map alwaysPreventDefault (Json.succeed msg))
+        
 -- shape for functionName objects
 functionNameshape: String -> ArgList -> List Input -> BlockPositions -> Id -> (Svg Msg)
 functionNameshape name argList inputs blockPositions id =
     case Dict.get id blockPositions of
         Just blockPos ->
             Svg.node "g"
-                [(Svg.Events.onMouseDown (BlockClick id))
+                [(svgLeftClick (BlockClick id))
                 ,svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)]
                 [
                  rect
