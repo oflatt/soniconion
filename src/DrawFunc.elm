@@ -30,16 +30,22 @@ drawCall: Call -> Int ->  ViewStructure -> (Svg Msg)
 drawCall call counter viewStructure =
     SvgDraw.drawBuiltIn call counter viewStructure
 
-drawOutputLine : Id -> BlockPos -> Int -> BlockPositions -> Svg.Attribute Msg -> Bool -> Maybe Int -> (Svg Msg)
-drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighlighted routing =
-    case Dict.get id blockPositions of
+drawOutputLine : Id -> BlockPos -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Maybe Int -> (Svg Msg)
+drawOutputLine id blockPos inputCounter viewStructure inputEvent isLineHighlighted routing =
+    case Dict.get id viewStructure.blockPositions of
         Nothing -> SvgDraw.errorSvgNode "Can't find line output"
         Just otherBlockPos ->
             SvgDraw.drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing
 
                 
-drawInput input blockPos inputCounter blockPositions blockId mouseState routing =
-    let inputEvent = (InputClick blockId inputCounter)
+drawInput input blockPos inputCounter viewStructure blockId mouseState routing =
+    let nodeEvents =
+            if viewStructure.isToolbar
+            then
+                []
+            else
+                [(SvgDraw.svgLeftClick (InputClick blockId inputCounter))
+                ,(SvgDraw.svgRightClick (InputRightClick blockId inputCounter))]
         highlightEvent = (InputHighlight blockId inputCounter)
         inputStringId = nodeInputId blockId inputCounter
         isInputHighlighted =
@@ -47,6 +53,15 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                 InputSelected inputId inputIndex ->
                     (inputId == blockId) && (inputCounter == inputIndex)
                 _ -> False
+        nodeWithEvent =
+            (\_ ->
+                 (SvgDraw.drawNodeWithEvent
+                      ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
+                      ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                      nodeEvents
+                      highlightEvent
+                      inputStringId
+                      isInputHighlighted))
     in
         case input of
             Output id ->
@@ -60,14 +75,8 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                         (Svg.Events.onMouseDown (OutputClick id))
                 in
                     Svg.node "g" []
-                        [(drawOutputLine id blockPos inputCounter blockPositions outputEvent isLineHighlighted routing)
-                        ,(SvgDraw.drawNodeWithEvent
-                              ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                              ((Tuple.second blockPos) + ViewVariables.nodeRadius)
-                              inputEvent
-                              highlightEvent
-                              inputStringId
-                              isInputHighlighted)]
+                        [(drawOutputLine id blockPos inputCounter viewStructure outputEvent isLineHighlighted routing)
+                        ,(nodeWithEvent ())]
             Text str ->
                 (SvgDraw.drawTextInput
                      str
@@ -76,29 +85,23 @@ drawInput input blockPos inputCounter blockPositions blockId mouseState routing 
                      blockId
                      inputCounter
                      inputStringId)
-            Hole -> SvgDraw.drawNodeWithEvent
-                    ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
-                    inputEvent
-                    highlightEvent
-                    inputStringId
-                    isInputHighlighted
+            Hole -> (nodeWithEvent ())
                     
                         
-drawInputLines inputs blockPos inputCounter blockPositions id mouseState lineRouting =
+drawInputLines inputs blockPos inputCounter viewStructure id mouseState lineRouting =
     case inputs of
         [] -> [SvgDraw.nodeEvent 0 0 (OutputHighlight id) (nodeOutputId id)]
         (input::rest) ->
             case lineRouting of
                 [] -> [SvgDraw.errorSvgNode "not enough routings for call"]
                 (routing::restRouting) ->
-                    (drawInput input blockPos inputCounter blockPositions id mouseState routing) ::
-                        (drawInputLines rest blockPos (inputCounter + 1) blockPositions id mouseState restRouting)
+                    (drawInput input blockPos inputCounter viewStructure id mouseState routing) ::
+                        (drawInputLines rest blockPos (inputCounter + 1) viewStructure id mouseState restRouting)
 
 
-drawCallInputs: Call -> BlockPositions -> MouseState -> CallLineRoute -> (Svg Msg)
-drawCallInputs call blockPositions mouseState routingList =
-    case Dict.get call.id blockPositions of
+drawCallInputs: Call -> ViewStructure -> MouseState -> CallLineRoute -> (Svg Msg)
+drawCallInputs call viewStructure mouseState routingList =
+    case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.g
                 []
@@ -106,13 +109,15 @@ drawCallInputs call blockPositions mouseState routingList =
                      call.inputs
                      blockPos
                      0
-                     blockPositions
+                     viewStructure
                      call.id
                      mouseState
                      routingList)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position"
-                            
+
+
+                
 drawCallEnding call blockPositions mouseState =
     case Dict.get call.id blockPositions of
         Just blockPos ->
@@ -124,21 +129,21 @@ drawCallEnding call blockPositions mouseState =
                 (SvgDraw.drawNode
                      (ViewVariables.outputNodeX + (Tuple.first blockPos))
                      (ViewVariables.outputNodeY + (Tuple.second blockPos))
-                     (OutputClick call.id)
+                     [(SvgDraw.svgLeftClick (OutputClick call.id))]
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"
                 
 -- there should be one line routing list per frame
-drawFuncInputs func blockPositions mouseState lineRouting=
+drawFuncInputs func viewStructure mouseState lineRouting =
     case func of
         [] -> []
         (call::calls) ->
             case lineRouting of
                 [] -> [SvgDraw.errorSvgNode "lineRouting not big enough"]
                 (routing::restRouting) ->
-                    (drawCallInputs call blockPositions mouseState routing)
-                    :: (drawFuncInputs calls blockPositions mouseState restRouting)
+                    (drawCallInputs call viewStructure mouseState routing)
+                    :: (drawFuncInputs calls viewStructure mouseState restRouting)
 
 drawFuncEndings func blockPositions mouseState =
     case func of
@@ -158,5 +163,5 @@ drawFuncWithConnections viewStructure mouseState =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.funcxoffset viewStructure.funcyoffset]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
-        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure.blockPositions mouseState viewStructure.lineRouting)
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure mouseState viewStructure.lineRouting)
         ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc viewStructure.blockPositions mouseState)]

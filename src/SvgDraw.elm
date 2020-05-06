@@ -1,5 +1,5 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
-                             nodeEvent, drawNodeWithEvent, svgTranslate)
+                             nodeEvent, drawNodeWithEvent, svgTranslate, svgLeftClick, svgRightClick)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -108,22 +108,23 @@ nodeEvent xpos ypos event domId =
               ,(onFocus event)]
              [])]
 
-drawNode xpos ypos event isHighlighted =
-    (circle [r (String.fromInt ViewVariables.nodeRadius)
-            , cx (String.fromInt xpos)
-            , cy (String.fromInt ypos)
-            , fill (if isHighlighted then "blue" else "black")
-            , (Svg.Events.onMouseDown event)] [])
+drawNode xpos ypos events isHighlighted =
+    (circle (events ++
+                 [r (String.fromInt ViewVariables.nodeRadius)
+                 , cx (String.fromInt xpos)
+                 , cy (String.fromInt ypos)
+                 , fill (if isHighlighted then "blue" else "black")])
+         [])
 
         
 -- nodes has inputs underneath them so that they can be tabbed
 
-drawNodeWithEvent xpos ypos event highlightevent eventId isHighlighted =
+drawNodeWithEvent xpos ypos events highlightevent eventId isHighlighted =
     Svg.g
         []
         [
          nodeEvent xpos ypos highlightevent eventId
-        ,drawNode xpos ypos event isHighlighted
+        ,drawNode xpos ypos events isHighlighted
         ]
 
         
@@ -141,7 +142,7 @@ alwaysPreventDefault msg =
 svgLeftClick msg =
     Svg.Events.preventDefaultOn "mousedown" (Json.map alwaysPreventDefault (Json.succeed msg))
 svgRightClick msg =
-    Svg.Events.stopPropagationOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
+    Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
 
 
 -- shape for functionName objects
@@ -153,7 +154,7 @@ functionNameshape call viewStructure =
                 ((svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)) ::
                      (if viewStructure.isToolbar
                       then
-                          [SpawnBlock call.functionName]
+                          [(svgLeftClick (SpawnBlock call.functionName))]
                       else
                           [(svgLeftClick (BlockClick call.id))]))
                 [
