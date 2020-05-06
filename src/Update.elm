@@ -17,6 +17,7 @@ import ViewVariables
 import ViewPositions
 
 import Model exposing (..)
+import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition)
 
@@ -242,6 +243,27 @@ keyboardUpdate model keyevent =
         InputSelected id index -> keyboardUpdateInput model keyevent id index
         OutputSelected id -> keyboardUpdateOutput model keyevent id
         _ -> (model, Cmd.none)
+
+spawnBlockFunc func call =
+    call :: func
+             
+spawnBlockProgram : Onion -> Call -> Onion
+spawnBlockProgram onion call =
+    case onion of
+        [] -> [[call]]
+        (func::funcs) -> (spawnBlockFunc func call) :: funcs
+
+spawnBlockModel : Model -> String -> (Model, Cmd Msg)
+spawnBlockModel model name =
+    let oldMouse = model.mouseState
+        newCall = constructCall model.idCounter name
+        newMouse = {oldMouse | mouseSelection = (BlockSelected newCall.id)}
+    in
+        ({model |
+              idCounter = newCall.id+1
+              ,mouseState = newMouse
+              ,program = spawnBlockProgram model.program newCall}
+        ,Cmd.none)
                 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -300,7 +322,7 @@ update msg model =
             (outputRightClickModel model id)
 
         SpawnBlock name ->
-            (model, Cmd.none)
+            spawnBlockModel model name
                 
         PlaySound ->
             playSoundResult model

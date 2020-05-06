@@ -1,10 +1,12 @@
-module BuiltIn exposing (..)
+module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
+                        ,specialFunctionList, waveFunctions, specialFunctions, ArgList)
 import Dict exposing (Dict)
-import Model exposing (Function, Call, constructCall)
+import Model exposing (Function, Call, Input(..), Id)
 
--- infinite has a minimum number of args
+-- infinite has a min number of args with the names of the args
+-- then the name of the rest of the args
 type ArgList = Finite (List String)
-             | Infinite Int
+             | Infinite (List String) String
 
 
 type alias BuiltInSpec = (String, ArgList)
@@ -14,7 +16,7 @@ waveList : List BuiltInSpec
 waveList = [("sine", Finite ["time", "frequency", "duration"])]
 
     
-specialFunctionList = [("join", Infinite 0)
+specialFunctionList = [("join", Infinite [] "sounds")
                       ,("play", Finite ["arg"])] -- join will be removed
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ specialFunctionList
@@ -39,3 +41,16 @@ makeAllFunction builtInList counter =
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
 allBuiltInAsFunction = makeAllFunction builtInFunctionList -100
+
+callWithHoles id name numHoles =
+    Call id (List.repeat numHoles Hole) name ""
+                       
+-- id needs to be unique to the Onion
+constructCall : Id -> String -> Call
+constructCall id functionName =
+    case Dict.get functionName builtInFunctions of
+        Just argList ->
+            case argList of
+                Infinite firstArgs restArgs -> callWithHoles id functionName (List.length firstArgs)
+                Finite args -> callWithHoles id functionName (List.length args)
+        Nothing -> callWithHoles id functionName 0
