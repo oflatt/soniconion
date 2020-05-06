@@ -139,8 +139,23 @@ alwaysPreventDefault : msg -> ( msg, Bool )
 alwaysPreventDefault msg =
   (msg, True)
 
+createLeftDecoder : Msg -> Int -> Json.Decoder Msg
+createLeftDecoder msg button =
+    if button == 0
+    then (Json.succeed msg)
+    else (Json.succeed NoOp)
+      
+checkLeftDecoder : Msg -> Json.Decoder Msg
+checkLeftDecoder msg =
+    (Json.field "button" Json.int)
+        |> Json.andThen (createLeftDecoder msg)
+      
+svgLeftDecoder : Msg -> Json.Decoder (Msg, Bool)
+svgLeftDecoder msg =
+    (Json.map alwaysPreventDefault (checkLeftDecoder msg))
+      
 svgLeftClick msg =
-    Svg.Events.preventDefaultOn "mousedown" (Json.map alwaysPreventDefault (Json.succeed msg))
+    Svg.Events.preventDefaultOn "mousedown" (svgLeftDecoder msg)
 svgRightClick msg =
     Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
 

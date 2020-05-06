@@ -61,11 +61,9 @@ mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 
 inputRightClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputRightClickModel model id index =
-    let oldMouse = model.mouseState
-    in
-        case oldMouse.mouseSelection of
-            OutputSelected outputId -> (updateInput model id index (\input -> (Output outputId)), Cmd.none)
-            _ -> (model, Cmd.none)
+    case model.mouseState.mouseSelection of
+        OutputSelected outputId -> (updateInput model id index (\input -> (Output outputId)), Cmd.none)
+        _ -> (model, Cmd.none)
                         
 inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
@@ -248,9 +246,9 @@ keyboardUpdate model keyevent =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        NoOp -> (model, Cmd.none)
         SilentDomError dom_error->
-            log "domerror"
-                (model, Cmd.none)
+            (model, Cmd.none)
         SetError errorString ->
             (modelWithError model errorString, Cmd.none)
         MouseRelease ->
@@ -283,7 +281,9 @@ update msg model =
             outputHighlightModel model id
                     
         InputClick id index ->
-            inputClickModel model id index
+            let l = log "left" 2
+            in
+                inputClickModel model id index
 
         InputUpdate id index str ->
             inputUpdateModel model id index str
@@ -292,7 +292,9 @@ update msg model =
             outputClickModel model id
 
         InputRightClick id index ->
-            (inputRightClickModel model id index)
+            let m = log "r" 2
+            in
+                (inputRightClickModel model id index)
 
         OutputRightClick id ->
             (outputRightClickModel model id)

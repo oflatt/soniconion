@@ -42,6 +42,7 @@ type Msg = MouseOver PageName
          | SetError String
          | InputUpdate Id Int String
          | SilentDomError (Result Dom.Error ())
+         | NoOp
 
 
 pageNames : List String
