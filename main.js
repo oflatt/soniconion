@@ -6158,6 +6158,64 @@ var $author$project$Model$InputSelected = F2(
 	function (a, b) {
 		return {$: 'InputSelected', a: a, b: b};
 	});
+var $author$project$Model$SilentDomError = function (a) {
+	return {$: 'SilentDomError', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var $author$project$Update$nodeInputId = F2(
+	function (callid, inputindex) {
+		return $elm$core$String$fromInt(callid) + ('-' + $elm$core$String$fromInt(inputindex));
+	});
+var $author$project$Update$focusInputCommand = F2(
+	function (id, index) {
+		return A2(
+			$elm$core$Task$attempt,
+			$author$project$Model$SilentDomError,
+			$elm$browser$Browser$Dom$focus(
+				A2($author$project$Update$nodeInputId, id, index)));
+	});
+var $author$project$Update$inputHighlightModel = F3(
+	function (model, id, index) {
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: A2($author$project$Model$InputSelected, id, index)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse}),
+			A2($author$project$Update$focusInputCommand, id, index));
+	});
+var $author$project$Update$inputClickModel = F3(
+	function (model, id, index) {
+		return A3($author$project$Update$inputHighlightModel, model, id, index);
+	});
 var $author$project$Model$Hole = {$: 'Hole'};
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Dict$get = F2(
@@ -6330,10 +6388,9 @@ var $author$project$ModelHelpers$updateInput = F4(
 			model,
 			{mouseState: newMouse, program: newOnion});
 	});
-var $author$project$Update$inputClickModel = F3(
+var $author$project$Update$inputRightClickModel = F3(
 	function (model, id, index) {
-		var oldMouse = model.mouseState;
-		var _v0 = oldMouse.mouseSelection;
+		var _v0 = model.mouseState.mouseSelection;
 		if (_v0.$ === 'OutputSelected') {
 			var outputId = _v0.a;
 			return _Utils_Tuple2(
@@ -6347,71 +6404,8 @@ var $author$project$Update$inputClickModel = F3(
 					}),
 				$elm$core$Platform$Cmd$none);
 		} else {
-			var newMouse = _Utils_update(
-				oldMouse,
-				{
-					mouseSelection: A2($author$project$Model$InputSelected, id, index)
-				});
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{mouseState: newMouse}),
-				$elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
-	});
-var $author$project$Model$SilentDomError = function (a) {
-	return {$: 'SilentDomError', a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
-	});
-var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var $author$project$Update$nodeInputId = F2(
-	function (callid, inputindex) {
-		return $elm$core$String$fromInt(callid) + ('-' + $elm$core$String$fromInt(inputindex));
-	});
-var $author$project$Update$focusInputCommand = F2(
-	function (id, index) {
-		return A2(
-			$elm$core$Task$attempt,
-			$author$project$Model$SilentDomError,
-			$elm$browser$Browser$Dom$focus(
-				A2($author$project$Update$nodeInputId, id, index)));
-	});
-var $author$project$Update$inputHighlightModel = F3(
-	function (model, id, index) {
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A2($author$project$Model$InputSelected, id, index)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse}),
-			A2($author$project$Update$focusInputCommand, id, index));
 	});
 var $author$project$Update$inputUpdateModel = F4(
 	function (model, id, index, str) {
@@ -6505,7 +6499,7 @@ var $elm$core$Debug$log = _Debug_log;
 var $author$project$ViewVariables$functionXSpacing = 100;
 var $author$project$ViewVariables$blockWidth = 200;
 var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 3) | 0;
-var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 3) | 0;
+var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
 var $author$project$ViewPositions$countOutputs = function (inputs) {
 	countOutputs:
@@ -6526,7 +6520,7 @@ var $author$project$ViewPositions$countOutputs = function (inputs) {
 		}
 	}
 };
-var $author$project$ViewVariables$lineSpaceBeforeBlock = ($author$project$ViewVariables$blockSpacing / 2) | 0;
+var $author$project$ViewVariables$lineSpaceBeforeBlock = $author$project$ViewVariables$blockSpacing;
 var $author$project$ViewPositions$callLinesSpace = function (call) {
 	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
 };
@@ -6848,36 +6842,6 @@ var $author$project$Update$modelWithError = F2(
 var $author$project$Model$OutputSelected = function (a) {
 	return {$: 'OutputSelected', a: a};
 };
-var $author$project$Update$outputClickModel = F2(
-	function (model, id) {
-		var oldMouse = model.mouseState;
-		var _v0 = oldMouse.mouseSelection;
-		if (_v0.$ === 'InputSelected') {
-			var inputId = _v0.a;
-			var index = _v0.b;
-			return _Utils_Tuple2(
-				A4(
-					$author$project$ModelHelpers$updateInput,
-					model,
-					inputId,
-					index,
-					function (i) {
-						return $author$project$Model$Output(id);
-					}),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			var newMouse = _Utils_update(
-				oldMouse,
-				{
-					mouseSelection: $author$project$Model$OutputSelected(id)
-				});
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{mouseState: newMouse}),
-				$elm$core$Platform$Cmd$none);
-		}
-	});
 var $author$project$Update$nodeOutputId = function (callid) {
 	return 'o' + $elm$core$String$fromInt(callid);
 };
@@ -6898,6 +6862,31 @@ var $author$project$Update$outputHighlightModel = F2(
 				$author$project$Model$SilentDomError,
 				$elm$browser$Browser$Dom$focus(
 					$author$project$Update$nodeOutputId(id))));
+	});
+var $author$project$Update$outputClickModel = F2(
+	function (model, id) {
+		return A2($author$project$Update$outputHighlightModel, model, id);
+	});
+var $author$project$Update$outputRightClickModel = F2(
+	function (model, id) {
+		var oldMouse = model.mouseState;
+		var _v0 = oldMouse.mouseSelection;
+		if (_v0.$ === 'InputSelected') {
+			var inputId = _v0.a;
+			var index = _v0.b;
+			return _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					inputId,
+					index,
+					function (i) {
+						return $author$project$Model$Output(id);
+					}),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$Compiler$Compile$buildValue = function (val) {
@@ -7203,12 +7192,11 @@ var $author$project$Update$playSoundResult = function (model) {
 var $author$project$Update$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'NoOp':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'SilentDomError':
 				var dom_error = msg.a;
-				return A2(
-					$elm$core$Debug$log,
-					'domerror',
-					_Utils_Tuple2(model, $elm$core$Platform$Cmd$none));
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'SetError':
 				var errorString = msg.a;
 				return _Utils_Tuple2(
@@ -7253,6 +7241,7 @@ var $author$project$Update$update = F2(
 			case 'InputClick':
 				var id = msg.a;
 				var index = msg.b;
+				var l = A2($elm$core$Debug$log, 'left', 2);
 				return A3($author$project$Update$inputClickModel, model, id, index);
 			case 'InputUpdate':
 				var id = msg.a;
@@ -7262,6 +7251,17 @@ var $author$project$Update$update = F2(
 			case 'OutputClick':
 				var id = msg.a;
 				return A2($author$project$Update$outputClickModel, model, id);
+			case 'InputRightClick':
+				var id = msg.a;
+				var index = msg.b;
+				var m = A2($elm$core$Debug$log, 'r', 2);
+				return A3($author$project$Update$inputRightClickModel, model, id, index);
+			case 'OutputRightClick':
+				var id = msg.a;
+				return A2($author$project$Update$outputRightClickModel, model, id);
+			case 'SpawnBlock':
+				var name = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'PlaySound':
 				return $author$project$Update$playSoundResult(model);
 			case 'WindowResize':
@@ -9615,14 +9615,14 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 var $author$project$Model$BlockClick = function (a) {
 	return {$: 'BlockClick', a: a};
 };
+var $author$project$Model$SpawnBlock = function (a) {
+	return {$: 'SpawnBlock', a: a};
+};
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
 var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 8) | 0;
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
-var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
 };
@@ -9634,14 +9634,31 @@ var $elm$html$Html$Events$preventDefaultOn = F2(
 			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
 	});
 var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $author$project$Model$NoOp = {$: 'NoOp'};
+var $author$project$SvgDraw$createLeftDecoder = F2(
+	function (msg, button) {
+		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
+	});
+var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		$author$project$SvgDraw$createLeftDecoder(msg),
+		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+};
+var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$author$project$SvgDraw$alwaysPreventDefault,
+		$author$project$SvgDraw$checkLeftDecoder(msg));
+};
 var $author$project$SvgDraw$svgLeftClick = function (msg) {
 	return A2(
 		$elm$svg$Svg$Events$preventDefaultOn,
 		'mousedown',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$SvgDraw$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
+		$author$project$SvgDraw$svgLeftDecoder(msg));
 };
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
@@ -9677,20 +9694,26 @@ var $author$project$SvgDraw$svgTranslate = F2(
 		return $elm$svg$Svg$Attributes$transform(
 			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
 	});
-var $author$project$SvgDraw$functionNameshape = F5(
-	function (name, argList, inputs, blockPositions, id) {
-		var _v0 = A2($elm$core$Dict$get, id, blockPositions);
+var $author$project$SvgDraw$functionNameshape = F2(
+	function (call, viewStructure) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
 		if (_v0.$ === 'Just') {
 			var blockPos = _v0.a;
 			return A3(
 				$elm$svg$Svg$node,
 				'g',
-				_List_fromArray(
-					[
-						$author$project$SvgDraw$svgLeftClick(
-						$author$project$Model$BlockClick(id)),
-						A2($author$project$SvgDraw$svgTranslate, blockPos.a, blockPos.b)
-					]),
+				A2(
+					$elm$core$List$cons,
+					A2($author$project$SvgDraw$svgTranslate, blockPos.a, blockPos.b),
+					viewStructure.isToolbar ? _List_fromArray(
+						[
+							$author$project$SvgDraw$svgLeftClick(
+							$author$project$Model$SpawnBlock(call.functionName))
+						]) : _List_fromArray(
+						[
+							$author$project$SvgDraw$svgLeftClick(
+							$author$project$Model$BlockClick(call.id))
+						])),
 				_List_fromArray(
 					[
 						A2(
@@ -9712,28 +9735,28 @@ var $author$project$SvgDraw$functionNameshape = F5(
 								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
 							]),
 						_List_Nil),
-						A5($author$project$SvgDraw$svgText, ($author$project$ViewVariables$blockWidth / 2) | 0, ($author$project$ViewVariables$blockHeight / 2) | 0, name, $author$project$ViewVariables$funcNameFontHeight, 'white')
+						A5($author$project$SvgDraw$svgText, ($author$project$ViewVariables$blockWidth / 2) | 0, ($author$project$ViewVariables$blockHeight / 2) | 0, call.functionName, $author$project$ViewVariables$funcNameFontHeight, 'white')
 					]));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
 		}
 	});
 var $author$project$SvgDraw$drawBuiltIn = F3(
-	function (call, index, blockPositions) {
+	function (call, index, viewStructure) {
 		var get = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
 		if (get.$ === 'Just') {
 			var names = get.a;
-			return A5($author$project$SvgDraw$functionNameshape, call.functionName, names, call.inputs, blockPositions, call.id);
+			return A2($author$project$SvgDraw$functionNameshape, call, viewStructure);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('not a built in function ' + call.functionName);
 		}
 	});
 var $author$project$DrawFunc$drawCall = F3(
-	function (call, counter, blockPositions) {
-		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, blockPositions);
+	function (call, counter, viewStructure) {
+		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
 	});
-var $author$project$DrawFunc$drawFunc = F4(
-	function (func, counter, blockPositions, mouseState) {
+var $author$project$DrawFunc$drawFunc = F3(
+	function (func, viewStructure, counter) {
 		if (!func.b) {
 			return _List_Nil;
 		} else {
@@ -9741,50 +9764,50 @@ var $author$project$DrawFunc$drawFunc = F4(
 			var calls = func.b;
 			return A2(
 				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCall, call, counter, blockPositions),
-				A4($author$project$DrawFunc$drawFunc, calls, counter + 1, blockPositions, mouseState));
+				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
+				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
 		}
 	});
 var $author$project$Model$OutputClick = function (a) {
 	return {$: 'OutputClick', a: a};
 };
+var $author$project$Model$OutputRightClick = function (a) {
+	return {$: 'OutputRightClick', a: a};
+};
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$svg$Svg$Events$onMouseDown = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'mousedown',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $author$project$SvgDraw$drawNode = F4(
-	function (xpos, ypos, event, isHighlighted) {
+	function (xpos, ypos, events, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$circle,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$r(
-					$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-					$elm$svg$Svg$Attributes$cx(
-					$elm$core$String$fromInt(xpos)),
-					$elm$svg$Svg$Attributes$cy(
-					$elm$core$String$fromInt(ypos)),
-					$elm$svg$Svg$Attributes$fill(
-					isHighlighted ? 'blue' : 'black'),
-					$elm$svg$Svg$Events$onMouseDown(event)
-				]),
+			_Utils_ap(
+				events,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$r(
+						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+						$elm$svg$Svg$Attributes$cx(
+						$elm$core$String$fromInt(xpos)),
+						$elm$svg$Svg$Attributes$cy(
+						$elm$core$String$fromInt(ypos)),
+						$elm$svg$Svg$Attributes$fill(
+						isHighlighted ? 'blue' : 'black')
+					])),
 			_List_Nil);
 	});
 var $author$project$ViewVariables$outputNodeX = ($author$project$ViewVariables$blockWidth / 2) | 0;
 var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
+var $author$project$SvgDraw$svgRightClick = function (msg) {
+	return A2(
+		$elm$svg$Svg$Events$preventDefaultOn,
+		'contextmenu',
+		A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
 var $author$project$DrawFunc$drawCallEnding = F3(
 	function (call, blockPositions, mouseState) {
 		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
@@ -9803,7 +9826,13 @@ var $author$project$DrawFunc$drawCallEnding = F3(
 				$author$project$SvgDraw$drawNode,
 				$author$project$ViewVariables$outputNodeX + blockPos.a,
 				$author$project$ViewVariables$outputNodeY + blockPos.b,
-				$author$project$Model$OutputClick(call.id),
+				_List_fromArray(
+					[
+						$author$project$SvgDraw$svgLeftClick(
+						$author$project$Model$OutputClick(call.id)),
+						$author$project$SvgDraw$svgRightClick(
+						$author$project$Model$OutputRightClick(call.id))
+					]),
 				isOutputHighlighted);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
@@ -9832,6 +9861,10 @@ var $author$project$Model$InputClick = F2(
 var $author$project$Model$InputHighlight = F2(
 	function (a, b) {
 		return {$: 'InputHighlight', a: a, b: b};
+	});
+var $author$project$Model$InputRightClick = F2(
+	function (a, b) {
+		return {$: 'InputRightClick', a: a, b: b};
 	});
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$foreignObject = $elm$svg$Svg$trustedNode('foreignObject');
@@ -10370,14 +10403,14 @@ var $author$project$SvgDraw$nodeEvent = F4(
 				]));
 	});
 var $author$project$SvgDraw$drawNodeWithEvent = F6(
-	function (xpos, ypos, event, highlightevent, eventId, isHighlighted) {
+	function (xpos, ypos, events, highlightevent, eventId, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$g,
 			_List_Nil,
 			_List_fromArray(
 				[
 					A4($author$project$SvgDraw$nodeEvent, xpos, ypos, highlightevent, eventId),
-					A4($author$project$SvgDraw$drawNode, xpos, ypos, event, isHighlighted)
+					A4($author$project$SvgDraw$drawNode, xpos, ypos, events, isHighlighted)
 				]));
 	});
 var $author$project$ViewVariables$nodePadding = $author$project$ViewVariables$nodeRadius * 4;
@@ -10456,8 +10489,8 @@ var $author$project$SvgDraw$drawConnector = F6(
 		}
 	});
 var $author$project$DrawFunc$drawOutputLine = F7(
-	function (id, blockPos, inputCounter, blockPositions, inputEvent, isLineHighlighted, routing) {
-		var _v0 = A2($elm$core$Dict$get, id, blockPositions);
+	function (id, blockPos, inputCounter, viewStructure, inputEvent, isLineHighlighted, routing) {
+		var _v0 = A2($elm$core$Dict$get, id, viewStructure.blockPositions);
 		if (_v0.$ === 'Nothing') {
 			return $author$project$SvgDraw$errorSvgNode('Can\'t find line output');
 		} else {
@@ -10504,21 +10537,23 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
-var $author$project$SvgDraw$drawTextInput = F6(
-	function (str, xpos, ypos, id, index, domId) {
+var $author$project$SvgDraw$drawTextInput = F7(
+	function (str, events, xpos, ypos, id, index, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(xpos - (($author$project$ViewVariables$inputWidth / 2) | 0))),
-					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
-					$elm$svg$Svg$Attributes$width(
-					$elm$core$String$fromInt($author$project$ViewVariables$inputWidth)),
-					$elm$svg$Svg$Attributes$height(
-					$elm$core$String$fromInt($author$project$ViewVariables$inputHeight))
-				]),
+			_Utils_ap(
+				events,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromInt(xpos - (($author$project$ViewVariables$inputWidth / 2) | 0))),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
+						$elm$svg$Svg$Attributes$width(
+						$elm$core$String$fromInt($author$project$ViewVariables$inputWidth)),
+						$elm$svg$Svg$Attributes$height(
+						$elm$core$String$fromInt($author$project$ViewVariables$inputHeight))
+					])),
 			_List_fromArray(
 				[
 					$rtfeldman$elm_css$Html$Styled$toUnstyled(
@@ -10532,8 +10567,6 @@ var $author$project$SvgDraw$drawTextInput = F6(
 								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
 								$rtfeldman$elm_css$Html$Styled$Events$onFocus(
 								A2($author$project$Model$InputHighlight, id, index)),
-								$rtfeldman$elm_css$Html$Styled$Events$onClick(
-								A2($author$project$Model$InputClick, id, index)),
 								$rtfeldman$elm_css$Html$Styled$Attributes$css(
 								_List_fromArray(
 									[
@@ -10551,21 +10584,50 @@ var $author$project$SvgDraw$drawTextInput = F6(
 						_List_Nil))
 				]));
 	});
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$svg$Svg$Events$onMouseDown = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mousedown',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $author$project$DrawFunc$drawInput = F7(
-	function (input, blockPos, inputCounter, blockPositions, blockId, mouseState, routing) {
+	function (input, blockPos, inputCounter, viewStructure, blockId, mouseState, routing) {
+		var nodeEvents = viewStructure.isToolbar ? _List_Nil : _List_fromArray(
+			[
+				$author$project$SvgDraw$svgLeftClick(
+				A2($author$project$Model$InputClick, blockId, inputCounter)),
+				$author$project$SvgDraw$svgRightClick(
+				A2($author$project$Model$InputRightClick, blockId, inputCounter))
+			]);
 		var isInputHighlighted = function () {
-			var _v2 = mouseState.mouseSelection;
-			if (_v2.$ === 'InputSelected') {
-				var inputId = _v2.a;
-				var inputIndex = _v2.b;
+			var _v3 = mouseState.mouseSelection;
+			if (_v3.$ === 'InputSelected') {
+				var inputId = _v3.a;
+				var inputIndex = _v3.b;
 				return _Utils_eq(inputId, blockId) && _Utils_eq(inputCounter, inputIndex);
 			} else {
 				return false;
 			}
 		}();
 		var inputStringId = A2($author$project$Update$nodeInputId, blockId, inputCounter);
-		var inputEvent = A2($author$project$Model$InputClick, blockId, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, blockId, inputCounter);
+		var nodeWithEvent = function (_v2) {
+			return A6(
+				$author$project$SvgDraw$drawNodeWithEvent,
+				blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
+				blockPos.b + $author$project$ViewVariables$nodeRadius,
+				nodeEvents,
+				highlightEvent,
+				inputStringId,
+				isInputHighlighted);
+		};
 		switch (input.$) {
 			case 'Output':
 				var id = input.a;
@@ -10591,39 +10653,26 @@ var $author$project$DrawFunc$drawInput = F7(
 					_List_Nil,
 					_List_fromArray(
 						[
-							A7($author$project$DrawFunc$drawOutputLine, id, blockPos, inputCounter, blockPositions, outputEvent, isLineHighlighted, routing),
-							A6(
-							$author$project$SvgDraw$drawNodeWithEvent,
-							blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
-							blockPos.b + $author$project$ViewVariables$nodeRadius,
-							inputEvent,
-							highlightEvent,
-							inputStringId,
-							isInputHighlighted)
+							A7($author$project$DrawFunc$drawOutputLine, id, blockPos, inputCounter, viewStructure, outputEvent, isLineHighlighted, routing),
+							nodeWithEvent(_Utils_Tuple0)
 						]));
 			case 'Text':
 				var str = input.a;
-				return A6(
+				return A7(
 					$author$project$SvgDraw$drawTextInput,
 					str,
+					nodeEvents,
 					blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
 					blockPos.b + $author$project$ViewVariables$nodeRadius,
 					blockId,
 					inputCounter,
 					inputStringId);
 			default:
-				return A6(
-					$author$project$SvgDraw$drawNodeWithEvent,
-					blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
-					blockPos.b + $author$project$ViewVariables$nodeRadius,
-					inputEvent,
-					highlightEvent,
-					inputStringId,
-					isInputHighlighted);
+				return nodeWithEvent(_Utils_Tuple0);
 		}
 	});
 var $author$project$DrawFunc$drawInputLines = F7(
-	function (inputs, blockPos, inputCounter, blockPositions, id, mouseState, lineRouting) {
+	function (inputs, blockPos, inputCounter, viewStructure, id, mouseState, lineRouting) {
 		if (!inputs.b) {
 			return _List_fromArray(
 				[
@@ -10647,26 +10696,26 @@ var $author$project$DrawFunc$drawInputLines = F7(
 				var restRouting = lineRouting.b;
 				return A2(
 					$elm$core$List$cons,
-					A7($author$project$DrawFunc$drawInput, input, blockPos, inputCounter, blockPositions, id, mouseState, routing),
-					A7($author$project$DrawFunc$drawInputLines, rest, blockPos, inputCounter + 1, blockPositions, id, mouseState, restRouting));
+					A7($author$project$DrawFunc$drawInput, input, blockPos, inputCounter, viewStructure, id, mouseState, routing),
+					A7($author$project$DrawFunc$drawInputLines, rest, blockPos, inputCounter + 1, viewStructure, id, mouseState, restRouting));
 			}
 		}
 	});
 var $author$project$DrawFunc$drawCallInputs = F4(
-	function (call, blockPositions, mouseState, routingList) {
-		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
+	function (call, viewStructure, mouseState, routingList) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
 		if (_v0.$ === 'Just') {
 			var blockPos = _v0.a;
 			return A2(
 				$elm$svg$Svg$g,
 				_List_Nil,
-				A7($author$project$DrawFunc$drawInputLines, call.inputs, blockPos, 0, blockPositions, call.id, mouseState, routingList));
+				A7($author$project$DrawFunc$drawInputLines, call.inputs, blockPos, 0, viewStructure, call.id, mouseState, routingList));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position');
 		}
 	});
 var $author$project$DrawFunc$drawFuncInputs = F4(
-	function (func, blockPositions, mouseState, lineRouting) {
+	function (func, viewStructure, mouseState, lineRouting) {
 		if (!func.b) {
 			return _List_Nil;
 		} else {
@@ -10682,8 +10731,8 @@ var $author$project$DrawFunc$drawFuncInputs = F4(
 				var restRouting = lineRouting.b;
 				return A2(
 					$elm$core$List$cons,
-					A4($author$project$DrawFunc$drawCallInputs, call, blockPositions, mouseState, routing),
-					A4($author$project$DrawFunc$drawFuncInputs, calls, blockPositions, mouseState, restRouting));
+					A4($author$project$DrawFunc$drawCallInputs, call, viewStructure, mouseState, routing),
+					A4($author$project$DrawFunc$drawFuncInputs, calls, viewStructure, mouseState, restRouting));
 			}
 		}
 	});
@@ -10700,20 +10749,20 @@ var $author$project$DrawFunc$drawFuncWithConnections = F2(
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
-					A4($author$project$DrawFunc$drawFunc, viewStructure.sortedFunc, 0, viewStructure.blockPositions, mouseState)),
+					A3($author$project$DrawFunc$drawFunc, viewStructure.sortedFunc, viewStructure, 0)),
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
-					A4($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc, viewStructure.blockPositions, mouseState, viewStructure.lineRouting)),
+					A4($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc, viewStructure, mouseState, viewStructure.lineRouting)),
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
 					A3($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc, viewStructure.blockPositions, mouseState))
 				]));
 	});
-var $author$project$ViewPositions$ViewStructure = F5(
-	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset) {
-		return {blockPositions: blockPositions, funcxoffset: funcxoffset, funcyoffset: funcyoffset, lineRouting: lineRouting, sortedFunc: sortedFunc};
+var $author$project$ViewPositions$ViewStructure = F7(
+	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, mouseState, isToolbar) {
+		return {blockPositions: blockPositions, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
 	});
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
@@ -11014,15 +11063,15 @@ var $author$project$ViewPositions$makeIdToPos = F2(
 			sorted,
 			A3($author$project$ViewPositions$idToPosAdd, sorted, $elm$core$Dict$empty, 0));
 	});
-var $author$project$ViewPositions$getViewStructure = F6(
-	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
+var $author$project$ViewPositions$getViewStructure = F7(
+	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
 		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
 		var madePos = A2($author$project$ViewPositions$makeIdToPos, func, blockPositions);
 		var idToPos = madePos.b;
 		var sortedFunc = madePos.a;
 		var connectedArray = A2($author$project$ViewPositions$getOutputConnectedArray, sortedFunc, idToPos);
 		var lineRouting = A4($author$project$ViewPositions$getLineRouting, sortedFunc, connectedArray, idToPos, true);
-		return A5($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset);
+		return A7($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, mouseState, isToolbar);
 	});
 var $author$project$DrawProgram$drawOnion = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
@@ -11031,14 +11080,15 @@ var $author$project$DrawProgram$drawOnion = F4(
 		} else {
 			var func = onion.a;
 			var funcs = onion.b;
-			var viewStructure = A6(
+			var viewStructure = A7(
 				$author$project$ViewPositions$getViewStructure,
 				func,
 				mouseState,
 				svgWindowWidth,
 				svgWindowHeight,
 				$author$project$ViewVariables$functionXSpacing + $author$project$ViewVariables$toolbarWidth(svgWindowWidth),
-				0);
+				0,
+				false);
 			return A2(
 				$elm$core$List$cons,
 				A2($author$project$DrawFunc$drawFuncWithConnections, viewStructure, mouseState),
@@ -11071,7 +11121,7 @@ var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
 		return A2(
 			$author$project$DrawFunc$drawFuncWithConnections,
-			A6($author$project$ViewPositions$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0),
+			A7($author$project$ViewPositions$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, true),
 			mouseState);
 	});
 var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
