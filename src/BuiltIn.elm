@@ -15,12 +15,13 @@ type alias BuiltInList = List BuiltInSpec
 waveList : List BuiltInSpec
 waveList = [("sine", Finite ["time", "frequency", "duration"])]
 
-    
+
+
 specialFunctionList = [("join", Infinite [] "sounds")
                       ,("play", Finite ["arg"])] -- join will be removed
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ specialFunctionList
-                      
+
 
 -- maps function names to a list of arg names
 builtInFunctions : Dict String ArgList
@@ -29,6 +30,12 @@ builtInFunctions =
 waveFunctions = Dict.fromList waveList
 specialFunctions = Dict.fromList builtInFunctionList
 
+
+
+builtInVariables : Dict String Float
+builtInVariables =
+    Dict.fromList
+        []
 
 callFromSpec spec id =
     constructCall id (Tuple.first spec)
