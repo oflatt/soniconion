@@ -1,4 +1,4 @@
-module MusicTheory exposing (makeNamedFrequencies, letterDictWithSharpsFlats)
+module MusicTheory exposing (namedFrequencies, letterDictWithSharpsFlats)
 
 import Dict exposing (Dict)
 import Utils exposing (dictAppend)
@@ -46,19 +46,26 @@ letterDictWithSharpsFlats =
 
 -- half step offsets from C0
 offsetToFrequency offset =
-    440.0 * (2.0 ^ ((offset-4*12) / 12.0))
+    440.0 * (2.0 ^ (((toFloat offset) - (4*12+9)) / 12.0))
         
 offsetLimit = 12 * 8
 
-addNamedFrequencies dict offset =
-    dict
-              
-namedFrequenciesAfter offset =
-    if offset < offsetLimit
-    then
-        addNamedFrequencies (namedFrequenciesAfter (offset+1)) offset
-    else
-        Dict.empty
-    
+tupleReversed a b = (b, a)
 
-makeNamedFrequencies = namedFrequenciesAfter 0
+offsetToOctave offset =
+    offset // 12
+
+namedFrequenciesForOffset offset =
+    let frequency = offsetToFrequency offset
+        maybeLetters = Dict.get (modBy 12 offset) letterDictWithSharpsFlats
+        octave = String.fromInt (offsetToOctave offset)
+    in
+        case maybeLetters of
+            Just letters ->
+                List.map (tupleReversed frequency)
+                    (List.map (\letter -> (letter++octave)) letters)
+            Nothing -> log "bad get names music" []
+
+namedFrequencies =
+    Dict.fromList
+        (List.concatMap namedFrequenciesForOffset (List.range 0 offsetLimit))

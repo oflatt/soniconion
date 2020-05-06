@@ -22,4 +22,19 @@ letterDict =
                         11))
          ]
 
+namedFrequencies : Test
+namedFrequencies =
+    describe "namedFrequencies"
+        [test "440 hz"
+             (\_ ->
+                  (Expect.equal
+                       (Just 440.0)
+                       (Dict.get "A4" MusicTheory.namedFrequencies)))
+        ,test "Bb6"
+            (\_ ->
+                 (Expect.equal
+                      (Just 1864.6550460723597)
+                      (Dict.get "Bb6" MusicTheory.namedFrequencies)))]
+
+
 
