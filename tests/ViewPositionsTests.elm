@@ -49,7 +49,7 @@ fixInvalidInputs =
                 
 
 getLineRouting testModel =
-    (ViewPositions.getViewStructure testModel (MouseState 0 0 NoneSelected) 0 0 0 0).lineRouting
+    (ViewPositions.getViewStructure testModel (MouseState 0 0 NoneSelected) 0 0 0 0 False).lineRouting
         
 getLineRoutingTest : Test
 getLineRoutingTest =
@@ -71,7 +71,7 @@ getLineRoutingTest =
 callBlockPositions testFunc mouse =
     (ViewPositions.blockPositionsToPositionList testFunc
          (ViewPositions.getViewStructure testFunc
-              mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0).blockPositions)
+              mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0 False).blockPositions)
 emptyMouse = (MouseState 0 0 NoneSelected)
 
 secondToLastMouse = (MouseState (ViewVariables.blockWidth//2)
