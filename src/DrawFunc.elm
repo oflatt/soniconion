@@ -80,6 +80,7 @@ drawInput input blockPos inputCounter viewStructure blockId mouseState routing =
             Text str ->
                 (SvgDraw.drawTextInput
                      str
+                     nodeEvents
                      ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
                      ((Tuple.second blockPos) + ViewVariables.nodeRadius)
                      blockId
@@ -129,7 +130,8 @@ drawCallEnding call blockPositions mouseState =
                 (SvgDraw.drawNode
                      (ViewVariables.outputNodeX + (Tuple.first blockPos))
                      (ViewVariables.outputNodeY + (Tuple.second blockPos))
-                     [(SvgDraw.svgLeftClick (OutputClick call.id))]
+                     [(SvgDraw.svgLeftClick (OutputClick call.id))
+                     ,(SvgDraw.svgRightClick (OutputRightClick call.id))]
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"

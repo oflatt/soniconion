@@ -71,20 +71,20 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : String -> Int -> Int -> Id -> Int -> String -> (Svg Msg)
-drawTextInput str xpos ypos id index domId =
+drawTextInput : String -> List (Svg.Attribute Msg) -> Int -> Int -> Id -> Int -> String -> (Svg Msg)
+drawTextInput str events xpos ypos id index domId =
     Svg.foreignObject
-        [x (String.fromInt (xpos - (ViewVariables.inputWidth//2)))
-        ,y (String.fromInt (ypos-(ViewVariables.inputHeight//2)))
-        ,width (String.fromInt ViewVariables.inputWidth)
-        ,height (String.fromInt (ViewVariables.inputHeight))]
+        (events ++
+             [x (String.fromInt (xpos - (ViewVariables.inputWidth//2)))
+             ,y (String.fromInt (ypos-(ViewVariables.inputHeight//2)))
+             ,width (String.fromInt ViewVariables.inputWidth)
+             ,height (String.fromInt (ViewVariables.inputHeight))])
         [toUnstyled
              (input
                   [Html.Styled.Attributes.value str
                   ,Html.Styled.Events.onInput (InputUpdate id index)
                   ,Html.Styled.Attributes.id domId
                   ,onFocus (InputHighlight id index)
-                  ,onClick (InputClick id index)
                   ,css [Css.width
                             (px ((Basics.toFloat ViewVariables.inputWidth)-4.0))
                        ,Css.height
