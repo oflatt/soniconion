@@ -7,7 +7,7 @@ import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 
 
-import ViewPositions exposing (BlockPositions)
+import ViewPositions exposing (BlockPositions, ViewStructure)
 
 import Json.Decode as Json
 import Css exposing (px)
@@ -47,13 +47,13 @@ errorSvgNode errorMsg=
         ]
         
 -- function for drawing builtIns
-drawBuiltIn: Call -> Int -> BlockPositions -> (Svg Msg)
-drawBuiltIn call index blockPositions =
+drawBuiltIn: Call -> Int -> ViewStructure -> (Svg Msg)
+drawBuiltIn call index viewStructure =
     let get = Dict.get call.functionName builtInFunctions
     in
         case get of
             Just names ->
-                functionNameshape call.functionName names call.inputs blockPositions call.id
+                functionNameshape call viewStructure
             Nothing ->
                 errorSvgNode ("not a built in function " ++ call.functionName)
 
@@ -140,15 +140,22 @@ alwaysPreventDefault msg =
 
 svgLeftClick msg =
     Svg.Events.preventDefaultOn "mousedown" (Json.map alwaysPreventDefault (Json.succeed msg))
-        
+svgRightClick msg =
+    Svg.Events.stopPropagationOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
+
+
 -- shape for functionName objects
-functionNameshape: String -> ArgList -> List Input -> BlockPositions -> Id -> (Svg Msg)
-functionNameshape name argList inputs blockPositions id =
-    case Dict.get id blockPositions of
+functionNameshape: Call -> ViewStructure -> (Svg Msg)
+functionNameshape call viewStructure =
+    case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.node "g"
-                [(svgLeftClick (BlockClick id))
-                ,svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)]
+                ((svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)) ::
+                     (if viewStructure.isToolbar
+                      then
+                          [SpawnBlock call.functionName]
+                      else
+                          [(svgLeftClick (BlockClick call.id))]))
                 [
                  rect
                      [ x "0"
@@ -161,7 +168,7 @@ functionNameshape name argList inputs blockPositions id =
                      , ry (String.fromInt ViewVariables.nodeRadius)
                      ]
                      []
-                , svgText (ViewVariables.blockWidth // 2) (ViewVariables.blockHeight // 2) name ViewVariables.funcNameFontHeight "white"
+                , svgText (ViewVariables.blockWidth // 2) (ViewVariables.blockHeight // 2) call.functionName ViewVariables.funcNameFontHeight "white"
                 ]
         Nothing ->
             errorSvgNode "function call without block pos"

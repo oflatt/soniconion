@@ -36,6 +36,9 @@ type Msg = MouseOver PageName
          | OutputClick Id
          | InputHighlight Id Int
          | OutputHighlight Id
+         | InputRightClick Id Int
+         | OutputRightClick Id
+         | SpawnBlock String -- when you click a block in the toolbar put it in hand
          | SetError String
          | InputUpdate Id Int String
          | SilentDomError (Result Dom.Error ())

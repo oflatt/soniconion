@@ -59,20 +59,17 @@ mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 
-inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
-inputClickModel model id index =
+inputRightClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
+inputRightClickModel model id index =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
             OutputSelected outputId -> (updateInput model id index (\input -> (Output outputId)), Cmd.none)
-            _ ->
-                let
-                    newMouse =
-                        {oldMouse | mouseSelection = (InputSelected id index)}
-                in
-                    ({model |
-                          mouseState = newMouse}
-                    ,Cmd.none)
+            _ -> (model, Cmd.none)
+                        
+inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
+inputClickModel model id index =
+    inputHighlightModel model id index
 
 focusInputCommand id index =
     (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)
@@ -90,21 +87,18 @@ inputHighlightModel model id index =
                   mouseState = newMouse}
             ,focusInputCommand id index)
             
-            
-outputClickModel : Model -> Id -> (Model, Cmd Msg)
-outputClickModel model id =
+outputRightClickModel : Model -> Id -> (Model, Cmd Msg)
+outputRightClickModel model id =
     let oldMouse = model.mouseState
     in
         case oldMouse.mouseSelection of
             InputSelected inputId index -> (updateInput model inputId index (\i -> (Output id)), Cmd.none)
-            _ ->
-                let
-                    newMouse =
-                        {oldMouse | mouseSelection = (OutputSelected id)}
-                in
-                    ({model |
-                          mouseState = newMouse}
-                    ,Cmd.none)
+            _ -> (model, Cmd.none)
+
+            
+outputClickModel : Model -> Id -> (Model, Cmd Msg)
+outputClickModel model id =
+    outputHighlightModel model id
 
 outputHighlightModel : Model -> Id -> (Model, Cmd Msg)
 outputHighlightModel model id =
@@ -296,6 +290,15 @@ update msg model =
 
         OutputClick id ->
             outputClickModel model id
+
+        InputRightClick id index ->
+            (inputRightClickModel model id index)
+
+        OutputRightClick id ->
+            (outputRightClickModel model id)
+
+        SpawnBlock name ->
+            (model, Cmd.none)
                 
         PlaySound ->
             playSoundResult model

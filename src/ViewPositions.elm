@@ -45,7 +45,9 @@ type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
                            ,sortedFunc : Function
                            ,funcxoffset : Int
-                           ,funcyoffset : Int}
+                           ,funcyoffset : Int
+                           ,mouseState : MouseState
+                           ,isToolbar : Bool}
 
 blockPositionsToPositionList func blockPositions =
     case func of
@@ -237,7 +239,7 @@ getLineRouting func connectedArray idToPos isLeft=
              (Tuple.first routing) ::
                 (getLineRouting calls connectedArray idToPos (Tuple.second routing))
 
-getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
+getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         madePos = makeIdToPos func blockPositions
         sortedFunc = (Tuple.first madePos)
@@ -250,7 +252,9 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
              lineRouting
              sortedFunc
              xoffset
-             yoffset)
+             yoffset
+             mouseState
+             isToolbar)
 
 
 createViewboxDimensions w h =

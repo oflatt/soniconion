@@ -37,7 +37,7 @@ drawOnion onion mouseState svgWindowWidth svgWindowHeight =
         let viewStructure =
                 (ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
                      (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth svgWindowWidth))
-                     0)    
+                     0 False)
         in
             (drawFuncWithConnections
                  viewStructure

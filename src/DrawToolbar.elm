@@ -22,5 +22,5 @@ import Svg.Attributes
 drawToolbar : Onion -> MouseState -> Int -> Int -> Svg Msg
 drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
     (DrawFunc.drawFuncWithConnections
-         (ViewPositions.getViewStructure allBuiltInAsFunction mouseState svgWindowWidth svgWindowHeight 0 0)
+         (ViewPositions.getViewStructure allBuiltInAsFunction mouseState svgWindowWidth svgWindowHeight 0 0 True)
          mouseState)

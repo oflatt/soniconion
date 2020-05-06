@@ -26,9 +26,9 @@ import Debug exposing (log)
 
 -- function for draw call objects
 
-drawCall: Call -> Int ->  BlockPositions -> (Svg Msg)
-drawCall call counter blockPositions =
-    SvgDraw.drawBuiltIn call counter blockPositions
+drawCall: Call -> Int ->  ViewStructure -> (Svg Msg)
+drawCall call counter viewStructure =
+    SvgDraw.drawBuiltIn call counter viewStructure
 
 drawOutputLine : Id -> BlockPos -> Int -> BlockPositions -> Svg.Attribute Msg -> Bool -> Maybe Int -> (Svg Msg)
 drawOutputLine id blockPos inputCounter blockPositions inputEvent isLineHighlighted routing =
@@ -147,16 +147,16 @@ drawFuncEndings func blockPositions mouseState =
             (drawCallEnding call blockPositions mouseState) :: (drawFuncEndings calls blockPositions mouseState)
                         
 -- function for drawing function records
-drawFunc: Function -> Int ->  BlockPositions -> MouseState -> List (Svg Msg)
-drawFunc func counter blockPositions mouseState =
+drawFunc: Function -> ViewStructure -> Int -> List (Svg Msg)
+drawFunc func viewStructure counter =
   case func of
     [] -> []
-    (call::calls) -> (drawCall call counter blockPositions) :: (drawFunc calls (counter + 1) blockPositions mouseState)
+    (call::calls) -> (drawCall call counter viewStructure) :: (drawFunc calls viewStructure (counter + 1))
 
 drawFuncWithConnections: ViewStructure -> MouseState -> Svg Msg
 drawFuncWithConnections viewStructure mouseState =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.funcxoffset viewStructure.funcyoffset]
-        [Svg.g [] (drawFunc viewStructure.sortedFunc 0 viewStructure.blockPositions mouseState)
+        [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
         ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure.blockPositions mouseState viewStructure.lineRouting)
         ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc viewStructure.blockPositions mouseState)]
