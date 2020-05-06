@@ -54,4 +54,6 @@ inputHeight = floor ((toFloat nodeRadius) * 2.5)
 toolbarProportion = 0.25
 
 blockColor = "rgb(50, 214, 232)"
+textInputColor = (rgb 186 232 188)
+textInputColorVariable = (rgb 108 230 113)
 errorColor = (rgb 255 150 150)

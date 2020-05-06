@@ -89,6 +89,10 @@ drawTextInput call str events xpos ypos index domId =
                             (px ((Basics.toFloat ViewVariables.inputWidth)-4.0))
                        ,Css.height
                             (px ((Basics.toFloat ViewVariables.inputHeight)-4.0))
+                       ,Css.backgroundColor
+                            (case Dict.get str BuiltIn.builtInVariables of
+                                 Just val -> ViewVariables.textInputColorVariable
+                                 Nothing -> ViewVariables.textInputColor)
                        ,Css.textAlign Css.center
                        ,Css.padding (px 0)
                        ,Css.border (px 2)]]
