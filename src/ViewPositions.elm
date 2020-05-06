@@ -62,13 +62,20 @@ blockPositionsToPositionList func blockPositions =
                             Ok (pos :: positions)
 
 -- gets extra space for the outputs of a call
+countOutputsBefore : (List Input) -> Int -> Int
+countOutputsBefore inputs threshhold =
+    if (threshhold == 0)
+    then 0
+    else
+        (case inputs of
+             [] -> 0
+             (input::rest) ->
+                 (case input of
+                      Output id -> 1 + (countOutputsBefore rest (threshhold-1))
+                      _ -> countOutputsBefore rest (threshhold-1)))
+
 countOutputs inputs =
-    case inputs of
-        [] -> 0
-        (input::rest) ->
-            case input of
-                Output id -> 1 + (countOutputs rest)
-                _ -> countOutputs rest
+    (countOutputsBefore inputs (List.length inputs))
                            
 callLinesSpace call =
     (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock

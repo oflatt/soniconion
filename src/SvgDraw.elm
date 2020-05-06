@@ -71,20 +71,20 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : String -> List (Svg.Attribute Msg) -> Int -> Int -> Id -> Int -> String -> (Svg Msg)
-drawTextInput str events xpos ypos id index domId =
+drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> Int -> Int -> String -> (Svg Msg)
+drawTextInput call str events xpos ypos index domId =
     Svg.foreignObject
         (events ++
              [x (String.fromInt (xpos - (ViewVariables.inputWidth//2)))
-             ,y (String.fromInt (ypos-(ViewVariables.inputHeight//2)))
+             ,y (String.fromInt (ypos - (ViewVariables.inputHeight//2)))
              ,width (String.fromInt ViewVariables.inputWidth)
              ,height (String.fromInt (ViewVariables.inputHeight))])
         [toUnstyled
              (input
                   [Html.Styled.Attributes.value str
-                  ,Html.Styled.Events.onInput (InputUpdate id index)
+                  ,Html.Styled.Events.onInput (InputUpdate call.id index)
                   ,Html.Styled.Attributes.id domId
-                  ,onFocus (InputHighlight id index)
+                  ,onFocus (InputHighlight call.id index)
                   ,css [Css.width
                             (px ((Basics.toFloat ViewVariables.inputWidth)-4.0))
                        ,Css.height
@@ -189,9 +189,9 @@ functionNameshape call viewStructure =
         Nothing ->
             errorSvgNode "function call without block pos"
                         
+
                         
-                        
-drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing =
+drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing =
     case routing of
         Nothing -> (errorSvgNode "got nothing where expected routing")
         Just routeOffset ->
@@ -202,6 +202,9 @@ drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted r
                         if routeOffset > 0
                         then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
                         else (Tuple.first otherBlockPos) + ViewVariables.outputNodeX
+                lastY =
+                    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                    - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
                 linepoints =
                     [
                      ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
@@ -214,10 +217,10 @@ drawConnector blockPos inputCounter otherBlockPos inputEvent isLineHighlighted r
                     ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
                     -- down to other block
                     ,lineX
-                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - (ViewVariables.lineSpaceBeforeBlock * (1 + inputCounter))
+                    ,lastY
                     -- above node by inputcounter spacing
                     ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
-                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius) - (ViewVariables.lineSpaceBeforeBlock * (1 + inputCounter))
+                    ,lastY
                         
                     -- on block node
                     ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))

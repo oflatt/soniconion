@@ -26,7 +26,7 @@ toolbarWidth windowWidth = viewportWidth // 4
 functionXSpacing = 100
 
 blockWidth = 200
-blockHeight = blockWidth // 3
+blockHeight = blockWidth // 4
 blockSpacing = blockHeight // 6
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing
@@ -39,7 +39,7 @@ lineXSpace = blockHeight // 2
 lineWidth = "4"
 lineSpaceBeforeBlock = blockSpacing
                
-nodeRadius = blockHeight // 8
+nodeRadius = blockHeight // 7
 nodePadding = nodeRadius * 4
 nodeSpacing = nodeRadius * 6
               
@@ -49,7 +49,7 @@ outputNodeX = blockWidth // 2
 indexToNodeX index = index * nodeSpacing + nodePadding
 
 inputWidth = (nodeSpacing - nodeRadius)
-inputHeight = nodeRadius * 2
+inputHeight = floor ((toFloat nodeRadius) * 2.5)
                      
 toolbarProportion = 0.25
 
