@@ -67,5 +67,4 @@ namedFrequenciesForOffset offset =
             Nothing -> log "bad get names music" []
 
 namedFrequencies =
-    Dict.fromList
-        (List.concatMap namedFrequenciesForOffset (List.range 0 offsetLimit))
+    (List.concatMap namedFrequenciesForOffset (List.range 0 offsetLimit))

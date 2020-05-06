@@ -1,5 +1,6 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
-                        ,specialFunctionList, waveFunctions, specialFunctions, ArgList)
+                        ,specialFunctionList, waveFunctions, specialFunctions, ArgList, builtInVariables)
+import MusicTheory
 import Dict exposing (Dict)
 import Model exposing (Function, Call, Input(..), Id)
 
@@ -35,7 +36,7 @@ specialFunctions = Dict.fromList builtInFunctionList
 builtInVariables : Dict String Float
 builtInVariables =
     Dict.fromList
-        []
+        MusicTheory.namedFrequencies
 
 callFromSpec spec id =
     constructCall id (Tuple.first spec)

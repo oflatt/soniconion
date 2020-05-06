@@ -25,16 +25,21 @@ makeIdToIndex func dict index =
 
 inputToValue input idToIndex =
     case input of
-        Output o ->
-            case Dict.get o idToIndex of
+        Output output ->
+            case Dict.get output idToIndex of
                 Just index -> Ok (StackIndex index)
                 Nothing -> Err "Invalid input found" -- this should never happen, since the ui should disallow actions that lead to it
-        Text t ->
-            case String.toFloat t of
-                Nothing -> Err "Could not parse number"
-                Just f -> Ok (ConstV f)
+        Text text ->
+            case Dict.get text BuiltIn.builtInVariables of
+                Nothing ->
+                    (case String.toFloat text of
+                         Nothing -> Err "Could not parse number"
+                         Just float -> Ok (ConstV float))
+                Just value -> Ok (ConstV value)
         Hole -> Err "No argument supplied to a function call"
 
+                
+                
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)
 inputsToValues inputs idToIndex =
     case inputs of
