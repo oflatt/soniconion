@@ -6483,7 +6483,7 @@ var $author$project$ViewPositions$countOutputs = function (inputs) {
 		inputs,
 		$elm$core$List$length(inputs));
 };
-var $author$project$ViewVariables$lineSpaceBeforeBlock = $author$project$ViewVariables$blockSpacing;
+var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewVariables$blockSpacing * 3) / 2) | 0;
 var $author$project$ViewPositions$callLinesSpace = function (call) {
 	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
 };
@@ -6493,7 +6493,7 @@ var $author$project$ViewPositions$BlockPosition = F3(
 	});
 var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
 var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
-var $author$project$ViewVariables$inputFontSizePercent = 0.7;
+var $author$project$ViewVariables$inputFontSizePercent = 0.85;
 var $author$project$ViewVariables$inputHeight = $elm$core$Basics$floor($author$project$ViewVariables$nodeRadius * 2.5);
 var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * 0.5) * $author$project$ViewVariables$inputFontSizePercent;
 var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
@@ -10495,7 +10495,7 @@ var $author$project$SvgDraw$drawNode = F4(
 						$elm$svg$Svg$Attributes$r(
 						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
 						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt(inputPosition.a + ((inputPosition.b / 4) | 0))),
+						$elm$core$String$fromInt(inputPosition.a + ((inputPosition.b / 2) | 0))),
 						$elm$svg$Svg$Attributes$cy(
 						$elm$core$String$fromInt(ypos)),
 						$elm$svg$Svg$Attributes$fill(
@@ -11174,7 +11174,7 @@ var $author$project$SvgDraw$drawConnector = F7(
 				var _v1 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
 				if (_v1.$ === 'Just') {
 					var inputPos = _v1.a;
-					return inputPos.a;
+					return inputPos.a + $author$project$ViewVariables$nodeRadius;
 				} else {
 					return -100;
 				}
