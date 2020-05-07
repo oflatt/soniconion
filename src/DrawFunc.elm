@@ -1,6 +1,6 @@
 module DrawFunc exposing (drawFuncWithConnections)
 import Model exposing (..)
-import ViewPositions exposing (BlockPositions, CallLineRoute, BlockPos, ViewStructure)
+import ViewPositions exposing (BlockPositions, CallLineRoute, BlockPosition, ViewStructure)
 import ViewVariables
 import SvgDraw
 import Update exposing (nodeInputId, nodeOutputId)
@@ -30,14 +30,15 @@ drawCall: Call -> Int ->  ViewStructure -> (Svg Msg)
 drawCall call counter viewStructure =
     SvgDraw.drawBuiltIn call counter viewStructure
 
-drawOutputLine : Call -> BlockPos -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Maybe Int -> Id -> (Svg Msg)
+drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Maybe Int -> Id -> (Svg Msg)
 drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlighted routing outputId =
     case Dict.get outputId viewStructure.blockPositions of
         Nothing -> SvgDraw.errorSvgNode "Can't find line output"
         Just otherBlockPos ->
             SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing
 
-                
+
+drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure -> Maybe Int -> Svg.Svg Msg
 drawInput call input blockPos inputCounter viewStructure routing =
     let nodeEvents =
             if viewStructure.isToolbar
@@ -53,11 +54,16 @@ drawInput call input blockPos inputCounter viewStructure routing =
                 InputSelected inputId inputIndex ->
                     (inputId == call.id) && (inputCounter == inputIndex)
                 _ -> False
+        nodePosition: ViewPositions.InputPosition
+        nodePosition =
+            case (Dict.get inputCounter blockPos.inputPositions) of
+                Just nodePos -> nodePos
+                Nothing -> (-100, -100) -- something went wrong
         nodeWithEvent =
             (\_ ->
                  (SvgDraw.drawNodeWithEvent
-                      ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                      ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                      nodePosition
+                      (blockPos.ypos + ViewVariables.nodeRadius)
                       nodeEvents
                       highlightEvent
                       inputStringId
@@ -82,8 +88,8 @@ drawInput call input blockPos inputCounter viewStructure routing =
                      call
                      str
                      nodeEvents
-                     ((Tuple.first blockPos) + ViewVariables.indexToNodeX inputCounter)
-                     ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                     nodePosition
+                     (blockPos.ypos + ViewVariables.nodeRadius)
                      inputCounter
                      inputStringId)
             Hole -> (nodeWithEvent ())
@@ -91,7 +97,7 @@ drawInput call input blockPos inputCounter viewStructure routing =
                         
 drawInputLines call inputs blockPos inputCounter viewStructure lineRouting =
     case inputs of
-        [] -> [SvgDraw.nodeEvent 0 0 (OutputHighlight call.id) (nodeOutputId call.id)]
+        [] -> [SvgDraw.nodeEvent (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id)]
         (input::rest) ->
             case lineRouting of
                 [] -> [SvgDraw.errorSvgNode "not enough routings for call"]
@@ -127,8 +133,8 @@ drawCallEnding call blockPositions mouseState =
                         _ -> False
             in
                 (SvgDraw.drawNode
-                     (ViewVariables.outputNodeX + (Tuple.first blockPos))
-                     (ViewVariables.outputNodeY + (Tuple.second blockPos))
+                     ((ViewVariables.outputNodeX + blockPos.xpos-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
+                     (ViewVariables.outputNodeY + blockPos.ypos)
                      [(SvgDraw.svgLeftClick (OutputClick call.id))
                      ,(SvgDraw.svgRightClick (OutputRightClick call.id))]
                      isOutputHighlighted)

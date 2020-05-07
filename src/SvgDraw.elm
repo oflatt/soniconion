@@ -7,7 +7,7 @@ import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 
 
-import ViewPositions exposing (BlockPositions, ViewStructure)
+import ViewPositions exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, LineRouting)
 
 import Json.Decode as Json
 import Css exposing (px)
@@ -71,13 +71,13 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> Int -> Int -> String -> (Svg Msg)
-drawTextInput call str events xpos ypos index domId =
+drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> InputPosition -> Int -> Int -> String -> (Svg Msg)
+drawTextInput call str events inputPos ypos index domId =
     Svg.foreignObject
         (events ++
-             [x (String.fromInt (xpos - (ViewVariables.inputWidth//2)))
+             [x (String.fromInt (Tuple.first inputPos))
              ,y (String.fromInt (ypos - (ViewVariables.inputHeight//2)))
-             ,width (String.fromInt ViewVariables.inputWidth)
+             ,width (String.fromInt (Tuple.second inputPos))
              ,height (String.fromInt (ViewVariables.inputHeight))])
         [toUnstyled
              (input
@@ -85,8 +85,10 @@ drawTextInput call str events xpos ypos index domId =
                   ,Html.Styled.Events.onInput (InputUpdate call.id index)
                   ,Html.Styled.Attributes.id domId
                   ,onFocus (InputHighlight call.id index)
-                  ,css [Css.width
-                            (px ((Basics.toFloat ViewVariables.inputWidth)-4.0))
+                  ,css [Css.fontFamily Css.monospace
+                       ,Css.fontSize (Css.pct (100*ViewVariables.inputFontSizePercent))
+                       ,Css.width
+                            (px ((Basics.toFloat (Tuple.second inputPos))-4.0))
                        ,Css.height
                             (px ((Basics.toFloat ViewVariables.inputHeight)-4.0))
                        ,Css.backgroundColor
@@ -99,9 +101,9 @@ drawTextInput call str events xpos ypos index domId =
                   [])]
 
 
-nodeEvent xpos ypos event domId =
+nodeEvent inputPos ypos event domId =
     Svg.foreignObject
-        [x (String.fromInt xpos)
+        [x (String.fromInt (Tuple.first inputPos))
         ,y (String.fromInt ypos)
         ,width (String.fromInt ViewVariables.nodeRadius)
         ,height (String.fromInt ViewVariables.nodeRadius)]
@@ -112,23 +114,22 @@ nodeEvent xpos ypos event domId =
               ,(onFocus event)]
              [])]
 
-drawNode xpos ypos events isHighlighted =
+drawNode inputPosition ypos events isHighlighted =
     (circle (events ++
-                 [r (String.fromInt ViewVariables.nodeRadius)
-                 , cx (String.fromInt xpos)
+                 [r (String.fromInt ((Tuple.second inputPosition)//2))
+                 , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//4)))
                  , cy (String.fromInt ypos)
                  , fill (if isHighlighted then "blue" else "black")])
          [])
 
         
 -- nodes has inputs underneath them so that they can be tabbed
-
-drawNodeWithEvent xpos ypos events highlightevent eventId isHighlighted =
+drawNodeWithEvent inputPos ypos events highlightevent eventId isHighlighted =
     Svg.g
         []
         [
-         nodeEvent xpos ypos highlightevent eventId
-        ,drawNode xpos ypos events isHighlighted
+         nodeEvent inputPos ypos highlightevent eventId
+        ,drawNode inputPos ypos events isHighlighted
         ]
 
         
@@ -170,7 +171,7 @@ functionNameshape call viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.node "g"
-                ((svgTranslate (Tuple.first blockPos) (Tuple.second blockPos)) ::
+                ((svgTranslate blockPos.xpos blockPos.ypos) ::
                      (if viewStructure.isToolbar
                       then
                           [(svgLeftClick (SpawnBlock call.functionName))]
@@ -194,41 +195,45 @@ functionNameshape call viewStructure =
             errorSvgNode "function call without block pos"
                         
 
-                        
+drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Maybe Int -> Svg Msg
 drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing =
     case routing of
         Nothing -> (errorSvgNode "got nothing where expected routing")
         Just routeOffset ->
             let lineX =
                     if routeOffset < 0
-                    then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset
+                    then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset
                     else
                         if routeOffset > 0
-                        then (Tuple.first otherBlockPos) + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
-                        else (Tuple.first otherBlockPos) + ViewVariables.outputNodeX
+                        then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
+                        else otherBlockPos.xpos + ViewVariables.outputNodeX
                 lastY =
-                    ((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                    (blockPos.ypos + ViewVariables.nodeRadius)
                     - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
+                nodeX =
+                    case (Dict.get inputCounter blockPos.inputPositions ) of
+                        Just inputPos -> (Tuple.first inputPos)
+                        Nothing -> -100 -- something went wrong
                 linepoints =
                     [
-                     ((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
-                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY)
+                     (otherBlockPos.xpos + ViewVariables.outputNodeX)
+                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY)
                     -- just below
-                    ,((Tuple.first otherBlockPos) + ViewVariables.outputNodeX)
-                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+                    ,(otherBlockPos.xpos + ViewVariables.outputNodeX)
+                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
                     -- to right or left
                     ,lineX
-                    ,((Tuple.second otherBlockPos) + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
                     -- down to other block
                     ,lineX
                     ,lastY
                     -- above node by inputcounter spacing
-                    ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
+                    ,(nodeX + blockPos.xpos)
                     ,lastY
                         
                     -- on block node
-                    ,((ViewVariables.indexToNodeX inputCounter) + (Tuple.first blockPos))
-                    ,((Tuple.second blockPos) + ViewVariables.nodeRadius)
+                    ,(nodeX + blockPos.xpos)
+                    ,(blockPos.ypos + ViewVariables.nodeRadius)
                     ]
             in
                 taxiLine

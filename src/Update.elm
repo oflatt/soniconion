@@ -149,7 +149,7 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                 case Dict.get currentCall.id blockPositions of
                     Nothing -> log "No block in placeBlockAtPos" func
                     Just currentBlockPos ->
-                        if (Tuple.second blockPos) < (Tuple.second currentBlockPos)
+                        if blockPos.ypos < currentBlockPos.ypos
                         then
                             call :: (finishBlockAtPos func blockId)
                         else

@@ -2,7 +2,7 @@ module DrawProgram exposing (drawProgram)
 import DrawFunc exposing (drawFuncWithConnections)
 import DrawToolbar
 import Model exposing (..)
-import ViewPositions exposing (BlockPositions, CallLineRoute, BlockPos, ViewStructure)
+import ViewPositions
 import ViewVariables
 import SvgDraw
 import Update exposing (nodeInputId, nodeOutputId)

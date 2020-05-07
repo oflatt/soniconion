@@ -36,11 +36,16 @@ getMovedInfo func mouseState mouseSvgCoordinates =
                                   ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
                     else getMovedInfo calls mouseState mouseSvgCoordinates
                 _ -> getMovedInfo calls mouseState mouseSvgCoordinates
-
-type alias BlockPos = (Int, Int)
+                     
+type alias InputPosition = (Int, Int)
+                     
+type alias BlockPosition = {xpos: Int
+                           ,ypos: Int
+                           ,inputPositions: Dict Int InputPosition}
+    
 type alias CallLineRoute = List (Maybe Int) -- the relative positions of the outside of the line to the middle, in increments
 type alias LineRouting = List CallLineRoute
-type alias BlockPositions = Dict Id BlockPos
+type alias BlockPositions = Dict Id BlockPosition
 type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
                            ,sortedFunc : Function
@@ -80,11 +85,30 @@ countOutputs inputs =
 callLinesSpace call =
     (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
 
+getInputWidth input =
+    case input of
+        Text str -> ViewVariables.numCharactersToInputWidth (String.length str)
+        _ -> ViewVariables.nodeRadius*2
+        
+inputPositionList inputs counter currentX =
+    case inputs of
+        [] -> []
+        (input::rest) ->
+            let width = getInputWidth input
+            in
+                (counter, (currentX, width)) :: (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing))
+        
+makeInputPositions call =
+    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding)
+
+makeBlockPosition xpos ypos call =
+    (BlockPosition xpos ypos (makeInputPositions call))
+        
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Id -> Maybe MovedBlockInfo -> Function -> Int -> BlockPositions
 getAllBlockPositions idToSkip maybeMoveInfo func currentY =
     let iterate = (\call calls ->
-                       Dict.insert call.id (0, currentY+(callLinesSpace call))
+                       Dict.insert call.id (makeBlockPosition 0 (currentY+(callLinesSpace call)) call)
                            (getAllBlockPositions idToSkip maybeMoveInfo calls
                                 (currentY+ViewVariables.blockSpace+(callLinesSpace call))))
     in
@@ -119,7 +143,10 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset
         positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func 0
     in
         case moveInfo of
-            Just info -> Dict.insert info.movedCall.id info.movedPos positionsWithoutMoved
+            Just info -> (Dict.insert
+                              info.movedCall.id
+                              (makeBlockPosition (Tuple.first info.movedPos) (Tuple.second info.movedPos) info.movedCall)
+                              positionsWithoutMoved)
             Nothing -> positionsWithoutMoved
 
 type alias IdToPos = Dict Id Int
@@ -132,7 +159,7 @@ idToPosAdd func dict currentPos =
 blockSorter blockPositions call =
     case Dict.get call.id blockPositions of
         Nothing -> -100 -- todo some sort of error handeling
-        Just pos -> Tuple.second pos
+        Just pos -> pos.ypos
                    
 
 makeIdToPos : Function -> BlockPositions -> (Function, IdToPos)
@@ -246,6 +273,7 @@ getLineRouting func connectedArray idToPos isLeft=
              (Tuple.first routing) ::
                 (getLineRouting calls connectedArray idToPos (Tuple.second routing))
 
+                    
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         madePos = makeIdToPos func blockPositions

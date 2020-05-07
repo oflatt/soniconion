@@ -40,16 +40,19 @@ lineWidth = "4"
 lineSpaceBeforeBlock = blockSpacing
                
 nodeRadius = blockHeight // 7
-nodePadding = nodeRadius * 4
-nodeSpacing = nodeRadius * 6
-              
+inputPadding = nodeRadius * 3
+inputSpacing = nodeRadius * 1
+
+
+               
 outputNodeY = blockHeight - nodeRadius
 outputNodeX = blockWidth // 2
 
-indexToNodeX index = index * nodeSpacing + nodePadding
-
-inputWidth = (nodeSpacing - nodeRadius)
 inputHeight = floor ((toFloat nodeRadius) * 2.5)
+
+inputFontSizePercent = 0.7
+characterOverestimate = (toFloat inputHeight) * 0.5 * inputFontSizePercent
+numCharactersToInputWidth numChars = floor (characterOverestimate * (toFloat (numChars+1)))
                      
 toolbarProportion = 0.25
 
