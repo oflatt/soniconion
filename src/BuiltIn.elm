@@ -1,10 +1,10 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
                         ,ArgList(..) , builtInVariables, BuiltInVariableValue(..))
 import MusicTheory
-import Compiler.CompileBuiltIn exposing (buildWave)
+import Compiler.CompileBuiltIn exposing (buildWave, buildUnary)
 import Dict exposing (Dict)
 import Model exposing (Function, Call, Input(..), Id)
-import Compiler.CompModel exposing (systemValues)
+import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
 
 -- infinite has a min number of args with the names of the args
 -- then the name of the rest of the args
@@ -23,10 +23,14 @@ waveList : List BuiltInSpec
 waveList = [(BuiltInSpec
                  "sine"
                  (Finite ["time", "frequency", "duration"])
-                 (Compiler.CompModel.CompileExprFunction buildWave))]
+                 (CompileExprFunction buildWave))]
 
+unaryList : List BuiltInSpec
+unaryList = [(BuiltInSpec "+" (Infinite ["num"] "nums") (CompileExprFunction buildUnary))
+ ]
+           
 builtInFunctionList : BuiltInList
-builtInFunctionList = waveList
+builtInFunctionList = waveList ++ unaryList
 
 
 nameTuple builtInList =
