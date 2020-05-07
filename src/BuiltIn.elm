@@ -1,14 +1,18 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
-                        ,specialFunctionList, waveFunctions, specialFunctions, ArgList, builtInVariables)
+                        ,specialFunctionList, waveFunctions, specialFunctions, ArgList, builtInVariables,
+                        BuiltInVariableValue(..))
 import MusicTheory
 import Dict exposing (Dict)
 import Model exposing (Function, Call, Input(..), Id)
+import Compiler.CompModel exposing (systemValues)
 
 -- infinite has a min number of args with the names of the args
 -- then the name of the rest of the args
 type ArgList = Finite (List String)
              | Infinite (List String) String
 
+type BuiltInVariableValue = Number Float
+                          | StackReference Int
 
 type alias BuiltInSpec = (String, ArgList)
 type alias BuiltInList = List BuiltInSpec
@@ -28,15 +32,27 @@ builtInFunctionList = waveList ++ specialFunctionList
 builtInFunctions : Dict String ArgList
 builtInFunctions =
     Dict.fromList builtInFunctionList
+        
 waveFunctions = Dict.fromList waveList
-specialFunctions = Dict.fromList builtInFunctionList
 
+makeBuiltInNumber pair =
+    ((Tuple.first pair), Number (Tuple.second pair))
 
+makeStackIndices pairs counter =
+    case pairs of
+        [] -> []
+        (pair::rest) -> ((Tuple.first pair), StackReference counter)
+                        :: (makeStackIndices rest (counter+1))
+                
+specialFunctions = Dict.fromList specialFunctionList
+                   
 
-builtInVariables : Dict String Float
+builtInVariables : Dict String BuiltInVariableValue
 builtInVariables =
     Dict.fromList
-        MusicTheory.namedFrequencies
+        ((List.map makeBuiltInNumber MusicTheory.namedFrequencies)
+                        ++ (makeStackIndices systemValues 0))
+        
 
 callFromSpec spec id =
     constructCall id (Tuple.first spec)

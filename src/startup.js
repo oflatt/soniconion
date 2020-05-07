@@ -6,7 +6,12 @@ var app = Elm.Main.init({
     outerWindowHeight : window.outerHeight}
     });
 
+document.addEventListener("mousemove", onMouseMove)
 
+function onMouseMove(event) {
+    window.mouseXPos = event.clientX;
+    window.mouseYPos = event.clientY;
+}
 
 // a note object has a frequency field, and nothing else
 

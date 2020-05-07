@@ -5,6 +5,11 @@ import Array exposing (Array)
 
 -- Environment : List Value
 
+systemValues : List (String, String)
+systemValues =
+    [("time", "time")
+    ,("mouseX", "window.mouseXPos")
+    ,("mouseY", "window.mouseYPos")]
 
 type Value = StackIndex Int
            | ConstV Float

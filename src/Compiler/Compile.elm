@@ -5,6 +5,7 @@ import Dict exposing (Dict)
 import BuiltIn exposing (waveFunctions)
 
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..))
+import Compiler.CompModel as CompModel
 import Compiler.OnionToExpr exposing (onionToCompModel)
     
 javascriptHead =
@@ -37,7 +38,8 @@ buildValue val =
             "stack[" ++ (String.fromInt i) ++ "]"
         ConstV c ->
             String.fromFloat c
-        
+
+                
 buildWave valList =
     case valList of
         (time::frequency::duration::[]) ->
@@ -94,7 +96,17 @@ buildMethods compModel =
         [] -> [javascriptTail]
         (method::methods) ->
             (buildMethodString method) :: (buildMethods methods)
-        
+
+pushSystemValue sysVal =
+    String.join "" ["stack.push("
+                   ,(Tuple.second sysVal)
+                   ,");"]
+                
+systemValues : String
+systemValues =
+    String.join ""
+        (List.map pushSystemValue CompModel.systemValues)
+
                  
 -- compiles a model of a program into a javascript string
 -- this does no error checking- all type checking and validity checks
@@ -104,7 +116,7 @@ compile : CompModel -> String
 compile compModel =
     String.join
         ""
-        (javascriptHead :: (buildMethods compModel))
+        (javascriptHead :: systemValues :: (buildMethods compModel))
 
 
 compileOnion onion =

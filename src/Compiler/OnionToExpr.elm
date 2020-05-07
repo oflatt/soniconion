@@ -1,7 +1,8 @@
 module Compiler.OnionToExpr exposing (onionToCompModel)
 import Model exposing (..)
-import BuiltIn exposing (builtInFunctions)
+import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..))
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel)
+import Compiler.CompModel as CompModel
 import Utils
 
 import Debug exposing (log)
@@ -35,7 +36,8 @@ inputToValue input idToIndex =
                     (case String.toFloat text of
                          Nothing -> Err "Could not parse number"
                          Just float -> Ok (ConstV float))
-                Just value -> Ok (ConstV value)
+                Just (Number value) -> Ok (ConstV value)
+                Just (StackReference index) -> Ok (StackIndex index)
         Hole -> Err "No argument supplied to a function call"
 
                 
@@ -81,7 +83,7 @@ onionToCompModel onion =
     case onion of
         [] -> Ok []
         (f::fs) ->
-            case functionToMethod f (makeIdToIndex f Dict.empty 0) of
+            case functionToMethod f (makeIdToIndex f Dict.empty (List.length CompModel.systemValues)) of
                 Ok method ->
                     case onionToCompModel fs of
                         Ok rest -> Ok (method :: rest)
