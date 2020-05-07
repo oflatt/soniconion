@@ -6487,6 +6487,56 @@ var $author$project$ViewVariables$lineSpaceBeforeBlock = $author$project$ViewVar
 var $author$project$ViewPositions$callLinesSpace = function (call) {
 	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
 };
+var $author$project$ViewPositions$BlockPosition = F3(
+	function (xpos, ypos, inputPositions) {
+		return {inputPositions: inputPositions, xpos: xpos, ypos: ypos};
+	});
+var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
+var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
+var $author$project$ViewVariables$inputFontSizePercent = 0.7;
+var $author$project$ViewVariables$inputHeight = $elm$core$Basics$floor($author$project$ViewVariables$nodeRadius * 2.5);
+var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * 0.5) * $author$project$ViewVariables$inputFontSizePercent;
+var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
+	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
+};
+var $author$project$ViewPositions$getInputWidth = function (input) {
+	if (input.$ === 'Text') {
+		var str = input.a;
+		return $author$project$ViewVariables$numCharactersToInputWidth(
+			$elm$core$String$length(str));
+	} else {
+		return $author$project$ViewVariables$nodeRadius * 2;
+	}
+};
+var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
+var $author$project$ViewPositions$inputPositionList = F3(
+	function (inputs, counter, currentX) {
+		if (!inputs.b) {
+			return _List_Nil;
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			var width = $author$project$ViewPositions$getInputWidth(input);
+			return A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(currentX, width)),
+				A3($author$project$ViewPositions$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing));
+		}
+	});
+var $author$project$ViewPositions$makeInputPositions = function (call) {
+	return $elm$core$Dict$fromList(
+		A3($author$project$ViewPositions$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding));
+};
+var $author$project$ViewPositions$makeBlockPosition = F3(
+	function (xpos, ypos, call) {
+		return A3(
+			$author$project$ViewPositions$BlockPosition,
+			xpos,
+			ypos,
+			$author$project$ViewPositions$makeInputPositions(call));
+	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
 	return y;
@@ -6500,9 +6550,11 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 					return A3(
 						$elm$core$Dict$insert,
 						call.id,
-						_Utils_Tuple2(
+						A3(
+							$author$project$ViewPositions$makeBlockPosition,
 							0,
-							currentY + $author$project$ViewPositions$callLinesSpace(call)),
+							currentY + $author$project$ViewPositions$callLinesSpace(call),
+							call),
 						A4(
 							$author$project$ViewPositions$getAllBlockPositions,
 							idToSkip,
@@ -6626,7 +6678,11 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 		var positionsWithoutMoved = A4($author$project$ViewPositions$getAllBlockPositions, idToSkip, moveInfo, func, 0);
 		if (moveInfo.$ === 'Just') {
 			var info = moveInfo.a;
-			return A3($elm$core$Dict$insert, info.movedCall.id, info.movedPos, positionsWithoutMoved);
+			return A3(
+				$elm$core$Dict$insert,
+				info.movedCall.id,
+				A3($author$project$ViewPositions$makeBlockPosition, info.movedPos.a, info.movedPos.b, info.movedCall),
+				positionsWithoutMoved);
 		} else {
 			return positionsWithoutMoved;
 		}
@@ -6693,7 +6749,7 @@ var $author$project$Update$placeBlockAtPos = F5(
 						return A2($elm$core$Debug$log, 'No block in placeBlockAtPos', func);
 					} else {
 						var currentBlockPos = _v1.a;
-						return (_Utils_cmp(blockPos.b, currentBlockPos.b) < 0) ? A2(
+						return (_Utils_cmp(blockPos.ypos, currentBlockPos.ypos) < 0) ? A2(
 							$elm$core$List$cons,
 							call,
 							A2($author$project$Update$finishBlockAtPos, func, blockId)) : A2(
@@ -6924,7 +6980,7 @@ var $author$project$Compiler$Compile$javascriptTail = A2(
 	$elm$core$String$join,
 	'',
 	_List_fromArray(
-		['update(state, notes);', 'function recur() {', 'step(state);', '}', 'window.requestAnimationFrame(recur);', '}', 'step(makeInitialState());']));
+		['update(state, notes);', 'function recur() {', 'step(state);', '}', 'window.setTimeout(recur, 0);', '}', 'step(makeInitialState());']));
 var $author$project$Compiler$Compile$buildMethods = function (compModel) {
 	if (!compModel.b) {
 		return _List_fromArray(
@@ -6943,6 +6999,23 @@ var $author$project$Compiler$Compile$javascriptHead = A2(
 	'',
 	_List_fromArray(
 		['var startTime = getTime();', 'function step(state){', 'var stack = [];', 'var notes = [];', 'var time = getTime()-startTime;']));
+var $author$project$Compiler$Compile$pushSystemValue = function (sysVal) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			['stack.push(', sysVal.b, ');']));
+};
+var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
+	[
+		_Utils_Tuple2('time', 'time'),
+		_Utils_Tuple2('mouseX', 'window.mouseXPos'),
+		_Utils_Tuple2('mouseY', 'window.mouseYPos')
+	]);
+var $author$project$Compiler$Compile$systemValues = A2(
+	$elm$core$String$join,
+	'',
+	A2($elm$core$List$map, $author$project$Compiler$Compile$pushSystemValue, $author$project$Compiler$CompModel$systemValues));
 var $author$project$Compiler$Compile$compile = function (compModel) {
 	return A2(
 		$elm$core$String$join,
@@ -6950,7 +7023,10 @@ var $author$project$Compiler$Compile$compile = function (compModel) {
 		A2(
 			$elm$core$List$cons,
 			$author$project$Compiler$Compile$javascriptHead,
-			$author$project$Compiler$Compile$buildMethods(compModel)));
+			A2(
+				$elm$core$List$cons,
+				$author$project$Compiler$Compile$systemValues,
+				$author$project$Compiler$Compile$buildMethods(compModel))));
 };
 var $author$project$Compiler$CompModel$Expr = F3(
 	function (functionName, id, children) {
@@ -6962,13 +7038,580 @@ var $author$project$Compiler$CompModel$ConstV = function (a) {
 var $author$project$Compiler$CompModel$StackIndex = function (a) {
 	return {$: 'StackIndex', a: a};
 };
+var $author$project$BuiltIn$Number = function (a) {
+	return {$: 'Number', a: a};
+};
+var $author$project$BuiltIn$makeBuiltInNumber = function (pair) {
+	return _Utils_Tuple2(
+		pair.a,
+		$author$project$BuiltIn$Number(pair.b));
+};
+var $author$project$BuiltIn$StackReference = function (a) {
+	return {$: 'StackReference', a: a};
+};
+var $author$project$BuiltIn$makeStackIndices = F2(
+	function (pairs, counter) {
+		if (!pairs.b) {
+			return _List_Nil;
+		} else {
+			var pair = pairs.a;
+			var rest = pairs.b;
+			return A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(
+					pair.a,
+					$author$project$BuiltIn$StackReference(counter)),
+				A2($author$project$BuiltIn$makeStackIndices, rest, counter + 1));
+		}
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Utils$dictAppend = F3(
+	function (dict, key, val) {
+		return A3(
+			$elm$core$Dict$update,
+			key,
+			function (maybeoldlist) {
+				if (maybeoldlist.$ === 'Just') {
+					var oldlist = maybeoldlist.a;
+					return $elm$core$Maybe$Just(
+						A2($elm$core$List$cons, val, oldlist));
+				} else {
+					return $elm$core$Maybe$Just(
+						_List_fromArray(
+							[val]));
+				}
+			},
+			dict);
+	});
+var $author$project$Utils$dictAppendAll = F2(
+	function (dict, list) {
+		if (!list.b) {
+			return dict;
+		} else {
+			var ele = list.a;
+			var eles = list.b;
+			return A3(
+				$author$project$Utils$dictAppend,
+				A2($author$project$Utils$dictAppendAll, dict, eles),
+				ele.a,
+				ele.b);
+		}
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$MusicTheory$getThisFlats = F2(
+	function (index, letter) {
+		return _Utils_Tuple2(
+			A2($elm$core$Basics$modBy, 12, index - 1),
+			letter + 'b');
+	});
+var $author$project$MusicTheory$getThisSharps = F2(
+	function (index, letter) {
+		return _Utils_Tuple2(
+			A2($elm$core$Basics$modBy, 12, index + 1),
+			letter + 's');
+	});
+var $author$project$MusicTheory$addSharpsFlats = F2(
+	function (dict, index) {
+		if (index < 12) {
+			var _v0 = A2($elm$core$Dict$get, index, dict);
+			if (_v0.$ === 'Just') {
+				var letters = _v0.a;
+				return A2(
+					$author$project$Utils$dictAppendAll,
+					A2(
+						$author$project$Utils$dictAppendAll,
+						A2($author$project$MusicTheory$addSharpsFlats, dict, index + 1),
+						A2(
+							$elm$core$List$map,
+							$author$project$MusicTheory$getThisSharps(index),
+							letters)),
+					A2(
+						$elm$core$List$map,
+						$author$project$MusicTheory$getThisFlats(index),
+						letters));
+			} else {
+				return A2($elm$core$Debug$log, 'bad sharps flats', dict);
+			}
+		} else {
+			return dict;
+		}
+	});
+var $author$project$MusicTheory$letterDict = $elm$core$Dict$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			0,
+			_List_fromArray(
+				['C'])),
+			_Utils_Tuple2(1, _List_Nil),
+			_Utils_Tuple2(
+			2,
+			_List_fromArray(
+				['D'])),
+			_Utils_Tuple2(3, _List_Nil),
+			_Utils_Tuple2(
+			4,
+			_List_fromArray(
+				['E'])),
+			_Utils_Tuple2(
+			5,
+			_List_fromArray(
+				['F'])),
+			_Utils_Tuple2(6, _List_Nil),
+			_Utils_Tuple2(
+			7,
+			_List_fromArray(
+				['G'])),
+			_Utils_Tuple2(8, _List_Nil),
+			_Utils_Tuple2(
+			9,
+			_List_fromArray(
+				['A'])),
+			_Utils_Tuple2(10, _List_Nil),
+			_Utils_Tuple2(
+			11,
+			_List_fromArray(
+				['B']))
+		]));
+var $author$project$MusicTheory$letterDictWithSharpsFlats = A2($author$project$MusicTheory$addSharpsFlats, $author$project$MusicTheory$letterDict, 0);
+var $elm$core$Basics$pow = _Basics_pow;
+var $author$project$MusicTheory$offsetToFrequency = function (offset) {
+	return 440.0 * A2($elm$core$Basics$pow, 2.0, (offset - ((4 * 12) + 9)) / 12.0);
+};
+var $author$project$MusicTheory$offsetToOctave = function (offset) {
+	return (offset / 12) | 0;
+};
+var $author$project$MusicTheory$tupleReversed = F2(
+	function (a, b) {
+		return _Utils_Tuple2(b, a);
+	});
+var $author$project$MusicTheory$namedFrequenciesForOffset = function (offset) {
+	var octave = $elm$core$String$fromInt(
+		$author$project$MusicTheory$offsetToOctave(offset));
+	var maybeLetters = A2(
+		$elm$core$Dict$get,
+		A2($elm$core$Basics$modBy, 12, offset),
+		$author$project$MusicTheory$letterDictWithSharpsFlats);
+	var frequency = $author$project$MusicTheory$offsetToFrequency(offset);
+	if (maybeLetters.$ === 'Just') {
+		var letters = maybeLetters.a;
+		return A2(
+			$elm$core$List$map,
+			$author$project$MusicTheory$tupleReversed(frequency),
+			A2(
+				$elm$core$List$map,
+				function (letter) {
+					return _Utils_ap(letter, octave);
+				},
+				letters));
+	} else {
+		return A2($elm$core$Debug$log, 'bad get names music', _List_Nil);
+	}
+};
+var $author$project$MusicTheory$offsetLimit = 12 * 8;
+var $author$project$MusicTheory$namedFrequencies = A2(
+	$elm$core$List$concatMap,
+	$author$project$MusicTheory$namedFrequenciesForOffset,
+	A2($elm$core$List$range, 0, $author$project$MusicTheory$offsetLimit));
+var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
+	_Utils_ap(
+		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
+		A2($author$project$BuiltIn$makeStackIndices, $author$project$Compiler$CompModel$systemValues, 0)));
 var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Compiler$OnionToExpr$inputToValue = F2(
 	function (input, idToIndex) {
 		switch (input.$) {
 			case 'Output':
-				var o = input.a;
-				var _v1 = A2($elm$core$Dict$get, o, idToIndex);
+				var output = input.a;
+				var _v1 = A2($elm$core$Dict$get, output, idToIndex);
 				if (_v1.$ === 'Just') {
 					var index = _v1.a;
 					return $elm$core$Result$Ok(
@@ -6977,14 +7620,27 @@ var $author$project$Compiler$OnionToExpr$inputToValue = F2(
 					return $elm$core$Result$Err('Invalid input found');
 				}
 			case 'Text':
-				var t = input.a;
-				var _v2 = $elm$core$String$toFloat(t);
+				var text = input.a;
+				var _v2 = A2($elm$core$Dict$get, text, $author$project$BuiltIn$builtInVariables);
 				if (_v2.$ === 'Nothing') {
-					return $elm$core$Result$Err('Could not parse number');
+					var _v3 = $elm$core$String$toFloat(text);
+					if (_v3.$ === 'Nothing') {
+						return $elm$core$Result$Err('Could not parse number');
+					} else {
+						var _float = _v3.a;
+						return $elm$core$Result$Ok(
+							$author$project$Compiler$CompModel$ConstV(_float));
+					}
 				} else {
-					var f = _v2.a;
-					return $elm$core$Result$Ok(
-						$author$project$Compiler$CompModel$ConstV(f));
+					if (_v2.a.$ === 'Number') {
+						var value = _v2.a.a;
+						return $elm$core$Result$Ok(
+							$author$project$Compiler$CompModel$ConstV(value));
+					} else {
+						var index = _v2.a.a;
+						return $elm$core$Result$Ok(
+							$author$project$Compiler$CompModel$StackIndex(index));
+					}
 				}
 			default:
 				return $elm$core$Result$Err('No argument supplied to a function call');
@@ -7108,7 +7764,11 @@ var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
 		var _v1 = A2(
 			$author$project$Compiler$OnionToExpr$functionToMethod,
 			f,
-			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f, $elm$core$Dict$empty, 0));
+			A3(
+				$author$project$Compiler$OnionToExpr$makeIdToIndex,
+				f,
+				$elm$core$Dict$empty,
+				$elm$core$List$length($author$project$Compiler$CompModel$systemValues)));
 		if (_v1.$ === 'Ok') {
 			var method = _v1.a;
 			var _v2 = $author$project$Compiler$OnionToExpr$onionToCompModel(fs);
@@ -7515,14 +8175,6 @@ var $rtfeldman$elm_css$Css$Structure$compactHelp = F2(
 var $rtfeldman$elm_css$Css$Structure$Keyframes = function (a) {
 	return {$: 'Keyframes', a: a};
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
 var $rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations = F2(
 	function (keyframesByName, compactedDeclarations) {
 		return A2(
@@ -7872,14 +8524,6 @@ var $rtfeldman$elm_css$Css$Structure$Output$prettyPrint = function (_v0) {
 					A2($elm$core$List$map, $rtfeldman$elm_css$Css$Structure$Output$prettyPrintDeclaration, declarations))
 				])));
 };
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
 var $rtfeldman$elm_css$Css$Structure$CounterStyle = function (a) {
 	return {$: 'CounterStyle', a: a};
 };
@@ -8337,7 +8981,6 @@ var $Skinney$murmur3$Murmur3$hashString = F2(
 	});
 var $rtfeldman$elm_css$Hash$murmurSeed = 15739;
 var $elm$core$String$fromList = _String_fromList;
-var $elm$core$Basics$modBy = _Basics_modBy;
 var $rtfeldman$elm_hex$Hex$unsafeToDigit = function (num) {
 	unsafeToDigit:
 	while (true) {
@@ -9683,7 +10326,6 @@ var $author$project$Model$SpawnBlock = function (a) {
 };
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
 var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
-var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
@@ -9767,7 +10409,7 @@ var $author$project$SvgDraw$functionNameshape = F2(
 				'g',
 				A2(
 					$elm$core$List$cons,
-					A2($author$project$SvgDraw$svgTranslate, blockPos.a, blockPos.b),
+					A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
 					viewStructure.isToolbar ? _List_fromArray(
 						[
 							$author$project$SvgDraw$svgLeftClick(
@@ -9842,7 +10484,7 @@ var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $author$project$SvgDraw$drawNode = F4(
-	function (xpos, ypos, events, isHighlighted) {
+	function (inputPosition, ypos, events, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$circle,
 			_Utils_ap(
@@ -9850,9 +10492,9 @@ var $author$project$SvgDraw$drawNode = F4(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$r(
-						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
 						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt(xpos)),
+						$elm$core$String$fromInt(inputPosition.a + ((inputPosition.b / 4) | 0))),
 						$elm$svg$Svg$Attributes$cy(
 						$elm$core$String$fromInt(ypos)),
 						$elm$svg$Svg$Attributes$fill(
@@ -9887,8 +10529,8 @@ var $author$project$DrawFunc$drawCallEnding = F3(
 			}();
 			return A4(
 				$author$project$SvgDraw$drawNode,
-				$author$project$ViewVariables$outputNodeX + blockPos.a,
-				$author$project$ViewVariables$outputNodeY + blockPos.b,
+				_Utils_Tuple2(($author$project$ViewVariables$outputNodeX + blockPos.xpos) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
+				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
 				_List_fromArray(
 					[
 						$author$project$SvgDraw$svgLeftClick(
@@ -10437,13 +11079,13 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
 var $author$project$SvgDraw$nodeEvent = F4(
-	function (xpos, ypos, event, domId) {
+	function (inputPos, ypos, event, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(xpos)),
+					$elm$core$String$fromInt(inputPos.a)),
 					$elm$svg$Svg$Attributes$y(
 					$elm$core$String$fromInt(ypos)),
 					$elm$svg$Svg$Attributes$width(
@@ -10466,21 +11108,16 @@ var $author$project$SvgDraw$nodeEvent = F4(
 				]));
 	});
 var $author$project$SvgDraw$drawNodeWithEvent = F6(
-	function (xpos, ypos, events, highlightevent, eventId, isHighlighted) {
+	function (inputPos, ypos, events, highlightevent, eventId, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$g,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A4($author$project$SvgDraw$nodeEvent, xpos, ypos, highlightevent, eventId),
-					A4($author$project$SvgDraw$drawNode, xpos, ypos, events, isHighlighted)
+					A4($author$project$SvgDraw$nodeEvent, inputPos, ypos, highlightevent, eventId),
+					A4($author$project$SvgDraw$drawNode, inputPos, ypos, events, isHighlighted)
 				]));
 	});
-var $author$project$ViewVariables$nodePadding = $author$project$ViewVariables$nodeRadius * 4;
-var $author$project$ViewVariables$nodeSpacing = $author$project$ViewVariables$nodeRadius * 6;
-var $author$project$ViewVariables$indexToNodeX = function (index) {
-	return (index * $author$project$ViewVariables$nodeSpacing) + $author$project$ViewVariables$nodePadding;
-};
 var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$lineWidth = '4';
 var $author$project$Utils$listToStringListRest = function (l) {
@@ -10532,23 +11169,19 @@ var $author$project$SvgDraw$drawConnector = F7(
 			return $author$project$SvgDraw$errorSvgNode('got nothing where expected routing');
 		} else {
 			var routeOffset = routing.a;
-			var lineX = (routeOffset < 0) ? (otherBlockPos.a + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.a + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.a + $author$project$ViewVariables$outputNodeX));
-			var lastY = (blockPos.b + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
+			var nodeX = function () {
+				var _v1 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
+				if (_v1.$ === 'Just') {
+					var inputPos = _v1.a;
+					return inputPos.a;
+				} else {
+					return -100;
+				}
+			}();
+			var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX));
+			var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
 			var linepoints = _List_fromArray(
-				[
-					otherBlockPos.a + $author$project$ViewVariables$outputNodeX,
-					otherBlockPos.b + $author$project$ViewVariables$outputNodeY,
-					otherBlockPos.a + $author$project$ViewVariables$outputNodeX,
-					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock,
-					lineX,
-					(otherBlockPos.b + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock,
-					lineX,
-					lastY,
-					$author$project$ViewVariables$indexToNodeX(inputCounter) + blockPos.a,
-					lastY,
-					$author$project$ViewVariables$indexToNodeX(inputCounter) + blockPos.a,
-					blockPos.b + $author$project$ViewVariables$nodeRadius
-				]);
+				[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX + blockPos.xpos, lastY, nodeX + blockPos.xpos, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
 			return A3($author$project$SvgDraw$taxiLine, linepoints, inputEvent, isLineHighlighted);
 		}
 	});
@@ -10566,9 +11199,9 @@ var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
 		return {$: 'InputUpdate', a: a, b: b, c: c};
 	});
+var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
 var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
-var $author$project$ViewVariables$inputHeight = $elm$core$Basics$floor($author$project$ViewVariables$nodeRadius * 2.5);
-var $author$project$ViewVariables$inputWidth = $author$project$ViewVariables$nodeSpacing - $author$project$ViewVariables$nodeRadius;
+var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
 var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
@@ -10600,9 +11233,11 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
+var $author$project$ViewVariables$textInputColor = A3($rtfeldman$elm_css$Css$rgb, 186, 232, 188);
+var $author$project$ViewVariables$textInputColorVariable = A3($rtfeldman$elm_css$Css$rgb, 108, 230, 113);
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
 var $author$project$SvgDraw$drawTextInput = F7(
-	function (call, str, events, xpos, ypos, index, domId) {
+	function (call, str, events, inputPos, ypos, index, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_Utils_ap(
@@ -10610,11 +11245,11 @@ var $author$project$SvgDraw$drawTextInput = F7(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$x(
-						$elm$core$String$fromInt(xpos - (($author$project$ViewVariables$inputWidth / 2) | 0))),
+						$elm$core$String$fromInt(inputPos.a)),
 						$elm$svg$Svg$Attributes$y(
 						$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
 						$elm$svg$Svg$Attributes$width(
-						$elm$core$String$fromInt($author$project$ViewVariables$inputWidth)),
+						$elm$core$String$fromInt(inputPos.b)),
 						$elm$svg$Svg$Attributes$height(
 						$elm$core$String$fromInt($author$project$ViewVariables$inputHeight))
 					])),
@@ -10634,10 +11269,23 @@ var $author$project$SvgDraw$drawTextInput = F7(
 								$rtfeldman$elm_css$Html$Styled$Attributes$css(
 								_List_fromArray(
 									[
+										$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$monospace),
+										$rtfeldman$elm_css$Css$fontSize(
+										$rtfeldman$elm_css$Css$pct(100 * $author$project$ViewVariables$inputFontSizePercent)),
 										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$px($author$project$ViewVariables$inputWidth - 4.0)),
+										$rtfeldman$elm_css$Css$px(inputPos.b - 4.0)),
 										$rtfeldman$elm_css$Css$height(
 										$rtfeldman$elm_css$Css$px($author$project$ViewVariables$inputHeight - 4.0)),
+										$rtfeldman$elm_css$Css$backgroundColor(
+										function () {
+											var _v0 = A2($elm$core$Dict$get, str, $author$project$BuiltIn$builtInVariables);
+											if (_v0.$ === 'Just') {
+												var val = _v0.a;
+												return $author$project$ViewVariables$textInputColorVariable;
+											} else {
+												return $author$project$ViewVariables$textInputColor;
+											}
+										}()),
 										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
 										$rtfeldman$elm_css$Css$padding(
 										$rtfeldman$elm_css$Css$px(0)),
@@ -10663,6 +11311,15 @@ var $elm$svg$Svg$Events$onMouseDown = function (msg) {
 };
 var $author$project$DrawFunc$drawInput = F6(
 	function (call, input, blockPos, inputCounter, viewStructure, routing) {
+		var nodePosition = function () {
+			var _v4 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
+			if (_v4.$ === 'Just') {
+				var nodePos = _v4.a;
+				return nodePos;
+			} else {
+				return _Utils_Tuple2(-100, -100);
+			}
+		}();
 		var nodeEvents = viewStructure.isToolbar ? _List_Nil : _List_fromArray(
 			[
 				$author$project$SvgDraw$svgLeftClick(
@@ -10683,14 +11340,7 @@ var $author$project$DrawFunc$drawInput = F6(
 		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
 		var nodeWithEvent = function (_v2) {
-			return A6(
-				$author$project$SvgDraw$drawNodeWithEvent,
-				blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
-				blockPos.b + $author$project$ViewVariables$nodeRadius,
-				nodeEvents,
-				highlightEvent,
-				inputStringId,
-				isInputHighlighted);
+			return A6($author$project$SvgDraw$drawNodeWithEvent, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted);
 		};
 		switch (input.$) {
 			case 'Output':
@@ -10722,15 +11372,7 @@ var $author$project$DrawFunc$drawInput = F6(
 						]));
 			case 'Text':
 				var str = input.a;
-				return A7(
-					$author$project$SvgDraw$drawTextInput,
-					call,
-					str,
-					nodeEvents,
-					blockPos.a + $author$project$ViewVariables$indexToNodeX(inputCounter),
-					blockPos.b + $author$project$ViewVariables$nodeRadius,
-					inputCounter,
-					inputStringId);
+				return A7($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId);
 			default:
 				return nodeWithEvent(_Utils_Tuple0);
 		}
@@ -10742,7 +11384,7 @@ var $author$project$DrawFunc$drawInputLines = F6(
 				[
 					A4(
 					$author$project$SvgDraw$nodeEvent,
-					0,
+					_Utils_Tuple2(0, 0),
 					0,
 					$author$project$Model$OutputHighlight(call.id),
 					$author$project$Update$nodeOutputId(call.id))
@@ -11099,7 +11741,7 @@ var $author$project$ViewPositions$blockSorter = F2(
 			return -100;
 		} else {
 			var pos = _v0.a;
-			return pos.b;
+			return pos.ypos;
 		}
 	});
 var $author$project$ViewPositions$idToPosAdd = F3(
