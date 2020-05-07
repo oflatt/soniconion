@@ -27,7 +27,7 @@ javascriptTail =
         ,"function recur() {" -- recur func with state
         ,"step(state);"
         ,"}"
-        ,"window.requestAnimationFrame(recur);"
+        ,"window.setTimeout(recur, 0);"
         ,"}"
         ,"step(makeInitialState());" -- start the anim loop
         ]
