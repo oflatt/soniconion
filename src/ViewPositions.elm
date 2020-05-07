@@ -98,11 +98,11 @@ inputPositionList inputs counter currentX =
             in
                 (counter, (currentX, width)) :: (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing))
         
-makeInputPositions call =
-    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding)
+makeInputPositions call xpos =
+    Dict.fromList (inputPositionList call.inputs 0 (ViewVariables.inputPadding + xpos))
 
 makeBlockPosition xpos ypos call =
-    (BlockPosition xpos ypos (makeInputPositions call))
+    (BlockPosition xpos ypos (makeInputPositions call xpos))
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Id -> Maybe MovedBlockInfo -> Function -> Int -> BlockPositions
