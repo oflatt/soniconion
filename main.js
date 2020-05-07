@@ -11200,8 +11200,38 @@ var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
 		return {$: 'InputUpdate', a: a, b: b, c: c};
 	});
+var $rtfeldman$elm_css$Css$calcExpressionToString = function (expression) {
+	if (expression.$ === 'Addition') {
+		return '+';
+	} else {
+		return '-';
+	}
+};
+var $rtfeldman$elm_css$Css$calc = F3(
+	function (firstExpr, expression, secondExpr) {
+		var withoutCalcStr = function (l) {
+			return A2($elm$core$String$startsWith, 'calc(', l.value) ? A2($elm$core$String$dropLeft, 4, l.value) : l.value;
+		};
+		var calcs = A2(
+			$elm$core$String$join,
+			' ',
+			_List_fromArray(
+				[
+					withoutCalcStr(firstExpr),
+					$rtfeldman$elm_css$Css$calcExpressionToString(expression),
+					withoutCalcStr(secondExpr)
+				]));
+		var value = A2(
+			$rtfeldman$elm_css$Css$cssFunction,
+			'calc',
+			_List_fromArray(
+				[calcs]));
+		return {calc: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, fontSize: $rtfeldman$elm_css$Css$Structure$Compatible, length: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, textIndent: $rtfeldman$elm_css$Css$Structure$Compatible, value: value};
+	});
 var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
 var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
+var $rtfeldman$elm_css$Css$Subtraction = {$: 'Subtraction'};
+var $rtfeldman$elm_css$Css$minus = $rtfeldman$elm_css$Css$Subtraction;
 var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
 var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -11274,9 +11304,17 @@ var $author$project$SvgDraw$drawTextInput = F7(
 										$rtfeldman$elm_css$Css$fontSize(
 										$rtfeldman$elm_css$Css$pct(100 * $author$project$ViewVariables$inputFontSizePercent)),
 										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$px(inputPos.b - 4.0)),
+										A3(
+											$rtfeldman$elm_css$Css$calc,
+											$rtfeldman$elm_css$Css$pct(100),
+											$rtfeldman$elm_css$Css$minus,
+											$rtfeldman$elm_css$Css$px(4))),
 										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$px($author$project$ViewVariables$inputHeight - 4.0)),
+										A3(
+											$rtfeldman$elm_css$Css$calc,
+											$rtfeldman$elm_css$Css$pct(100),
+											$rtfeldman$elm_css$Css$minus,
+											$rtfeldman$elm_css$Css$px(4))),
 										$rtfeldman$elm_css$Css$backgroundColor(
 										function () {
 											var _v0 = A2($elm$core$Dict$get, str, $author$project$BuiltIn$builtInVariables);
