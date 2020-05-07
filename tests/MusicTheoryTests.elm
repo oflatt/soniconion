@@ -22,6 +22,8 @@ letterDict =
                         11))
          ]
 
+frequenciesDict = Dict.fromList MusicTheory.namedFrequencies
+        
 namedFrequencies : Test
 namedFrequencies =
     describe "namedFrequencies"
@@ -29,12 +31,12 @@ namedFrequencies =
              (\_ ->
                   (Expect.equal
                        (Just 440.0)
-                       (Dict.get "A4" MusicTheory.namedFrequencies)))
+                       (Dict.get "A4" frequenciesDict)))
         ,test "Bb6"
             (\_ ->
                  (Expect.equal
                       (Just 1864.6550460723597)
-                      (Dict.get "Bb6" MusicTheory.namedFrequencies)))]
+                      (Dict.get "Bb6" frequenciesDict)))]
 
 
 

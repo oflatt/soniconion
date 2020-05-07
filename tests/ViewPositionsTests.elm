@@ -68,10 +68,16 @@ getLineRoutingTest =
                  [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])]
 
 
+blockPositionToTuple blockPos =
+    (blockPos.xpos, blockPos.ypos)
+        
 callBlockPositions testFunc mouse =
-    (ViewPositions.blockPositionsToPositionList testFunc
-         (ViewPositions.getViewStructure testFunc
-              mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0 False).blockPositions)
+    Result.map (List.map blockPositionToTuple)
+        (ViewPositions.blockPositionsToPositionList testFunc
+             (ViewPositions.getViewStructure testFunc
+                  mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0 False).blockPositions)
+
+            
 emptyMouse = (MouseState 0 0 NoneSelected)
 
 secondToLastMouse = (MouseState (ViewVariables.blockWidth//2)
