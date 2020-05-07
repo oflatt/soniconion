@@ -37,7 +37,7 @@ funcNameFontHeight = blockHeight // 2
 
 lineXSpace = blockHeight // 2
 lineWidth = "4"
-lineSpaceBeforeBlock = blockSpacing
+lineSpaceBeforeBlock = blockSpacing*3 // 2
                
 nodeRadius = blockHeight // 7
 inputPadding = nodeRadius * 3
@@ -50,7 +50,7 @@ outputNodeX = blockWidth // 2
 
 inputHeight = floor ((toFloat nodeRadius) * 2.5)
 
-inputFontSizePercent = 0.7
+inputFontSizePercent = 0.85
 characterOverestimate = (toFloat inputHeight) * 0.5 * inputFontSizePercent
 numCharactersToInputWidth numChars = floor (characterOverestimate * (toFloat (numChars+1)))
                      

@@ -117,7 +117,7 @@ nodeEvent inputPos ypos event domId =
 drawNode inputPosition ypos events isHighlighted =
     (circle (events ++
                  [r (String.fromInt ((Tuple.second inputPosition)//2))
-                 , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//4)))
+                 , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2)))
                  , cy (String.fromInt ypos)
                  , fill (if isHighlighted then "blue" else "black")])
          [])
@@ -212,7 +212,7 @@ drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighligh
                     - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
                 nodeX =
                     case (Dict.get inputCounter blockPos.inputPositions ) of
-                        Just inputPos -> (Tuple.first inputPos)
+                        Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius
                         Nothing -> -100 -- something went wrong
                 linepoints =
                     [
