@@ -6525,17 +6525,18 @@ var $author$project$ViewPositions$inputPositionList = F3(
 				A3($author$project$ViewPositions$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing));
 		}
 	});
-var $author$project$ViewPositions$makeInputPositions = function (call) {
-	return $elm$core$Dict$fromList(
-		A3($author$project$ViewPositions$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding));
-};
+var $author$project$ViewPositions$makeInputPositions = F2(
+	function (call, xpos) {
+		return $elm$core$Dict$fromList(
+			A3($author$project$ViewPositions$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding + xpos));
+	});
 var $author$project$ViewPositions$makeBlockPosition = F3(
 	function (xpos, ypos, call) {
 		return A3(
 			$author$project$ViewPositions$BlockPosition,
 			xpos,
 			ypos,
-			$author$project$ViewPositions$makeInputPositions(call));
+			A2($author$project$ViewPositions$makeInputPositions, call, xpos));
 	});
 var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
