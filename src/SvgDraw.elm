@@ -88,9 +88,9 @@ drawTextInput call str events inputPos ypos index domId =
                   ,css [Css.fontFamily Css.monospace
                        ,Css.fontSize (Css.pct (100*ViewVariables.inputFontSizePercent))
                        ,Css.width
-                            (px ((Basics.toFloat (Tuple.second inputPos))-4.0))
+                            (Css.calc (Css.pct 100) Css.minus (Css.px 4))
                        ,Css.height
-                            (px ((Basics.toFloat ViewVariables.inputHeight)-4.0))
+                            (Css.calc (Css.pct 100) Css.minus (Css.px 4))
                        ,Css.backgroundColor
                             (case Dict.get str BuiltIn.builtInVariables of
                                  Just val -> ViewVariables.textInputColorVariable
