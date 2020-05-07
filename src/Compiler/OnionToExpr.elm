@@ -1,6 +1,6 @@
 module Compiler.OnionToExpr exposing (onionToCompModel)
 import Model exposing (..)
-import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..))
+import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..))
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel)
 import Compiler.CompModel as CompModel
 import Utils
@@ -51,20 +51,28 @@ inputsToValues inputs idToIndex =
                 (::)
                 (inputToValue input idToIndex)
                 (inputsToValues rest idToIndex)
-                                  
-isFunctionValid : String -> Bool                                    
-isFunctionValid funcName =
-    Dict.member funcName builtInFunctions
-    
+
+checkCorrectNumberArguments builtIn call =
+    case builtIn.argList of
+        Finite args -> (List.length call.inputs) >= (List.length args)
+        Infinite args othername -> (List.length call.inputs) >= (List.length args)
+                    
+callToExprBuiltIn builtIn call idToIndex =
+    if checkCorrectNumberArguments builtIn call
+    then
+        (case inputsToValues call.inputs idToIndex of
+             Ok children -> Ok (Expr call.functionName call.id children builtIn.compileExprFunction)
+             Err e -> Err e)
+    else
+        Err "Wrong number of arguments"
+                    
 callToExpr : Call -> IdToIndex -> Result Error Expr
 callToExpr call idToIndex =
-    if isFunctionValid call.functionName
-    then
-        case inputsToValues call.inputs idToIndex of
-            Ok children -> Ok (Expr call.functionName call.id children)
-            Err e -> Err e
-    else
-        Err "Not a built in function"
+    case Dict.get call.functionName builtInFunctions of
+        Just builtIn ->
+            callToExprBuiltIn builtIn call idToIndex
+        Nothing ->
+            Err "Not a built in function"
 
 
 functionToMethod : Function -> IdToIndex -> Result Error Method

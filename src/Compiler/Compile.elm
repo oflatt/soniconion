@@ -2,9 +2,9 @@ module Compiler.Compile exposing (compile, compileOnion)
 
 import Dict exposing (Dict)
 
-import BuiltIn exposing (waveFunctions)
+import BuiltIn exposing (builtInFunctions)
 
-import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..))
+import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), CompileExprFunction(..))
 import Compiler.CompModel as CompModel
 import Compiler.OnionToExpr exposing (onionToCompModel)
     
@@ -31,51 +31,15 @@ javascriptTail =
         ,"}"
         ,"step(makeInitialState());" -- start the anim loop
         ]
-
-buildValue val =
-    case val of
-        StackIndex i ->
-            "stack[" ++ (String.fromInt i) ++ "]"
-        ConstV c ->
-            String.fromFloat c
-
-                
-buildWave valList =
-    case valList of
-        (time::frequency::duration::[]) ->
-            let timeStr = buildValue time
-                frequencyStr = buildValue frequency
-                durationStr = buildValue duration
-                endStr = "(" ++ timeStr ++ "+" ++ durationStr ++ ")"
-            in
-                String.join
-                    ""
-                    [
-                     "stack.push("
-                    ,endStr
-                    ,");"
-                        
-                    ,"if(time>"
-                    ,timeStr
-                    ," && time<"
-                    ,endStr
-                    ,"){"
-                        
-                    ,"notes.push({frequency: "
-                    ,frequencyStr
-                    ,"});"
-
-                    ,"}"
-                    ]
-        _ -> "" -- fail silently
         
 -- todo: handle join function
 buildExpr : Expr -> String
 buildExpr expr =
-    case Dict.get expr.functionName waveFunctions of
+    case Dict.get expr.functionName builtInFunctions of
         Nothing -> "" -- fails silently, this check should have been made already
         Just val ->
-            buildWave expr.children
+            case expr.compileExprFunction of
+                CompileExprFunction func -> func expr
 
 buildMethod : Method -> List String
 buildMethod method =

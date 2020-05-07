@@ -32,7 +32,7 @@ blockSpacing = blockHeight // 6
 blockSpace = blockHeight + blockSpacing
 
 
-funcNameFontHeight = blockHeight // 2
+funcNameFontHeight = floor ((toFloat blockHeight) * 0.4)
              
 
 lineXSpace = blockHeight // 2

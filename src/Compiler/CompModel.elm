@@ -14,6 +14,8 @@ systemValues =
 type Value = StackIndex Int
            | ConstV Float
 
+type CompileExprFunction = CompileExprFunction (Expr -> String)
+             
 type alias CompModel = List Method
 
 type alias Method = List Expr
@@ -21,5 +23,6 @@ type alias Method = List Expr
 type alias Expr =
     {functionName : String
     ,id : Id -- just for error messages
-    ,children : List Value}
+    ,children : List Value
+    ,compileExprFunction : CompileExprFunction}
 
