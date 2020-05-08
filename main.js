@@ -6908,8 +6908,19 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$BuiltIn$BuiltInSpec = F3(
+	function (functionName, argList, compileExprFunction) {
+		return {argList: argList, compileExprFunction: compileExprFunction, functionName: functionName};
+	});
+var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
+	return {$: 'CompileExprFunction', a: a};
+};
+var $author$project$BuiltIn$Infinite = F2(
+	function (a, b) {
+		return {$: 'Infinite', a: a, b: b};
+	});
 var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$Compiler$Compile$buildValue = function (val) {
+var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
 	if (val.$ === 'StackIndex') {
 		var i = val.a;
 		return 'stack[' + ($elm$core$String$fromInt(i) + ']');
@@ -6918,45 +6929,127 @@ var $author$project$Compiler$Compile$buildValue = function (val) {
 		return $elm$core$String$fromFloat(c);
 	}
 };
-var $author$project$Compiler$Compile$buildWave = function (valList) {
-	if (((valList.b && valList.b.b) && valList.b.b.b) && (!valList.b.b.b.b)) {
-		var time = valList.a;
-		var _v1 = valList.b;
+var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
+	function (children, op) {
+		if (!children.b) {
+			return _List_fromArray(
+				['']);
+		} else {
+			if (!children.b.b) {
+				var arg = children.a;
+				return _List_fromArray(
+					[
+						$author$project$Compiler$CompileBuiltIn$buildValue(arg)
+					]);
+			} else {
+				var arg = children.a;
+				var args = children.b;
+				return A2(
+					$elm$core$List$cons,
+					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
+					A2(
+						$elm$core$List$cons,
+						op,
+						A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op)));
+			}
+		}
+	});
+var $author$project$Compiler$CompileBuiltIn$stackPush = function (str) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			['stack.push(', str, ');']));
+};
+var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
+	var _v0 = expr.children;
+	if (!_v0.b) {
+		return '';
+	} else {
+		if (!_v0.b.b) {
+			var arg = _v0.a;
+			return $author$project$Compiler$CompileBuiltIn$stackPush(
+				expr.functionName + (' ' + $author$project$Compiler$CompileBuiltIn$buildValue(arg)));
+		} else {
+			return A2(
+				$elm$core$String$join,
+				'',
+				A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName));
+		}
+	}
+};
+var $author$project$BuiltIn$unaryList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'+',
+		A2(
+			$author$project$BuiltIn$Infinite,
+			_List_fromArray(
+				['num']),
+			'nums'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary))
+	]);
+var $author$project$BuiltIn$Finite = function (a) {
+	return {$: 'Finite', a: a};
+};
+var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var time = _v0.a;
+		var _v1 = _v0.b;
 		var frequency = _v1.a;
 		var _v2 = _v1.b;
 		var duration = _v2.a;
-		var timeStr = $author$project$Compiler$Compile$buildValue(time);
-		var frequencyStr = $author$project$Compiler$Compile$buildValue(frequency);
-		var durationStr = $author$project$Compiler$Compile$buildValue(duration);
+		var timeStr = $author$project$Compiler$CompileBuiltIn$buildValue(time);
+		var frequencyStr = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
+		var durationStr = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
 		var endStr = '(' + (timeStr + ('+' + (durationStr + ')')));
 		return A2(
 			$elm$core$String$join,
 			'',
 			_List_fromArray(
-				['stack.push(', endStr, ');', 'if(time>', timeStr, ' && time<', endStr, '){', 'notes.push({frequency: ', frequencyStr, '});', '}']));
+				[
+					$author$project$Compiler$CompileBuiltIn$stackPush(endStr),
+					'if(time>',
+					timeStr,
+					' && time<',
+					endStr,
+					'){',
+					'notes.push({frequency: ',
+					frequencyStr,
+					'});',
+					'}'
+				]));
 	} else {
 		return '';
 	}
 };
-var $author$project$BuiltIn$Finite = function (a) {
-	return {$: 'Finite', a: a};
-};
 var $author$project$BuiltIn$waveList = _List_fromArray(
 	[
-		_Utils_Tuple2(
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
 		'sine',
 		$author$project$BuiltIn$Finite(
 			_List_fromArray(
-				['time', 'frequency', 'duration'])))
+				['time', 'frequency', 'duration'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave))
 	]);
-var $author$project$BuiltIn$waveFunctions = $elm$core$Dict$fromList($author$project$BuiltIn$waveList);
+var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$unaryList);
+var $author$project$BuiltIn$nameTuple = function (builtInList) {
+	return _Utils_Tuple2(builtInList.functionName, builtInList);
+};
+var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList(
+	A2($elm$core$List$map, $author$project$BuiltIn$nameTuple, $author$project$BuiltIn$builtInFunctionList));
 var $author$project$Compiler$Compile$buildExpr = function (expr) {
-	var _v0 = A2($elm$core$Dict$get, expr.functionName, $author$project$BuiltIn$waveFunctions);
+	var _v0 = A2($elm$core$Dict$get, expr.functionName, $author$project$BuiltIn$builtInFunctions);
 	if (_v0.$ === 'Nothing') {
 		return '';
 	} else {
 		var val = _v0.a;
-		return $author$project$Compiler$Compile$buildWave(expr.children);
+		var _v1 = expr.compileExprFunction;
+		var func = _v1.a;
+		return func(expr);
 	}
 };
 var $author$project$Compiler$Compile$buildMethod = function (method) {
@@ -7029,9 +7122,25 @@ var $author$project$Compiler$Compile$compile = function (compModel) {
 				$author$project$Compiler$Compile$systemValues,
 				$author$project$Compiler$Compile$buildMethods(compModel))));
 };
-var $author$project$Compiler$CompModel$Expr = F3(
-	function (functionName, id, children) {
-		return {children: children, functionName: functionName, id: id};
+var $author$project$Compiler$CompModel$Expr = F4(
+	function (functionName, id, children, compileExprFunction) {
+		return {children: children, compileExprFunction: compileExprFunction, functionName: functionName, id: id};
+	});
+var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
+	function (builtIn, call) {
+		var _v0 = builtIn.argList;
+		if (_v0.$ === 'Finite') {
+			var args = _v0.a;
+			return _Utils_cmp(
+				$elm$core$List$length(call.inputs),
+				$elm$core$List$length(args)) > -1;
+		} else {
+			var args = _v0.a;
+			var othername = _v0.b;
+			return _Utils_cmp(
+				$elm$core$List$length(call.inputs),
+				$elm$core$List$length(args)) > -1;
+		}
 	});
 var $author$project$Compiler$CompModel$ConstV = function (a) {
 	return {$: 'ConstV', a: a};
@@ -7678,47 +7787,28 @@ var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
 				A2($author$project$Compiler$OnionToExpr$inputsToValues, rest, idToIndex));
 		}
 	});
-var $author$project$BuiltIn$Infinite = F2(
-	function (a, b) {
-		return {$: 'Infinite', a: a, b: b};
-	});
-var $author$project$BuiltIn$specialFunctionList = _List_fromArray(
-	[
-		_Utils_Tuple2(
-		'join',
-		A2($author$project$BuiltIn$Infinite, _List_Nil, 'sounds')),
-		_Utils_Tuple2(
-		'play',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['arg'])))
-	]);
-var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$specialFunctionList);
-var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList($author$project$BuiltIn$builtInFunctionList);
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $author$project$Compiler$OnionToExpr$isFunctionValid = function (funcName) {
-	return A2($elm$core$Dict$member, funcName, $author$project$BuiltIn$builtInFunctions);
-};
-var $author$project$Compiler$OnionToExpr$callToExpr = F2(
-	function (call, idToIndex) {
-		if ($author$project$Compiler$OnionToExpr$isFunctionValid(call.functionName)) {
+var $author$project$Compiler$OnionToExpr$callToExprBuiltIn = F3(
+	function (builtIn, call, idToIndex) {
+		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, builtIn, call)) {
 			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, call.inputs, idToIndex);
 			if (_v0.$ === 'Ok') {
 				var children = _v0.a;
 				return $elm$core$Result$Ok(
-					A3($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children));
+					A4($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children, builtIn.compileExprFunction));
 			} else {
 				var e = _v0.a;
 				return $elm$core$Result$Err(e);
 			}
+		} else {
+			return $elm$core$Result$Err('Wrong number of arguments');
+		}
+	});
+var $author$project$Compiler$OnionToExpr$callToExpr = F2(
+	function (call, idToIndex) {
+		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Just') {
+			var builtIn = _v0.a;
+			return A3($author$project$Compiler$OnionToExpr$callToExprBuiltIn, builtIn, call, idToIndex);
 		} else {
 			return $elm$core$Result$Err('Not a built in function');
 		}
@@ -7852,17 +7942,18 @@ var $author$project$BuiltIn$constructCall = F2(
 	function (id, functionName) {
 		var _v0 = A2($elm$core$Dict$get, functionName, $author$project$BuiltIn$builtInFunctions);
 		if (_v0.$ === 'Just') {
-			var argList = _v0.a;
-			if (argList.$ === 'Infinite') {
-				var firstArgs = argList.a;
-				var restArgs = argList.b;
+			var builtIn = _v0.a;
+			var _v1 = builtIn.argList;
+			if (_v1.$ === 'Infinite') {
+				var firstArgs = _v1.a;
+				var restArgs = _v1.b;
 				return A3(
 					$author$project$BuiltIn$callWithHoles,
 					id,
 					functionName,
 					$elm$core$List$length(firstArgs));
 			} else {
-				var args = argList.a;
+				var args = _v1.a;
 				return A3(
 					$author$project$BuiltIn$callWithHoles,
 					id,
@@ -10326,7 +10417,7 @@ var $author$project$Model$SpawnBlock = function (a) {
 	return {$: 'SpawnBlock', a: a};
 };
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
-var $author$project$ViewVariables$funcNameFontHeight = ($author$project$ViewVariables$blockHeight / 2) | 0;
+var $author$project$ViewVariables$funcNameFontHeight = $elm$core$Basics$floor($author$project$ViewVariables$blockHeight * 0.4);
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
@@ -11182,7 +11273,7 @@ var $author$project$SvgDraw$drawConnector = F7(
 			var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX));
 			var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
 			var linepoints = _List_fromArray(
-				[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX + blockPos.xpos, lastY, nodeX + blockPos.xpos, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
+				[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
 			return A3($author$project$SvgDraw$taxiLine, linepoints, inputEvent, isLineHighlighted);
 		}
 	});
@@ -11200,38 +11291,10 @@ var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
 		return {$: 'InputUpdate', a: a, b: b, c: c};
 	});
-var $rtfeldman$elm_css$Css$calcExpressionToString = function (expression) {
-	if (expression.$ === 'Addition') {
-		return '+';
-	} else {
-		return '-';
-	}
-};
-var $rtfeldman$elm_css$Css$calc = F3(
-	function (firstExpr, expression, secondExpr) {
-		var withoutCalcStr = function (l) {
-			return A2($elm$core$String$startsWith, 'calc(', l.value) ? A2($elm$core$String$dropLeft, 4, l.value) : l.value;
-		};
-		var calcs = A2(
-			$elm$core$String$join,
-			' ',
-			_List_fromArray(
-				[
-					withoutCalcStr(firstExpr),
-					$rtfeldman$elm_css$Css$calcExpressionToString(expression),
-					withoutCalcStr(secondExpr)
-				]));
-		var value = A2(
-			$rtfeldman$elm_css$Css$cssFunction,
-			'calc',
-			_List_fromArray(
-				[calcs]));
-		return {calc: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, fontSize: $rtfeldman$elm_css$Css$Structure$Compatible, length: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, textIndent: $rtfeldman$elm_css$Css$Structure$Compatible, value: value};
-	});
+var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
+var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
 var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
 var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
-var $rtfeldman$elm_css$Css$Subtraction = {$: 'Subtraction'};
-var $rtfeldman$elm_css$Css$minus = $rtfeldman$elm_css$Css$Subtraction;
 var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
 var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -11304,17 +11367,10 @@ var $author$project$SvgDraw$drawTextInput = F7(
 										$rtfeldman$elm_css$Css$fontSize(
 										$rtfeldman$elm_css$Css$pct(100 * $author$project$ViewVariables$inputFontSizePercent)),
 										$rtfeldman$elm_css$Css$width(
-										A3(
-											$rtfeldman$elm_css$Css$calc,
-											$rtfeldman$elm_css$Css$pct(100),
-											$rtfeldman$elm_css$Css$minus,
-											$rtfeldman$elm_css$Css$px(4))),
+										$rtfeldman$elm_css$Css$pct(100)),
 										$rtfeldman$elm_css$Css$height(
-										A3(
-											$rtfeldman$elm_css$Css$calc,
-											$rtfeldman$elm_css$Css$pct(100),
-											$rtfeldman$elm_css$Css$minus,
-											$rtfeldman$elm_css$Css$px(4))),
+										$rtfeldman$elm_css$Css$pct(100)),
+										$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$borderBox),
 										$rtfeldman$elm_css$Css$backgroundColor(
 										function () {
 											var _v0 = A2($elm$core$Dict$get, str, $author$project$BuiltIn$builtInVariables);
@@ -11842,7 +11898,7 @@ var $author$project$DrawProgram$drawOnion = F4(
 	});
 var $author$project$BuiltIn$callFromSpec = F2(
 	function (spec, id) {
-		return A2($author$project$BuiltIn$constructCall, id, spec.a);
+		return A2($author$project$BuiltIn$constructCall, id, spec.functionName);
 	});
 var $author$project$BuiltIn$makeAllFunction = F2(
 	function (builtInList, counter) {
