@@ -6273,7 +6273,201 @@ var $author$project$ModelHelpers$fixInvalidInputs = function (func) {
 	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
 	return A3($author$project$ModelHelpers$fixInvalidInputsHelper, func, idToPos, 0);
 };
-var $author$project$ModelHelpers$updateInputInputs = F3(
+var $author$project$BuiltIn$BuiltInSpec = F3(
+	function (functionName, argList, compileExprFunction) {
+		return {argList: argList, compileExprFunction: compileExprFunction, functionName: functionName};
+	});
+var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
+	return {$: 'CompileExprFunction', a: a};
+};
+var $author$project$BuiltIn$Infinite = F2(
+	function (a, b) {
+		return {$: 'Infinite', a: a, b: b};
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
+	if (val.$ === 'StackIndex') {
+		var i = val.a;
+		return 'stack[' + ($elm$core$String$fromInt(i) + ']');
+	} else {
+		var c = val.a;
+		return $elm$core$String$fromFloat(c);
+	}
+};
+var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
+	function (children, op) {
+		if (!children.b) {
+			return _List_fromArray(
+				['']);
+		} else {
+			if (!children.b.b) {
+				var arg = children.a;
+				return _List_fromArray(
+					[
+						$author$project$Compiler$CompileBuiltIn$buildValue(arg)
+					]);
+			} else {
+				var arg = children.a;
+				var args = children.b;
+				return A2(
+					$elm$core$List$cons,
+					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
+					A2(
+						$elm$core$List$cons,
+						op,
+						A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op)));
+			}
+		}
+	});
+var $author$project$Compiler$CompileBuiltIn$stackPush = function (str) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			['stack.push(', str, ');']));
+};
+var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
+	var _v0 = expr.children;
+	if (!_v0.b) {
+		return '';
+	} else {
+		if (!_v0.b.b) {
+			var arg = _v0.a;
+			return $author$project$Compiler$CompileBuiltIn$stackPush(
+				expr.functionName + (' ' + $author$project$Compiler$CompileBuiltIn$buildValue(arg)));
+		} else {
+			return A2(
+				$elm$core$String$join,
+				'',
+				A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName));
+		}
+	}
+};
+var $author$project$BuiltIn$unaryList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'+',
+		A2(
+			$author$project$BuiltIn$Infinite,
+			_List_fromArray(
+				['num']),
+			'nums'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary))
+	]);
+var $author$project$BuiltIn$Finite = function (a) {
+	return {$: 'Finite', a: a};
+};
+var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var time = _v0.a;
+		var _v1 = _v0.b;
+		var frequency = _v1.a;
+		var _v2 = _v1.b;
+		var duration = _v2.a;
+		var timeStr = $author$project$Compiler$CompileBuiltIn$buildValue(time);
+		var frequencyStr = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
+		var durationStr = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
+		var endStr = '(' + (timeStr + ('+' + (durationStr + ')')));
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					$author$project$Compiler$CompileBuiltIn$stackPush(endStr),
+					'if(time>',
+					timeStr,
+					' && time<',
+					endStr,
+					'){',
+					'notes.push({frequency: ',
+					frequencyStr,
+					'});',
+					'}'
+				]));
+	} else {
+		return '';
+	}
+};
+var $author$project$BuiltIn$waveList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'sine',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['time', 'frequency', 'duration'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave))
+	]);
+var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$unaryList);
+var $author$project$BuiltIn$nameTuple = function (builtInList) {
+	return _Utils_Tuple2(builtInList.functionName, builtInList);
+};
+var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList(
+	A2($elm$core$List$map, $author$project$BuiltIn$nameTuple, $author$project$BuiltIn$builtInFunctionList));
+var $author$project$ModelHelpers$eliminateHoles = function (inputs) {
+	eliminateHoles:
+	while (true) {
+		if (!inputs.b) {
+			return _List_fromArray(
+				[$author$project$Model$Hole]);
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			if (input.$ === 'Hole') {
+				var $temp$inputs = rest;
+				inputs = $temp$inputs;
+				continue eliminateHoles;
+			} else {
+				return A2(
+					$elm$core$List$cons,
+					input,
+					$author$project$ModelHelpers$eliminateHoles(rest));
+			}
+		}
+	}
+};
+var $author$project$ModelHelpers$eliminateHolesAfter = F2(
+	function (inputs, mandatoryLength) {
+		eliminateHolesAfter:
+		while (true) {
+			if (!mandatoryLength) {
+				return $author$project$ModelHelpers$eliminateHoles(inputs);
+			} else {
+				var $temp$inputs = inputs,
+					$temp$mandatoryLength = mandatoryLength - 1;
+				inputs = $temp$inputs;
+				mandatoryLength = $temp$mandatoryLength;
+				continue eliminateHolesAfter;
+			}
+		}
+	});
+var $author$project$ModelHelpers$fixInfiniteInputs = F2(
+	function (inputs, mandatoryLength) {
+		return A2($author$project$ModelHelpers$eliminateHolesAfter, inputs, mandatoryLength);
+	});
+var $author$project$ModelHelpers$fixInputsForInfiniteArguments = F2(
+	function (inputs, call) {
+		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Nothing') {
+			return inputs;
+		} else {
+			var builtInSpec = _v0.a;
+			var _v1 = builtInSpec.argList;
+			if (_v1.$ === 'Infinite') {
+				var base = _v1.a;
+				var lastName = _v1.b;
+				return A2(
+					$author$project$ModelHelpers$fixInfiniteInputs,
+					inputs,
+					$elm$core$List$length(base));
+			} else {
+				return inputs;
+			}
+		}
+	});
+var $author$project$ModelHelpers$updateInputAtIndex = F3(
 	function (inputs, index, inputFunc) {
 		if (!inputs.b) {
 			return _List_Nil;
@@ -6286,15 +6480,22 @@ var $author$project$ModelHelpers$updateInputInputs = F3(
 				rest) : A2(
 				$elm$core$List$cons,
 				thisinput,
-				A3($author$project$ModelHelpers$updateInputInputs, rest, index - 1, inputFunc));
+				A3($author$project$ModelHelpers$updateInputAtIndex, rest, index - 1, inputFunc));
 		}
+	});
+var $author$project$ModelHelpers$updateInputInputs = F4(
+	function (inputs, index, inputFunc, call) {
+		return A2(
+			$author$project$ModelHelpers$fixInputsForInfiniteArguments,
+			A3($author$project$ModelHelpers$updateInputAtIndex, inputs, index, inputFunc),
+			call);
 	});
 var $author$project$ModelHelpers$updateInputCall = F4(
 	function (call, id, index, inputFunc) {
 		return _Utils_eq(id, call.id) ? _Utils_update(
 			call,
 			{
-				inputs: A3($author$project$ModelHelpers$updateInputInputs, call.inputs, index, inputFunc)
+				inputs: A4($author$project$ModelHelpers$updateInputInputs, call.inputs, index, inputFunc, call)
 			}) : call;
 	});
 var $author$project$ModelHelpers$updateInputFunc = F4(
@@ -6908,139 +7109,6 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$BuiltIn$BuiltInSpec = F3(
-	function (functionName, argList, compileExprFunction) {
-		return {argList: argList, compileExprFunction: compileExprFunction, functionName: functionName};
-	});
-var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
-	return {$: 'CompileExprFunction', a: a};
-};
-var $author$project$BuiltIn$Infinite = F2(
-	function (a, b) {
-		return {$: 'Infinite', a: a, b: b};
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
-	if (val.$ === 'StackIndex') {
-		var i = val.a;
-		return 'stack[' + ($elm$core$String$fromInt(i) + ']');
-	} else {
-		var c = val.a;
-		return $elm$core$String$fromFloat(c);
-	}
-};
-var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
-	function (children, op) {
-		if (!children.b) {
-			return _List_fromArray(
-				['']);
-		} else {
-			if (!children.b.b) {
-				var arg = children.a;
-				return _List_fromArray(
-					[
-						$author$project$Compiler$CompileBuiltIn$buildValue(arg)
-					]);
-			} else {
-				var arg = children.a;
-				var args = children.b;
-				return A2(
-					$elm$core$List$cons,
-					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
-					A2(
-						$elm$core$List$cons,
-						op,
-						A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op)));
-			}
-		}
-	});
-var $author$project$Compiler$CompileBuiltIn$stackPush = function (str) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		_List_fromArray(
-			['stack.push(', str, ');']));
-};
-var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
-	var _v0 = expr.children;
-	if (!_v0.b) {
-		return '';
-	} else {
-		if (!_v0.b.b) {
-			var arg = _v0.a;
-			return $author$project$Compiler$CompileBuiltIn$stackPush(
-				expr.functionName + (' ' + $author$project$Compiler$CompileBuiltIn$buildValue(arg)));
-		} else {
-			return A2(
-				$elm$core$String$join,
-				'',
-				A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName));
-		}
-	}
-};
-var $author$project$BuiltIn$unaryList = _List_fromArray(
-	[
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'+',
-		A2(
-			$author$project$BuiltIn$Infinite,
-			_List_fromArray(
-				['num']),
-			'nums'),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary))
-	]);
-var $author$project$BuiltIn$Finite = function (a) {
-	return {$: 'Finite', a: a};
-};
-var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
-	var _v0 = expr.children;
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var time = _v0.a;
-		var _v1 = _v0.b;
-		var frequency = _v1.a;
-		var _v2 = _v1.b;
-		var duration = _v2.a;
-		var timeStr = $author$project$Compiler$CompileBuiltIn$buildValue(time);
-		var frequencyStr = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
-		var durationStr = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
-		var endStr = '(' + (timeStr + ('+' + (durationStr + ')')));
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					$author$project$Compiler$CompileBuiltIn$stackPush(endStr),
-					'if(time>',
-					timeStr,
-					' && time<',
-					endStr,
-					'){',
-					'notes.push({frequency: ',
-					frequencyStr,
-					'});',
-					'}'
-				]));
-	} else {
-		return '';
-	}
-};
-var $author$project$BuiltIn$waveList = _List_fromArray(
-	[
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'sine',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['time', 'frequency', 'duration'])),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave))
-	]);
-var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$unaryList);
-var $author$project$BuiltIn$nameTuple = function (builtInList) {
-	return _Utils_Tuple2(builtInList.functionName, builtInList);
-};
-var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList(
-	A2($elm$core$List$map, $author$project$BuiltIn$nameTuple, $author$project$BuiltIn$builtInFunctionList));
 var $author$project$Compiler$Compile$buildExpr = function (expr) {
 	var _v0 = A2($elm$core$Dict$get, expr.functionName, $author$project$BuiltIn$builtInFunctions);
 	if (_v0.$ === 'Nothing') {
