@@ -1,4 +1,4 @@
-module Compiler.CompileBuiltIn exposing (buildWave, buildUnary)
+module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault, buildUnaryWithSingleLead)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..))
 
@@ -47,13 +47,27 @@ buildUnaryMultiple children op =
         [] -> [")"]
         (arg::[]) -> [buildValue arg, ")"]
         (arg::args) -> buildValue arg :: op :: (buildUnaryMultiple args op)
-        
+
+buildGeneralUnary defaultValue singleArgumentLead expr =
+    stackPush
+    (case expr.children of
+         [] -> defaultValue
+         (arg::[]) -> ("(" ++ singleArgumentLead ++ buildValue arg ++ ")")
+         _ -> (String.join "" ("(" :: (buildUnaryMultiple expr.children expr.functionName))))
+
              
-buildUnary singleArgumentLead expr =
-    case expr.children of
-        [] -> "" -- fail silently, we checked before
-        (arg::[]) -> stackPush ("(" ++ singleArgumentLead ++ buildValue arg ++ ")")
-        _ -> stackPush (String.join "" ("(" :: (buildUnaryMultiple expr.children expr.functionName)))
+buildUnary expr =
+    buildGeneralUnary "0" "" expr
                                           
-        
+buildUnaryWithDefault default expr =
+    buildGeneralUnary default "" expr
+
+buildUnaryWithSingleLead lead expr =
+    buildGeneralUnary "0" lead expr
+
+buildJavascriptCall funcName expr =
+    let values = String.join "," (List.map buildValue expr.children)
+    in
+        String.join ""
+            [funcName, "(", values, ")"]
                                           

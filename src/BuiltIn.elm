@@ -1,7 +1,7 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
                         ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler)
 import MusicTheory
-import Compiler.CompileBuiltIn exposing (buildWave, buildUnary)
+import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault, buildUnaryWithSingleLead)
 import Dict exposing (Dict)
 import Model exposing (Function, Call, Input(..), Id)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
@@ -28,12 +28,18 @@ waveList = [(BuiltInSpec
                  (CompileExprFunction buildWave))]
 
 unaryList : List BuiltInSpec
-unaryList = [(BuiltInSpec "+" (Infinite [] "nums") (CompileExprFunction (buildUnary "")))
-            ,(BuiltInSpec "-" (Infinite ["num"] "nums") (CompileExprFunction (buildUnary "-")))
-            ,(BuiltInSpec "/" (Infinite ["numerator"] "denominators") (CompileExprFunction (buildUnary "")))]
+unaryList = [(BuiltInSpec "+" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "0")))
+            ,(BuiltInSpec "-" (Infinite ["num"] "nums") (CompileExprFunction (buildUnaryWithSingleLead "-")))
+            ,(BuiltInSpec "/" (Infinite ["numerator"] "denominators") (CompileExprFunction buildUnary))
+            ,(BuiltInSpec "*" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "1")))]
+
+javascriptFunctionList =
+    [(BuiltInSpec "mod" (Finite ["numerator", "divisor"]) (CompileExprFunction (buildJavascriptCall "mathMod")))
+    ]
+    
            
 builtInFunctionList : BuiltInList
-builtInFunctionList = waveList ++ unaryList
+builtInFunctionList = waveList ++ unaryList ++ javascriptFunctionList
 
 
 nameTuple builtInList =
