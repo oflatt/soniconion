@@ -28,8 +28,9 @@ waveList = [(BuiltInSpec
                  (CompileExprFunction buildWave))]
 
 unaryList : List BuiltInSpec
-unaryList = [(BuiltInSpec "+" (Infinite ["num"] "nums") (CompileExprFunction buildUnary))
- ]
+unaryList = [(BuiltInSpec "+" (Infinite [] "nums") (CompileExprFunction (buildUnary "")))
+            ,(BuiltInSpec "-" (Infinite ["num"] "nums") (CompileExprFunction (buildUnary "-")))
+            ,(BuiltInSpec "/" (Infinite ["numerator"] "denominators") (CompileExprFunction (buildUnary "")))]
            
 builtInFunctionList : BuiltInList
 builtInFunctionList = waveList ++ unaryList
@@ -83,6 +84,6 @@ constructCall id functionName =
     case Dict.get functionName builtInFunctions of
         Just builtIn ->
             case builtIn.argList of
-                Infinite firstArgs restArgs -> callWithHoles id functionName (List.length firstArgs)
+                Infinite firstArgs restArgs -> callWithHoles id functionName ((List.length firstArgs)+1)
                 Finite args -> callWithHoles id functionName (List.length args)
         Nothing -> callWithHoles id functionName 0

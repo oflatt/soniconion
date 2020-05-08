@@ -40,18 +40,20 @@ buildWave expr =
                     ]
         _ -> "" -- fail silently
 
+
+             
 buildUnaryMultiple children op =
     case children of
-        [] -> [""]
-        (arg::[]) -> [buildValue arg]
+        [] -> [")"]
+        (arg::[]) -> [buildValue arg, ")"]
         (arg::args) -> buildValue arg :: op :: (buildUnaryMultiple args op)
         
              
-buildUnary expr =
+buildUnary singleArgumentLead expr =
     case expr.children of
         [] -> "" -- fail silently, we checked before
-        (arg::[]) -> stackPush (expr.functionName ++ " " ++ buildValue arg)
-        _ -> String.join "" (buildUnaryMultiple expr.children expr.functionName)
+        (arg::[]) -> stackPush ("(" ++ singleArgumentLead ++ buildValue arg ++ ")")
+        _ -> stackPush (String.join "" ("(" :: (buildUnaryMultiple expr.children expr.functionName)))
                                           
         
                                           

@@ -52,19 +52,36 @@ inputsToValues inputs idToIndex =
                 (inputToValue input idToIndex)
                 (inputsToValues rest idToIndex)
 
-checkCorrectNumberArguments builtIn call =
+checkCorrectNumberArguments builtIn inputs =
     case builtIn.argList of
-        Finite args -> (List.length call.inputs) >= (List.length args)
-        Infinite args othername -> (List.length call.inputs) >= (List.length args)
+        Finite args -> (List.length inputs) >= (List.length args)
+        Infinite args othername -> (List.length inputs) >= (List.length args)
+
+dropFinalHole argList =
+    case argList of
+        [] -> []
+        [finalArg] ->
+            case finalArg of
+                Hole -> []
+                _ -> argList
+        (arg::args) -> arg :: dropFinalHole args
+                                   
+-- drops the hole at the end of inifinite arguments
+argumentSubset builtIn inputs =
+    case builtIn.argList of
+        Finite args -> inputs
+        Infinite args othername -> dropFinalHole inputs
                     
 callToExprBuiltIn builtIn call idToIndex =
-    if checkCorrectNumberArguments builtIn call
-    then
-        (case inputsToValues call.inputs idToIndex of
-             Ok children -> Ok (Expr call.functionName call.id children builtIn.compileExprFunction)
-             Err e -> Err e)
-    else
-        Err "Wrong number of arguments"
+    let filteredInputs = argumentSubset builtIn call.inputs
+    in
+        if (checkCorrectNumberArguments builtIn filteredInputs)
+        then
+            (case inputsToValues filteredInputs idToIndex of
+                 Ok children -> Ok (Expr call.functionName call.id children builtIn.compileExprFunction)
+                 Err e -> Err e)
+        else
+            Err "Wrong number of arguments"
                     
 callToExpr : Call -> IdToIndex -> Result Error Expr
 callToExpr call idToIndex =
