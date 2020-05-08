@@ -3,6 +3,8 @@ module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updat
 import Dict exposing (Dict)
 
 import Model exposing (..)
+import BuiltIn exposing (builtInFunctions, ArgList(..))
+
 
 idToPosition func dict pos =
     case func of
@@ -11,21 +13,53 @@ idToPosition func dict pos =
                    (Dict.insert e.id pos dict)
                    (pos + 1)                                
 
+eliminateHoles inputs =
+    case inputs of
+        [] -> [Hole]
+        (input::rest) ->
+            case input of
+                Hole -> eliminateHoles rest
+                _ -> input :: eliminateHoles rest
+                    
+eliminateHolesAfter inputs mandatoryLength =
+    case mandatoryLength of
+        0 -> eliminateHoles inputs
+        _ -> (eliminateHolesAfter inputs (mandatoryLength-1))
+             
+fixInfiniteInputs inputs mandatoryLength = 
+    (eliminateHolesAfter inputs mandatoryLength)
+                    
 
-updateInputInputs : List Input -> Int -> (Input -> Input) -> List Input
-updateInputInputs inputs index inputFunc =
+fixInputsForInfiniteArguments : List Input -> Call -> List Input
+fixInputsForInfiniteArguments inputs call =
+    case Dict.get call.functionName builtInFunctions of
+        Nothing -> inputs
+        Just builtInSpec ->
+            case builtInSpec.argList of
+                Infinite base lastName -> fixInfiniteInputs inputs (List.length base)
+                _ -> inputs
+                                
+
+updateInputAtIndex : List Input -> Int -> (Input -> Input) -> List Input
+updateInputAtIndex inputs index inputFunc =
     case inputs of
         [] -> []
         (thisinput::rest) ->
             if index == 0
             then (inputFunc thisinput) :: rest
             else
-                thisinput :: updateInputInputs rest (index - 1) inputFunc
+                thisinput :: updateInputAtIndex rest (index - 1) inputFunc
+
+                    
+                     
+updateInputInputs : List Input -> Int -> (Input -> Input) -> Call -> List Input
+updateInputInputs inputs index inputFunc call =
+    fixInputsForInfiniteArguments (updateInputAtIndex inputs index inputFunc) call
 
 updateInputCall call id index inputFunc =
     if id == call.id
     then
-        {call | inputs = updateInputInputs call.inputs index inputFunc}
+        {call | inputs = updateInputInputs call.inputs index inputFunc call}
     else
         call
                         

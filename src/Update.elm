@@ -116,8 +116,7 @@ outputHighlightModel model id =
 inputUpdateModel model id index str =
     case str of
         "" -> (updateInput model id index (\i -> Hole), focusInputCommand id index)
-        _  -> (updateInput model id index (\i -> (Text str)), Cmd.none)
-    
+        _  -> (updateInput model id index (\i -> (Text str)), Cmd.none) 
 
 modelNoneSelected model =
     let oldMouse = model.mouseState
