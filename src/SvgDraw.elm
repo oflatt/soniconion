@@ -229,11 +229,11 @@ drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighligh
                     ,lineX
                     ,lastY
                     -- above node by inputcounter spacing
-                    ,(nodeX + blockPos.xpos)
+                    ,nodeX
                     ,lastY
                         
                     -- on block node
-                    ,(nodeX + blockPos.xpos)
+                    ,nodeX
                     ,(blockPos.ypos + ViewVariables.nodeRadius)
                     ]
             in
