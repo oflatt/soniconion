@@ -4,7 +4,9 @@ import Expect exposing (Expectation)
 import Test exposing (..)
 
 import TestModel exposing (testFunction)
-    
+
+import BuiltIn exposing (builtInFunctions, waveCompiler)
+import Dict exposing (Dict)
 import Compiler.OnionToExpr exposing (onionToCompModel)
 import Compiler.CompModel exposing (Value(..), Expr)
 import Compiler.CompModel as CompModel
@@ -12,18 +14,19 @@ import Model exposing (Call, Input(..))
 
 numSystemValues = List.length CompModel.systemValues
 
+makeExpr name id values =
+    case Dict.get name builtInFunctions of
+        Just builtInSpec -> (Expr name id values builtInSpec.compileExprFunction)
+        Nothing -> (Expr "bad" -200 [] waveCompiler)
+    
+                  
 onionToCompModelTest =
     describe "onionToCompModel"
-        [test "basic example"
+        [test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [[(Call 0 [] "sine" "")]])
-                       (Ok [[(Expr "sine" 0 [])]])))
-        ,test "basic example with constant arg"
-             (\_ ->
-                  (Expect.equal
-                       (onionToCompModel [[(Call 0 [(Text "2")] "sine" "")]])
-                       (Ok [[(Expr "sine" 0 [(ConstV 2)])]])))
+                       (onionToCompModel [[(Call 0 [(Text "2")] "+" "")]])
+                       (Ok [[(makeExpr "+" 0 [(ConstV 2)])]])))
 
         ,test "test function"
             (\_ ->
@@ -31,13 +34,15 @@ onionToCompModelTest =
                       (onionToCompModel [testFunction])
                       (Ok
                       [
-                       [(Expr "sine" TestModel.sine.id [(ConstV 1)
-                                                       ,(ConstV 440)])
-                       ,(Expr "sine" TestModel.sine2.id [(ConstV 2)
-                                                        ,(ConstV 640)])
-                       ,(Expr "join" TestModel.join.id [(StackIndex (numSystemValues + 0))
-                                                       ,(StackIndex (numSystemValues + 1))])
-                       ,(Expr "play" TestModel.play.id [(StackIndex (numSystemValues + 2))])
+                       [(makeExpr "sine" TestModel.sine.id [(ConstV 1)
+                                                           ,(ConstV 440)
+                                                           ,(ConstV 1)])
+                       ,(makeExpr "sine" TestModel.sine2.id [(ConstV 2)
+                                                            ,(ConstV 640)
+                                                            ,(ConstV 2)])
+                       ,(makeExpr "+" TestModel.join.id [(StackIndex (numSystemValues + 0))
+                                                        ,(StackIndex (numSystemValues + 1))])
+                       ,(makeExpr "+" TestModel.plus.id [(StackIndex (numSystemValues + 2))])
                        ]
                       ])))
         ]

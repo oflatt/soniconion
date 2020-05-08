@@ -61,7 +61,7 @@ getLineRoutingTest =
         ,test "basic example"
             (myexpect
                  (getLineRouting TestModel.testFunction)
-                 [[Nothing, Nothing], [Nothing, Nothing], [Just -1, Just 0], [Just 0]])
+                 [[Nothing, Nothing, Nothing], [Nothing, Nothing, Nothing], [Just -1, Just 0], [Just 0]])
         ,test "complex routing"
             (myexpect
                  (getLineRouting TestModel.complexRoutingFunc)

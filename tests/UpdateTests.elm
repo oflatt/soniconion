@@ -21,7 +21,7 @@ fixInvalidInputs =
         ,test "fix play"
             (\_ ->
                  (Expect.equal (ModelHelpers.fixInvalidInputs testInvalidFunction)
-                      [sine, sine2, playWithHole, join]))]
+                      [sine, sine2, plusWithHole, join]))]
                 
 
 

@@ -1,5 +1,5 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
-                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..))
+                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler)
 import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary)
 import Dict exposing (Dict)
@@ -19,6 +19,8 @@ type alias BuiltInSpec = {functionName: String
                          ,compileExprFunction: Compiler.CompModel.CompileExprFunction}
 type alias BuiltInList = List BuiltInSpec
 
+waveCompiler = CompileExprFunction buildWave
+    
 waveList : List BuiltInSpec
 waveList = [(BuiltInSpec
                  "sine"
