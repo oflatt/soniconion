@@ -31,3 +31,13 @@ complexRoutingFunc =
     ,(Call 12 [Output 80, Output 23] "sine" "")
      ]
 
+plusCall id routes =
+    (Call id (List.map Output routes) "+" "")
+    
+threeLeftRoutingFunc : Function
+threeLeftRoutingFunc =
+    [(plusCall 0 [])
+    ,(plusCall 1 [])
+    ,(plusCall 2 [0])
+    ,(plusCall 3 [1, 1])
+    ,(plusCall 4 [2, 2])]

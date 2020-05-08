@@ -68,6 +68,7 @@ buildUnaryWithSingleLead lead expr =
 buildJavascriptCall funcName expr =
     let values = String.join "," (List.map buildValue expr.children)
     in
-        String.join ""
-            [funcName, "(", values, ")"]
+        stackPush
+        (String.join ""
+             [funcName, "(", values, ")"])
                                           

@@ -28,23 +28,23 @@ outputConnectedArrayTest func expected =
     in
         (myexpect
              connectedArray
-             expected)
+             (Tuple.mapBoth Array.fromList Array.fromList expected))
         
 fixInvalidInputs : Test
 fixInvalidInputs =
     describe "getOutputConnectedArray"
         [test "no connections"
              (outputConnectedArrayTest TestModel.testFunctionHoles
-                  (Array.fromList [0,0,0,0]
-                  ,Array.fromList [0,0,0,0]))
+                  ([0,0,0,0]
+                  ,[0,0,0,0]))
         ,test "test connections"
             (outputConnectedArrayTest TestModel.testFunction
-                  ((Array.fromList [1, 0, 1, 0])
-                  ,(Array.fromList [0, 1, 0, 0])))
+                  ([1, 0, 1, 0]
+                  ,[0, 1, 0, 0]))
         ,test "test complex"
             (outputConnectedArrayTest TestModel.complexRoutingFunc
-                 ((Array.fromList [1, 1, 0, 0, 0])
-                 ,(Array.fromList [1, 1, 0, 1, 0])))
+                 ([1, 1, 0, 0, 0]
+                 ,[1, 1, 0, 1, 0]))
         ]
                 
 
@@ -65,7 +65,15 @@ getLineRoutingTest =
         ,test "complex routing"
             (myexpect
                  (getLineRouting TestModel.complexRoutingFunc)
-                 [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])]
+                 [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])
+        ,test "three levels on left"
+            (myexpect
+                 (getLineRouting TestModel.threeLeftRoutingFunc)
+                 [[]
+                 ,[]
+                 ,[Just -3]
+                 ,[Just 2,Just -2]
+                 ,[Just 1,Just -1]])]
 
 
 blockPositionToTuple blockPos =
