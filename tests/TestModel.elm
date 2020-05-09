@@ -20,16 +20,22 @@ testFunctionHoles = [(Call 80 [Text "1", Hole] "sine" "")
                     ,(Call 85 [Hole, Hole] "+" "")
                     ,(Call 1092392 [Hole] "+" "")]
 
-secondToLastSine = (Call 23 [Output 98, Output 98] "sine" "")
 
+complex0 = (Call 80 [Text "1", Text "2"] "sine" "")
+complex1 = (Call 98 [Output 80, Text "2"] "sine" "")
+complex2 = (Call 83 [Output 80, Text "2"] "sine" "")
+secondToLastSine = (Call 23 [Output 98, Output 98] "sine" "")
+complex3 = secondToLastSine
+complex4 = (Call 12 [Output 80, Output 23] "sine" "")
 complexRoutingFunc : Function    
 complexRoutingFunc =
-    [(Call 80 [Text "1", Text "2"] "sine" "")
-    ,(Call 98 [Output 80, Text "2"] "sine" "")
-    ,(Call 83 [Output 80, Text "2"] "sine" "")
-    ,secondToLastSine
-    ,(Call 12 [Output 80, Output 23] "sine" "")
+    [complex0
+    ,complex1
+    ,complex2
+    ,complex3
+    ,complex4
      ]
+
 
 plusCall id routes =
     (Call id (List.map Output routes) "+" "")

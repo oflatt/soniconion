@@ -1,9 +1,10 @@
-module LineRouting exposing (CallLineRoute, LineRouting, getLineRouting)
+module LineRouting exposing (CallLineRoute, LineRouting, getLineRouting, getOutputOrdering, OutputOrdering, InputInfo)
 
 import ModelHelpers exposing (IdToPos, idToPosition)
 import Model exposing (Function, Call, Input(..), Id)
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Debug exposing (log)
 
 type alias CallLineRoute = Array (Maybe Int) -- the relative positions of the outside of the line to the middle in increments
 type alias LineRouting = Dict Id CallLineRoute
@@ -65,9 +66,6 @@ getOutputOrdering : Function -> IdToPos -> OutputOrdering
 getOutputOrdering func idToPos =
     List.sortBy (byOutput idToPos) (List.concatMap getCallOrderedInputs func)
         
-
-
-        
 countOutputsBetween subOutputConnectedDict startIndex endIndex =
     if endIndex <= (startIndex + 1)
     then
@@ -80,11 +78,11 @@ countOutputsBetween subOutputConnectedDict startIndex endIndex =
 
 findMaxBurden : Array Call -> OutputBurden -> Int -> Int -> Int
 findMaxBurden fArray outputBurden currentIndex maxIndex =
-    if currentIndex >= maxIndex
+    if currentIndex > maxIndex
     then 0
     else
         let callId =
-                (Maybe.withDefault -100
+                log "id" (Maybe.withDefault -100
                      (Maybe.map (\call -> call.id)
                           (Array.get currentIndex fArray)))
         in
@@ -94,17 +92,17 @@ findMaxBurden fArray outputBurden currentIndex maxIndex =
 
 findThisRouting : InputInfo -> OutputBurden -> Array Call -> IdToPos -> Int
 findThisRouting inputInfo outputBurden fArray idToPos =
-    let cIndex = (case Dict.get inputInfo.call.id idToPos of
-                      Just callIndex -> callIndex
-                      Nothing -> 0)-- should never happen
-        oIndex = (case Dict.get inputInfo.outputId idToPos of
-                           Just outputIndex -> outputIndex
-                           Nothing -> 0)-- should never happen
+    let cIndex = log "c" (case Dict.get inputInfo.call.id idToPos of
+                              Just callIndex -> callIndex
+                              Nothing -> 0)-- should never happen
+        oIndex = log "o" (case Dict.get inputInfo.outputId idToPos of
+                              Just outputIndex -> outputIndex
+                              Nothing -> 0)-- should never happen
     in
-        if oIndex == (1 + cIndex)
+        if cIndex == (1 + oIndex)
         then 0
         else
-            max (findMaxBurden fArray outputBurden (oIndex+1) (cIndex-1)) 1
+            (findMaxBurden fArray outputBurden (oIndex+1) (cIndex-1))+1
                     
 -- because of the ordering, we now assume that all outputBurdens between here
 addLineRouting : InputInfo -> OutputBurden -> LineRouting -> Array Call -> IdToPos -> (OutputBurden, LineRouting)
