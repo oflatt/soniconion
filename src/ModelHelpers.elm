@@ -1,10 +1,12 @@
-module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall)
+module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos)
 
 import Dict exposing (Dict)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList(..))
 
+
+type alias IdToPos = Dict Id Int
 
 idToPosition func dict pos =
     case func of

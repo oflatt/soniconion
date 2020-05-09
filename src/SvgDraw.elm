@@ -7,7 +7,8 @@ import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 
 
-import ViewPositions exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, LineRouting)
+import ViewPositions exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition)
+import LineRouting exposing (LineRouting)
 
 import Json.Decode as Json
 import Css exposing (px)
@@ -196,53 +197,47 @@ functionNameshape call viewStructure =
             errorSvgNode "function call without block pos"
                         
 
-drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Maybe Int -> Svg Msg
-drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing =
-    case routing of
-        Nothing -> (errorSvgNode "got nothing where expected routing")
-        Just routeOffset ->
-            let lineX =
-                    if routeOffset < 0
-                    then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset
-                    else
-                        if routeOffset > 0
-                        then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
-                        else otherBlockPos.xpos + ViewVariables.outputNodeX
-                lastY =
-                    (blockPos.ypos + ViewVariables.nodeRadius)
-                    - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
-                nodeX =
-                    case (Dict.get inputCounter blockPos.inputPositions ) of
-                        Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius
-                        Nothing -> -100 -- something went wrong
-                linepoints =
-                    [
-                     (otherBlockPos.xpos + ViewVariables.outputNodeX)
-                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY)
-                    -- just below
-                    ,(otherBlockPos.xpos + ViewVariables.outputNodeX)
-                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
-                    -- to right or left
-                    ,lineX
-                    ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
-                    -- down to other block
-                    ,lineX
-                    ,lastY
-                    -- above node by inputcounter spacing
-                    ,nodeX
-                    ,lastY
+drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> Svg Msg
+drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routeOffset =
+    let lineX =
+            (if routeOffset < 0
+             then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset
+             else
+                 if routeOffset > 0
+                 then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
+                 else otherBlockPos.xpos + ViewVariables.outputNodeX)
+        lastY =
+            (blockPos.ypos + ViewVariables.nodeRadius)
+            - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
+        nodeX =
+            (case (Dict.get inputCounter blockPos.inputPositions ) of
+                 Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius
+                 Nothing -> -100) -- something went wrong
+        linepoints =
+            [
+             (otherBlockPos.xpos + ViewVariables.outputNodeX)
+            ,(otherBlockPos.ypos + ViewVariables.outputNodeY)
+            -- just below
+            ,(otherBlockPos.xpos + ViewVariables.outputNodeX)
+            ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+            -- to right or left
+            ,lineX
+            ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+            -- down to other block
+            ,lineX
+            ,lastY
+            -- above node by inputcounter spacing
+            ,nodeX
+            ,lastY
+                
+            -- on block node
+            ,nodeX
+            ,(blockPos.ypos + ViewVariables.nodeRadius)
+            ]
+    in
+        taxiLine linepoints inputEvent isLineHighlighted
                         
-                    -- on block node
-                    ,nodeX
-                    ,(blockPos.ypos + ViewVariables.nodeRadius)
-                    ]
-            in
-                taxiLine
-                linepoints
-                inputEvent
-                isLineHighlighted
-                   
-
+                        
 taxiLine: List Int -> Svg.Attribute msg -> Bool -> Svg msg
 taxiLine posList inputEvent isLineHighlighted =
     let color =

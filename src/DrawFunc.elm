@@ -1,6 +1,7 @@
 module DrawFunc exposing (drawFuncWithConnections)
 import Model exposing (..)
-import ViewPositions exposing (BlockPositions, CallLineRoute, BlockPosition, ViewStructure)
+import ViewPositions exposing (BlockPositions, BlockPosition, ViewStructure)
+import LineRouting exposing (CallLineRoute)
 import ViewVariables
 import SvgDraw
 import Update exposing (nodeInputId, nodeOutputId)
@@ -13,6 +14,7 @@ import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
 
 import Dict exposing (Dict)
 import Array exposing (Array)
+import Maybe exposing (andThen)
 
 
 import Svg exposing (..)
@@ -30,16 +32,24 @@ drawCall: Call -> Int ->  ViewStructure -> (Svg Msg)
 drawCall call counter viewStructure =
     SvgDraw.drawBuiltIn call counter viewStructure
 
-drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Maybe Int -> Id -> (Svg Msg)
-drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlighted routing outputId =
-    case Dict.get outputId viewStructure.blockPositions of
-        Nothing -> SvgDraw.errorSvgNode "Can't find line output"
-        Just otherBlockPos ->
-            SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing
+getInputRouting : Call -> Int -> ViewStructure -> Maybe Int
+getInputRouting call inputCounter viewStructure =
+    Maybe.withDefault Nothing
+        ((Dict.get call.id viewStructure.lineRouting)
+        |> andThen (Array.get inputCounter))
+        
+drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Id -> (Svg Msg)
+drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlighted outputId =
+    Maybe.withDefault (SvgDraw.errorSvgNode "Can't find line output")
+        (Maybe.map2
+             (\otherBlockPos routing ->
+                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing)
+             (Dict.get outputId viewStructure.blockPositions)
+             (getInputRouting call inputCounter viewStructure))    
 
 
-drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure -> Maybe Int -> Svg.Svg Msg
-drawInput call input blockPos inputCounter viewStructure routing =
+drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
+drawInput call input blockPos inputCounter viewStructure =
     let nodeEvents =
             if viewStructure.isToolbar
             then
@@ -81,7 +91,7 @@ drawInput call input blockPos inputCounter viewStructure routing =
                         (Svg.Events.onMouseDown (OutputClick id))
                 in
                     Svg.node "g" []
-                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvent isLineHighlighted routing id)
+                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvent isLineHighlighted id)
                         ,(nodeWithEvent ())]
             Text str ->
                 (SvgDraw.drawTextInput
@@ -95,19 +105,16 @@ drawInput call input blockPos inputCounter viewStructure routing =
             Hole -> (nodeWithEvent ())
                     
                         
-drawInputLines call inputs blockPos inputCounter viewStructure lineRouting =
+drawInputLines call inputs blockPos inputCounter viewStructure =
     case inputs of
         [] -> [SvgDraw.nodeEvent (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id)]
         (input::rest) ->
-            case lineRouting of
-                [] -> [SvgDraw.errorSvgNode "not enough routings for call"]
-                (routing::restRouting) ->
-                    (drawInput call input blockPos inputCounter viewStructure routing) ::
-                        (drawInputLines call rest blockPos (inputCounter + 1) viewStructure restRouting)
+            (drawInput call input blockPos inputCounter viewStructure) ::
+                (drawInputLines call rest blockPos (inputCounter + 1) viewStructure)
 
 
-drawCallInputs: Call -> ViewStructure -> MouseState -> CallLineRoute -> (Svg Msg)
-drawCallInputs call viewStructure mouseState routingList =
+drawCallInputs: Call -> ViewStructure -> MouseState -> (Svg Msg)
+drawCallInputs call viewStructure mouseState =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.g
@@ -117,8 +124,7 @@ drawCallInputs call viewStructure mouseState routingList =
                      call.inputs
                      blockPos
                      0
-                     viewStructure
-                     routingList)
+                     viewStructure)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position"
 
@@ -142,15 +148,12 @@ drawCallEnding call blockPositions mouseState =
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"
                 
 -- there should be one line routing list per frame
-drawFuncInputs func viewStructure mouseState lineRouting =
+drawFuncInputs func viewStructure mouseState=
     case func of
         [] -> []
         (call::calls) ->
-            case lineRouting of
-                [] -> [SvgDraw.errorSvgNode "lineRouting not big enough"]
-                (routing::restRouting) ->
-                    (drawCallInputs call viewStructure mouseState routing)
-                    :: (drawFuncInputs calls viewStructure mouseState restRouting)
+            (drawCallInputs call viewStructure mouseState)
+            :: (drawFuncInputs calls viewStructure mouseState)
 
 drawFuncEndings func blockPositions mouseState =
     case func of
@@ -170,5 +173,5 @@ drawFuncWithConnections viewStructure mouseState =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.funcxoffset viewStructure.funcyoffset]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
-        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure mouseState viewStructure.lineRouting)
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure mouseState)
         ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc viewStructure.blockPositions mouseState)]

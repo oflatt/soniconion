@@ -1,12 +1,12 @@
 module ViewPositions exposing (..)
 
 
+import LineRouting exposing (LineRouting, getLineRouting)
 import Model exposing (..)
+import ModelHelpers exposing (idToPosition, IdToPos)
 import ViewVariables
 
 import Dict exposing (Dict)
-import Array exposing (Array)
-import List
 import Debug exposing (log)
 
 -- skip index of -1 if 
@@ -43,8 +43,6 @@ type alias BlockPosition = {xpos: Int
                            ,ypos: Int
                            ,inputPositions: Dict Int InputPosition}
     
-type alias CallLineRoute = List (Maybe Int) -- the relative positions of the outside of the line to the middle, in increments
-type alias LineRouting = List CallLineRoute
 type alias BlockPositions = Dict Id BlockPosition
 type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
@@ -149,12 +147,8 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset
                               positionsWithoutMoved)
             Nothing -> positionsWithoutMoved
 
-type alias IdToPos = Dict Id Int
-
-idToPosAdd func dict currentPos =
-    case func of
-        [] -> dict
-        (call::calls) -> Dict.insert call.id currentPos (idToPosAdd calls dict (currentPos + 1))
+makeSortedFunc func blockPositions =
+    List.sortBy (blockSorter blockPositions) func
 
 blockSorter blockPositions call =
     case Dict.get call.id blockPositions of
@@ -162,125 +156,11 @@ blockSorter blockPositions call =
         Just pos -> pos.ypos
                    
 
-makeIdToPos : Function -> BlockPositions -> (Function, IdToPos)
-makeIdToPos func blockPositions =
-    let sorted = (List.sortBy (blockSorter blockPositions) func)
-    in
-        (sorted, idToPosAdd sorted Dict.empty 0)
-
-updateConnectedArray : List Input -> IdToPos -> ConnectedArray -> Bool -> (Bool, ConnectedArray)
-updateConnectedArray inputs indexToPos array isLeft =
-    case inputs of
-        [] -> (isLeft, array)
-        (input::rest) ->
-            case input of
-                Output id ->
-                    case Dict.get id indexToPos of
-                        -- TODO throw error here
-                        Nothing -> updateConnectedArray rest indexToPos array isLeft
-                        Just pos ->
-                            if isLeft
-                            then
-                                updateConnectedArray rest indexToPos
-                                    ((Array.set pos 1 (Tuple.first array)), (Tuple.second array))
-                                    False
-                            else
-                                updateConnectedArray
-                                    rest indexToPos
-                                    ((Tuple.first array), (Array.set pos 1 (Tuple.second array)))
-                                    True
-                _ -> updateConnectedArray rest indexToPos array isLeft
-                     
-type alias ConnectedArray = (Array Int, Array Int)
-                     
--- returns an array with 1's representing that the output is connected
-getOutputConnectedArrayHelper: Function -> IdToPos -> ConnectedArray -> Bool -> ConnectedArray
-getOutputConnectedArrayHelper func indexToPos array isLeft =
-    case func of
-        [] -> array
-        (call::calls) ->
-            let update = (updateConnectedArray call.inputs indexToPos array isLeft)
-            in
-                getOutputConnectedArrayHelper calls indexToPos (Tuple.second update) (Tuple.first update)
-
-getOutputConnectedArray : Function -> IdToPos -> ConnectedArray
-getOutputConnectedArray func indexToPos =
-    let oneArray = (Array.repeat (List.length func) 0)
-    in
-        getOutputConnectedArrayHelper func indexToPos (oneArray, oneArray) True
-
-countOutputsBetween subConnectedArray startIndex endIndex =
-    if endIndex <= (startIndex + 1)
-    then
-        0
-    else
-        case Array.get (startIndex+1) subConnectedArray of
-            Nothing -> 0 -- TODO throw error
-            Just connectedness ->
-                connectedness + (countOutputsBetween subConnectedArray (startIndex+1) endIndex)
-                
-    
-getOutputRouting id connectedArray idToPos isLeft thisCallId =
-    case Dict.get id idToPos of
-        Nothing -> 0 -- TODO throw error
-        Just outputIndex ->
-            case Dict.get thisCallId idToPos of
-                Nothing -> 0 -- TODO throw error
-                Just callIndex ->
-                    if outputIndex == (callIndex-1)
-                    then 0
-                    else
-                        let startingSign =
-                                if isLeft
-                                then -1
-                                else 1
-                            subConnectedArray =
-                                if isLeft
-                                then (Tuple.first connectedArray)
-                                else (Tuple.second connectedArray)
-                        in
-                            startingSign + (startingSign * (countOutputsBetween subConnectedArray outputIndex callIndex))
-    
-getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Id -> (CallLineRoute, Bool)
-getInputsRouting inputs connectedArray idToPos isLeft thisCallId =
-    case inputs of
-        [] -> ([], isLeft)
-        (input::rest) ->
-            case input of
-                Output id ->
-                    let
-                        restAnswer = getInputsRouting rest connectedArray idToPos (not isLeft) thisCallId
-                    in
-                        ((Just (getOutputRouting id connectedArray idToPos isLeft thisCallId) ::
-                             (Tuple.first restAnswer))
-                        ,(Tuple.second restAnswer))
-                        
-                _ ->
-                    let
-                        restAnswer = getInputsRouting rest connectedArray idToPos isLeft thisCallId
-                    in
-                        (Nothing :: (Tuple.first restAnswer)
-                        ,(Tuple.second restAnswer))
-
-    
-getLineRouting : Function -> ConnectedArray -> IdToPos -> Bool -> LineRouting
-getLineRouting func connectedArray idToPos isLeft=
-    case func of
-        [] -> []
-        (call::calls) ->
-            let routing = (getInputsRouting call.inputs connectedArray idToPos isLeft call.id)
-            in
-             (Tuple.first routing) ::
-                (getLineRouting calls connectedArray idToPos (Tuple.second routing))
-
                     
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
-        madePos = makeIdToPos func blockPositions
-        sortedFunc = (Tuple.first madePos)
-        idToPos = (Tuple.second madePos)
-        connectedArray = getOutputConnectedArray sortedFunc idToPos
-        lineRouting = getLineRouting sortedFunc connectedArray idToPos True
+        sortedFunc = makeSortedFunc func blockPositions
+        lineRouting = getLineRouting sortedFunc
     in
         (ViewStructure
              blockPositions
