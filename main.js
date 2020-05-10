@@ -6280,83 +6280,165 @@ var $author$project$BuiltIn$BuiltInSpec = F3(
 var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
 	return {$: 'CompileExprFunction', a: a};
 };
+var $author$project$BuiltIn$Finite = function (a) {
+	return {$: 'Finite', a: a};
+};
+var $author$project$Compiler$CompModel$CallFunction = F2(
+	function (a, b) {
+		return {$: 'CallFunction', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$Literal = function (a) {
+	return {$: 'Literal', a: a};
+};
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Compiler$CompileToAST$getCacheValue = function (ast) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		$author$project$Compiler$CompModel$Literal('getValueAt'),
+		_List_fromArray(
+			[ast]));
+};
+var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
+	if (val.$ === 'StackIndex') {
+		var i = val.a;
+		return $author$project$Compiler$CompileToAST$getCacheValue(
+			$author$project$Compiler$CompModel$Literal(
+				$elm$core$String$fromInt(i)));
+	} else {
+		var c = val.a;
+		return $author$project$Compiler$CompModel$Literal(
+			$elm$core$String$fromFloat(c));
+	}
+};
+var $author$project$Compiler$CompileBuiltIn$buildJavascriptCall = F2(
+	function (funcName, expr) {
+		return A2(
+			$author$project$Compiler$CompModel$CallFunction,
+			$author$project$Compiler$CompModel$Literal(funcName),
+			A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children));
+	});
+var $author$project$BuiltIn$javascriptFunctionList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'mod',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['numerator', 'divisor'])),
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			$author$project$Compiler$CompileBuiltIn$buildJavascriptCall('mathMod')))
+	]);
 var $author$project$BuiltIn$Infinite = F2(
 	function (a, b) {
 		return {$: 'Infinite', a: a, b: b};
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
-	if (val.$ === 'StackIndex') {
-		var i = val.a;
-		return 'stack[' + ($elm$core$String$fromInt(i) + ']');
-	} else {
-		var c = val.a;
-		return $elm$core$String$fromFloat(c);
-	}
-};
+var $author$project$Compiler$CompModel$SingleOp = F2(
+	function (a, b) {
+		return {$: 'SingleOp', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
+var $author$project$Compiler$CompModel$Unary = F3(
+	function (a, b, c) {
+		return {$: 'Unary', a: a, b: b, c: c};
+	});
 var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
 	function (children, op) {
 		if (!children.b) {
-			return _List_fromArray(
-				['']);
+			return $author$project$Compiler$CompModel$Empty;
 		} else {
 			if (!children.b.b) {
 				var arg = children.a;
-				return _List_fromArray(
-					[
-						$author$project$Compiler$CompileBuiltIn$buildValue(arg)
-					]);
+				return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
 			} else {
 				var arg = children.a;
 				var args = children.b;
-				return A2(
-					$elm$core$List$cons,
+				return A3(
+					$author$project$Compiler$CompModel$Unary,
+					op,
 					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
-					A2(
-						$elm$core$List$cons,
-						op,
-						A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op)));
+					A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op));
 			}
 		}
 	});
-var $author$project$Compiler$CompileBuiltIn$stackPush = function (str) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		_List_fromArray(
-			['stack.push(', str, ');']));
-};
-var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
-	var _v0 = expr.children;
-	if (!_v0.b) {
-		return '';
-	} else {
-		if (!_v0.b.b) {
-			var arg = _v0.a;
-			return $author$project$Compiler$CompileBuiltIn$stackPush(
-				expr.functionName + (' ' + $author$project$Compiler$CompileBuiltIn$buildValue(arg)));
+var $author$project$Compiler$CompileBuiltIn$buildGeneralUnary = F3(
+	function (defaultValue, singleArgumentLead, expr) {
+		var _v0 = expr.children;
+		if (!_v0.b) {
+			return $author$project$Compiler$CompModel$Literal(defaultValue);
 		} else {
-			return A2(
-				$elm$core$String$join,
-				'',
-				A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName));
+			if (!_v0.b.b) {
+				var arg = _v0.a;
+				if (singleArgumentLead === '') {
+					return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
+				} else {
+					var lead = singleArgumentLead;
+					return A2(
+						$author$project$Compiler$CompModel$SingleOp,
+						lead,
+						$author$project$Compiler$CompileBuiltIn$buildValue(arg));
+				}
+			} else {
+				return A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName);
+			}
 		}
-	}
+	});
+var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
+	return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', '', expr);
 };
+var $author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault = F2(
+	function (_default, expr) {
+		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, _default, '', expr);
+	});
+var $author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead = F2(
+	function (lead, expr) {
+		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', lead, expr);
+	});
 var $author$project$BuiltIn$unaryList = _List_fromArray(
 	[
 		A3(
 		$author$project$BuiltIn$BuiltInSpec,
 		'+',
+		A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('0'))),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'-',
 		A2(
 			$author$project$BuiltIn$Infinite,
 			_List_fromArray(
 				['num']),
 			'nums'),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary))
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			$author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead('-'))),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'/',
+		A2(
+			$author$project$BuiltIn$Infinite,
+			_List_fromArray(
+				['numerator']),
+			'denominators'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary)),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'*',
+		A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('1')))
 	]);
-var $author$project$BuiltIn$Finite = function (a) {
-	return {$: 'Finite', a: a};
+var $author$project$Compiler$CompModel$Begin = function (a) {
+	return {$: 'Begin', a: a};
+};
+var $author$project$Compiler$CompModel$If = F3(
+	function (a, b, c) {
+		return {$: 'If', a: a, b: b, c: c};
+	});
+var $author$project$Compiler$CompModel$Note = function (a) {
+	return {$: 'Note', a: a};
+};
+var $author$project$Compiler$CompModel$NotesPush = function (a) {
+	return {$: 'NotesPush', a: a};
 };
 var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
 	var _v0 = expr.children;
@@ -6366,28 +6448,22 @@ var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
 		var frequency = _v1.a;
 		var _v2 = _v1.b;
 		var duration = _v2.a;
-		var timeStr = $author$project$Compiler$CompileBuiltIn$buildValue(time);
-		var frequencyStr = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
-		var durationStr = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
-		var endStr = '(' + (timeStr + ('+' + (durationStr + ')')));
-		return A2(
-			$elm$core$String$join,
-			'',
+		var timeAST = $author$project$Compiler$CompileBuiltIn$buildValue(time);
+		var frequencyAST = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
+		var durationAST = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
+		return $author$project$Compiler$CompModel$Begin(
 			_List_fromArray(
 				[
-					$author$project$Compiler$CompileBuiltIn$stackPush(endStr),
-					'if(time>',
-					timeStr,
-					' && time<',
-					endStr,
-					'){',
-					'notes.push({frequency: ',
-					frequencyStr,
-					'});',
-					'}'
+					A3(
+					$author$project$Compiler$CompModel$If,
+					A3($author$project$Compiler$CompModel$Unary, '>', timeAST, durationAST),
+					$author$project$Compiler$CompModel$NotesPush(
+						$author$project$Compiler$CompModel$Note(frequencyAST)),
+					$author$project$Compiler$CompModel$Empty),
+					A3($author$project$Compiler$CompModel$Unary, '+', timeAST, durationAST)
 				]));
 	} else {
-		return '';
+		return $author$project$Compiler$CompModel$Empty;
 	}
 };
 var $author$project$BuiltIn$waveList = _List_fromArray(
@@ -6400,7 +6476,9 @@ var $author$project$BuiltIn$waveList = _List_fromArray(
 				['time', 'frequency', 'duration'])),
 		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave))
 	]);
-var $author$project$BuiltIn$builtInFunctionList = _Utils_ap($author$project$BuiltIn$waveList, $author$project$BuiltIn$unaryList);
+var $author$project$BuiltIn$builtInFunctionList = _Utils_ap(
+	$author$project$BuiltIn$waveList,
+	_Utils_ap($author$project$BuiltIn$unaryList, $author$project$BuiltIn$javascriptFunctionList));
 var $author$project$BuiltIn$nameTuple = function (builtInList) {
 	return _Utils_Tuple2(builtInList.functionName, builtInList);
 };
@@ -7109,104 +7187,59 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Compiler$Compile$buildExpr = function (expr) {
-	var _v0 = A2($elm$core$Dict$get, expr.functionName, $author$project$BuiltIn$builtInFunctions);
-	if (_v0.$ === 'Nothing') {
-		return '';
-	} else {
-		var val = _v0.a;
-		var _v1 = expr.compileExprFunction;
-		var func = _v1.a;
-		return func(expr);
-	}
-};
-var $author$project$Compiler$Compile$buildMethod = function (method) {
-	if (!method.b) {
-		return _List_Nil;
-	} else {
-		var expr = method.a;
-		var exprs = method.b;
-		return A2(
-			$elm$core$List$cons,
-			$author$project$Compiler$Compile$buildExpr(expr),
-			$author$project$Compiler$Compile$buildMethod(exprs));
-	}
-};
-var $author$project$Compiler$Compile$buildMethodString = function (method) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		$author$project$Compiler$Compile$buildMethod(method));
-};
-var $author$project$Compiler$Compile$javascriptTail = A2(
-	$elm$core$String$join,
-	'',
-	_List_fromArray(
-		['update(state, notes);', 'function recur() {', 'step(state);', '}', 'window.setTimeout(recur, 0);', '}', 'step(makeInitialState());']));
-var $author$project$Compiler$Compile$buildMethods = function (compModel) {
-	if (!compModel.b) {
-		return _List_fromArray(
-			[$author$project$Compiler$Compile$javascriptTail]);
-	} else {
-		var method = compModel.a;
-		var methods = compModel.b;
-		return A2(
-			$elm$core$List$cons,
-			$author$project$Compiler$Compile$buildMethodString(method),
-			$author$project$Compiler$Compile$buildMethods(methods));
-	}
-};
-var $author$project$Compiler$Compile$javascriptHead = A2(
-	$elm$core$String$join,
-	'',
-	_List_fromArray(
-		['var startTime = getTime();', 'function step(state){', 'var stack = [];', 'var notes = [];', 'var time = getTime()-startTime;']));
-var $author$project$Compiler$Compile$pushSystemValue = function (sysVal) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		_List_fromArray(
-			['stack.push(', sysVal.b, ');']));
-};
-var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
-	[
-		_Utils_Tuple2('time', 'time'),
-		_Utils_Tuple2('mouseX', 'window.mouseXPos'),
-		_Utils_Tuple2('mouseY', 'window.mouseYPos')
-	]);
-var $author$project$Compiler$Compile$systemValues = A2(
-	$elm$core$String$join,
-	'',
-	A2($elm$core$List$map, $author$project$Compiler$Compile$pushSystemValue, $author$project$Compiler$CompModel$systemValues));
 var $author$project$Compiler$Compile$compile = function (compModel) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		A2(
-			$elm$core$List$cons,
-			$author$project$Compiler$Compile$javascriptHead,
-			A2(
-				$elm$core$List$cons,
-				$author$project$Compiler$Compile$systemValues,
-				$author$project$Compiler$Compile$buildMethods(compModel))));
+	return '';
 };
 var $author$project$Compiler$CompModel$Expr = F4(
 	function (functionName, id, children, compileExprFunction) {
 		return {children: children, compileExprFunction: compileExprFunction, functionName: functionName, id: id};
 	});
+var $author$project$Compiler$OnionToExpr$dropFinalHole = function (argList) {
+	if (!argList.b) {
+		return _List_Nil;
+	} else {
+		if (!argList.b.b) {
+			var finalArg = argList.a;
+			if (finalArg.$ === 'Hole') {
+				return _List_Nil;
+			} else {
+				return argList;
+			}
+		} else {
+			var arg = argList.a;
+			var args = argList.b;
+			return A2(
+				$elm$core$List$cons,
+				arg,
+				$author$project$Compiler$OnionToExpr$dropFinalHole(args));
+		}
+	}
+};
+var $author$project$Compiler$OnionToExpr$argumentSubset = F2(
+	function (builtIn, inputs) {
+		var _v0 = builtIn.argList;
+		if (_v0.$ === 'Finite') {
+			var args = _v0.a;
+			return inputs;
+		} else {
+			var args = _v0.a;
+			var othername = _v0.b;
+			return $author$project$Compiler$OnionToExpr$dropFinalHole(inputs);
+		}
+	});
 var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
-	function (builtIn, call) {
+	function (builtIn, inputs) {
 		var _v0 = builtIn.argList;
 		if (_v0.$ === 'Finite') {
 			var args = _v0.a;
 			return _Utils_cmp(
-				$elm$core$List$length(call.inputs),
+				$elm$core$List$length(inputs),
 				$elm$core$List$length(args)) > -1;
 		} else {
 			var args = _v0.a;
 			var othername = _v0.b;
 			return _Utils_cmp(
-				$elm$core$List$length(call.inputs),
+				$elm$core$List$length(inputs),
 				$elm$core$List$length(args)) > -1;
 		}
 	});
@@ -7779,6 +7812,12 @@ var $author$project$MusicTheory$namedFrequencies = A2(
 	$elm$core$List$concatMap,
 	$author$project$MusicTheory$namedFrequenciesForOffset,
 	A2($elm$core$List$range, 0, $author$project$MusicTheory$offsetLimit));
+var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
+	[
+		_Utils_Tuple2('time', 'time'),
+		_Utils_Tuple2('mouseX', 'window.mouseXPos'),
+		_Utils_Tuple2('mouseY', 'window.mouseYPos')
+	]);
 var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
 	_Utils_ap(
 		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
@@ -7857,8 +7896,9 @@ var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
 	});
 var $author$project$Compiler$OnionToExpr$callToExprBuiltIn = F3(
 	function (builtIn, call, idToIndex) {
-		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, builtIn, call)) {
-			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, call.inputs, idToIndex);
+		var filteredInputs = A2($author$project$Compiler$OnionToExpr$argumentSubset, builtIn, call.inputs);
+		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, builtIn, filteredInputs)) {
+			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, filteredInputs, idToIndex);
 			if (_v0.$ === 'Ok') {
 				var children = _v0.a;
 				return $elm$core$Result$Ok(
@@ -8019,7 +8059,7 @@ var $author$project$BuiltIn$constructCall = F2(
 					$author$project$BuiltIn$callWithHoles,
 					id,
 					functionName,
-					$elm$core$List$length(firstArgs));
+					$elm$core$List$length(firstArgs) + 1);
 			} else {
 				var args = _v1.a;
 				return A3(
@@ -11324,36 +11364,107 @@ var $author$project$SvgDraw$taxiLine = F3(
 			_List_Nil);
 	});
 var $author$project$SvgDraw$drawConnector = F7(
-	function (call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routing) {
-		if (routing.$ === 'Nothing') {
-			return $author$project$SvgDraw$errorSvgNode('got nothing where expected routing');
+	function (call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routeOffset) {
+		var nodeX = function () {
+			var _v0 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
+			if (_v0.$ === 'Just') {
+				var inputPos = _v0.a;
+				return inputPos.a + $author$project$ViewVariables$nodeRadius;
+			} else {
+				return -100;
+			}
+		}();
+		var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX));
+		var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
+		var linepoints = _List_fromArray(
+			[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
+		return A3($author$project$SvgDraw$taxiLine, linepoints, inputEvent, isLineHighlighted);
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
 		} else {
-			var routeOffset = routing.a;
-			var nodeX = function () {
-				var _v1 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
-				if (_v1.$ === 'Just') {
-					var inputPos = _v1.a;
-					return inputPos.a + $author$project$ViewVariables$nodeRadius;
-				} else {
-					return -100;
-				}
-			}();
-			var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX));
-			var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
-			var linepoints = _List_fromArray(
-				[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
-			return A3($author$project$SvgDraw$taxiLine, linepoints, inputEvent, isLineHighlighted);
+			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$DrawFunc$drawOutputLine = F8(
-	function (call, blockPos, inputCounter, viewStructure, inputEvent, isLineHighlighted, routing, outputId) {
-		var _v0 = A2($elm$core$Dict$get, outputId, viewStructure.blockPositions);
-		if (_v0.$ === 'Nothing') {
-			return $author$project$SvgDraw$errorSvgNode('Can\'t find line output');
-		} else {
-			var otherBlockPos = _v0.a;
-			return A7($author$project$SvgDraw$drawConnector, call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routing);
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
 		}
+	});
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $author$project$DrawFunc$getInputRouting = F3(
+	function (call, inputCounter, viewStructure) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Maybe$Nothing,
+			A2(
+				$elm$core$Maybe$andThen,
+				$elm$core$Array$get(inputCounter),
+				A2($elm$core$Dict$get, call.id, viewStructure.lineRouting)));
+	});
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $author$project$DrawFunc$drawOutputLine = F7(
+	function (call, blockPos, inputCounter, viewStructure, inputEvent, isLineHighlighted, outputId) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$SvgDraw$errorSvgNode('Can\'t find line output'),
+			A3(
+				$elm$core$Maybe$map2,
+				F2(
+					function (otherBlockPos, routing) {
+						return A7($author$project$SvgDraw$drawConnector, call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routing);
+					}),
+				A2($elm$core$Dict$get, outputId, viewStructure.blockPositions),
+				A3($author$project$DrawFunc$getInputRouting, call, inputCounter, viewStructure)));
 	});
 var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
@@ -11472,8 +11583,8 @@ var $elm$svg$Svg$Events$onMouseDown = function (msg) {
 		'mousedown',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$DrawFunc$drawInput = F6(
-	function (call, input, blockPos, inputCounter, viewStructure, routing) {
+var $author$project$DrawFunc$drawInput = F5(
+	function (call, input, blockPos, inputCounter, viewStructure) {
 		var nodePosition = function () {
 			var _v4 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
 			if (_v4.$ === 'Just') {
@@ -11530,7 +11641,7 @@ var $author$project$DrawFunc$drawInput = F6(
 					_List_Nil,
 					_List_fromArray(
 						[
-							A8($author$project$DrawFunc$drawOutputLine, call, blockPos, inputCounter, viewStructure, outputEvent, isLineHighlighted, routing, id),
+							A7($author$project$DrawFunc$drawOutputLine, call, blockPos, inputCounter, viewStructure, outputEvent, isLineHighlighted, id),
 							nodeWithEvent(_Utils_Tuple0)
 						]));
 			case 'Text':
@@ -11540,8 +11651,8 @@ var $author$project$DrawFunc$drawInput = F6(
 				return nodeWithEvent(_Utils_Tuple0);
 		}
 	});
-var $author$project$DrawFunc$drawInputLines = F6(
-	function (call, inputs, blockPos, inputCounter, viewStructure, lineRouting) {
+var $author$project$DrawFunc$drawInputLines = F5(
+	function (call, inputs, blockPos, inputCounter, viewStructure) {
 		if (!inputs.b) {
 			return _List_fromArray(
 				[
@@ -11555,54 +11666,36 @@ var $author$project$DrawFunc$drawInputLines = F6(
 		} else {
 			var input = inputs.a;
 			var rest = inputs.b;
-			if (!lineRouting.b) {
-				return _List_fromArray(
-					[
-						$author$project$SvgDraw$errorSvgNode('not enough routings for call')
-					]);
-			} else {
-				var routing = lineRouting.a;
-				var restRouting = lineRouting.b;
-				return A2(
-					$elm$core$List$cons,
-					A6($author$project$DrawFunc$drawInput, call, input, blockPos, inputCounter, viewStructure, routing),
-					A6($author$project$DrawFunc$drawInputLines, call, rest, blockPos, inputCounter + 1, viewStructure, restRouting));
-			}
+			return A2(
+				$elm$core$List$cons,
+				A5($author$project$DrawFunc$drawInput, call, input, blockPos, inputCounter, viewStructure),
+				A5($author$project$DrawFunc$drawInputLines, call, rest, blockPos, inputCounter + 1, viewStructure));
 		}
 	});
-var $author$project$DrawFunc$drawCallInputs = F4(
-	function (call, viewStructure, mouseState, routingList) {
+var $author$project$DrawFunc$drawCallInputs = F3(
+	function (call, viewStructure, mouseState) {
 		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
 		if (_v0.$ === 'Just') {
 			var blockPos = _v0.a;
 			return A2(
 				$elm$svg$Svg$g,
 				_List_Nil,
-				A6($author$project$DrawFunc$drawInputLines, call, call.inputs, blockPos, 0, viewStructure, routingList));
+				A5($author$project$DrawFunc$drawInputLines, call, call.inputs, blockPos, 0, viewStructure));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position');
 		}
 	});
-var $author$project$DrawFunc$drawFuncInputs = F4(
-	function (func, viewStructure, mouseState, lineRouting) {
+var $author$project$DrawFunc$drawFuncInputs = F3(
+	function (func, viewStructure, mouseState) {
 		if (!func.b) {
 			return _List_Nil;
 		} else {
 			var call = func.a;
 			var calls = func.b;
-			if (!lineRouting.b) {
-				return _List_fromArray(
-					[
-						$author$project$SvgDraw$errorSvgNode('lineRouting not big enough')
-					]);
-			} else {
-				var routing = lineRouting.a;
-				var restRouting = lineRouting.b;
-				return A2(
-					$elm$core$List$cons,
-					A4($author$project$DrawFunc$drawCallInputs, call, viewStructure, mouseState, routing),
-					A4($author$project$DrawFunc$drawFuncInputs, calls, viewStructure, mouseState, restRouting));
-			}
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCallInputs, call, viewStructure, mouseState),
+				A3($author$project$DrawFunc$drawFuncInputs, calls, viewStructure, mouseState));
 		}
 	});
 var $author$project$DrawFunc$drawFuncWithConnections = F2(
@@ -11622,7 +11715,7 @@ var $author$project$DrawFunc$drawFuncWithConnections = F2(
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
-					A4($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc, viewStructure, mouseState, viewStructure.lineRouting)),
+					A3($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc, viewStructure, mouseState)),
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
@@ -11633,118 +11726,54 @@ var $author$project$ViewPositions$ViewStructure = F7(
 	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, mouseState, isToolbar) {
 		return {blockPositions: blockPositions, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
 	});
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
-var $author$project$ViewPositions$countOutputsBetween = F3(
-	function (subConnectedArray, startIndex, endIndex) {
-		if (_Utils_cmp(endIndex, startIndex + 1) < 1) {
+var $author$project$LineRouting$findMaxBurden = F4(
+	function (fArray, outputBurden, currentIndex, maxIndex) {
+		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
 			return 0;
 		} else {
-			var _v0 = A2($elm$core$Array$get, startIndex + 1, subConnectedArray);
-			if (_v0.$ === 'Nothing') {
-				return 0;
-			} else {
-				var connectedness = _v0.a;
-				return connectedness + A3($author$project$ViewPositions$countOutputsBetween, subConnectedArray, startIndex + 1, endIndex);
-			}
-		}
-	});
-var $author$project$ViewPositions$getOutputRouting = F5(
-	function (id, connectedArray, idToPos, isLeft, thisCallId) {
-		var _v0 = A2($elm$core$Dict$get, id, idToPos);
-		if (_v0.$ === 'Nothing') {
-			return 0;
-		} else {
-			var outputIndex = _v0.a;
-			var _v1 = A2($elm$core$Dict$get, thisCallId, idToPos);
-			if (_v1.$ === 'Nothing') {
-				return 0;
-			} else {
-				var callIndex = _v1.a;
-				if (_Utils_eq(outputIndex, callIndex - 1)) {
-					return 0;
-				} else {
-					var subConnectedArray = isLeft ? connectedArray.a : connectedArray.b;
-					var startingSign = isLeft ? (-1) : 1;
-					return startingSign + (startingSign * A3($author$project$ViewPositions$countOutputsBetween, subConnectedArray, outputIndex, callIndex));
-				}
-			}
-		}
-	});
-var $author$project$ViewPositions$getInputsRouting = F5(
-	function (inputs, connectedArray, idToPos, isLeft, thisCallId) {
-		if (!inputs.b) {
-			return _Utils_Tuple2(_List_Nil, isLeft);
-		} else {
-			var input = inputs.a;
-			var rest = inputs.b;
-			if (input.$ === 'Output') {
-				var id = input.a;
-				var restAnswer = A5($author$project$ViewPositions$getInputsRouting, rest, connectedArray, idToPos, !isLeft, thisCallId);
-				return _Utils_Tuple2(
-					A2(
-						$elm$core$List$cons,
-						$elm$core$Maybe$Just(
-							A5($author$project$ViewPositions$getOutputRouting, id, connectedArray, idToPos, isLeft, thisCallId)),
-						restAnswer.a),
-					restAnswer.b);
-			} else {
-				var restAnswer = A5($author$project$ViewPositions$getInputsRouting, rest, connectedArray, idToPos, isLeft, thisCallId);
-				return _Utils_Tuple2(
-					A2($elm$core$List$cons, $elm$core$Maybe$Nothing, restAnswer.a),
-					restAnswer.b);
-			}
-		}
-	});
-var $author$project$ViewPositions$getLineRouting = F4(
-	function (func, connectedArray, idToPos, isLeft) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			var routing = A5($author$project$ViewPositions$getInputsRouting, call.inputs, connectedArray, idToPos, isLeft, call.id);
+			var callId = A2(
+				$elm$core$Maybe$withDefault,
+				-100,
+				A2(
+					$elm$core$Maybe$map,
+					function (call) {
+						return call.id;
+					},
+					A2($elm$core$Array$get, currentIndex, fArray)));
 			return A2(
-				$elm$core$List$cons,
-				routing.a,
-				A4($author$project$ViewPositions$getLineRouting, calls, connectedArray, idToPos, routing.b));
+				$elm$core$Basics$max,
+				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
+				A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					A2($elm$core$Dict$get, callId, outputBurden)));
 		}
+	});
+var $author$project$LineRouting$findThisRouting = F4(
+	function (inputInfo, outputBurden, fArray, idToPos) {
+		var oIndex = function () {
+			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var outputIndex = _v1.a;
+				return outputIndex;
+			} else {
+				return 0;
+			}
+		}();
+		var cIndex = function () {
+			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v0.$ === 'Just') {
+				var callIndex = _v0.a;
+				return callIndex;
+			} else {
+				return 0;
+			}
+		}();
+		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
+	});
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
 	});
 var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var $elm$core$Array$setHelp = F4(
@@ -11789,114 +11818,254 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
-var $author$project$ViewPositions$updateConnectedArray = F4(
-	function (inputs, indexToPos, array, isLeft) {
-		updateConnectedArray:
-		while (true) {
-			if (!inputs.b) {
-				return _Utils_Tuple2(isLeft, array);
-			} else {
-				var input = inputs.a;
-				var rest = inputs.b;
-				if (input.$ === 'Output') {
-					var id = input.a;
-					var _v2 = A2($elm$core$Dict$get, id, indexToPos);
-					if (_v2.$ === 'Nothing') {
-						var $temp$inputs = rest,
-							$temp$indexToPos = indexToPos,
-							$temp$array = array,
-							$temp$isLeft = isLeft;
-						inputs = $temp$inputs;
-						indexToPos = $temp$indexToPos;
-						array = $temp$array;
-						isLeft = $temp$isLeft;
-						continue updateConnectedArray;
+var $author$project$LineRouting$updateCallLineRoute = F3(
+	function (inputInfo, thisRouting, lineRoute) {
+		return $elm$core$Maybe$Just(
+			A3(
+				$elm$core$Array$set,
+				inputInfo.index,
+				$elm$core$Maybe$Just(thisRouting),
+				function () {
+					if (lineRoute.$ === 'Nothing') {
+						return A2(
+							$elm$core$Array$initialize,
+							$elm$core$List$length(inputInfo.call.inputs),
+							$elm$core$Basics$always($elm$core$Maybe$Nothing));
 					} else {
-						var pos = _v2.a;
-						if (isLeft) {
-							var $temp$inputs = rest,
-								$temp$indexToPos = indexToPos,
-								$temp$array = _Utils_Tuple2(
-								A3($elm$core$Array$set, pos, 1, array.a),
-								array.b),
-								$temp$isLeft = false;
-							inputs = $temp$inputs;
-							indexToPos = $temp$indexToPos;
-							array = $temp$array;
-							isLeft = $temp$isLeft;
-							continue updateConnectedArray;
-						} else {
-							var $temp$inputs = rest,
-								$temp$indexToPos = indexToPos,
-								$temp$array = _Utils_Tuple2(
-								array.a,
-								A3($elm$core$Array$set, pos, 1, array.b)),
-								$temp$isLeft = true;
-							inputs = $temp$inputs;
-							indexToPos = $temp$indexToPos;
-							array = $temp$array;
-							isLeft = $temp$isLeft;
-							continue updateConnectedArray;
-						}
+						var route = lineRoute.a;
+						return route;
 					}
-				} else {
-					var $temp$inputs = rest,
-						$temp$indexToPos = indexToPos,
-						$temp$array = array,
+				}()));
+	});
+var $author$project$LineRouting$setLineRouting = F4(
+	function (lineRouting, inputInfo, thisRouting, isLeft) {
+		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
+		return A3(
+			$elm$core$Dict$update,
+			inputInfo.call.id,
+			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
+			lineRouting);
+	});
+var $author$project$LineRouting$updateOutputBurden = F2(
+	function (burden, otherBurden) {
+		if (otherBurden.$ === 'Just') {
+			var ob = otherBurden.a;
+			return $elm$core$Maybe$Just(
+				A2($elm$core$Basics$max, burden, ob));
+		} else {
+			return $elm$core$Maybe$Just(burden);
+		}
+	});
+var $author$project$LineRouting$setOutputBurden = F3(
+	function (outputBurden, id, burden) {
+		return A3(
+			$elm$core$Dict$update,
+			id,
+			$author$project$LineRouting$updateOutputBurden(burden),
+			outputBurden);
+	});
+var $author$project$LineRouting$addLineRouting = F6(
+	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
+		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
+		return _Utils_Tuple2(
+			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
+			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
+	});
+var $author$project$LineRouting$getOutputBurden = F2(
+	function (outputBurden, id) {
+		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
+		if (_v0.$ === 'Nothing') {
+			return 0;
+		} else {
+			var burden = _v0.a;
+			return burden;
+		}
+	});
+var $author$project$LineRouting$existingBurdenOne = F4(
+	function (inputInfo, burden, lineRouting, isLeft) {
+		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
+		if (!_v0) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var value = _v0;
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
+		}
+	});
+var $author$project$LineRouting$isDirectlyAbove = F2(
+	function (inputInfo, idToPos) {
+		var _v0 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+		if (_v0.$ === 'Just') {
+			var outputPos = _v0.a;
+			var _v1 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v1.$ === 'Just') {
+				var inputPos = _v1.a;
+				return _Utils_eq(inputPos, outputPos + 1);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	});
+var $author$project$LineRouting$existingBurden = F5(
+	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
+		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
+		} else {
+			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
+			if (_v0.$ === 'Just') {
+				var newRouting = _v0.a;
+				return $elm$core$Maybe$Just(newRouting);
+			} else {
+				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
+			}
+		}
+	});
+var $author$project$LineRouting$buildLineRouting = F7(
+	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
+		buildLineRouting:
+		while (true) {
+			if (!ordering.b) {
+				return lineRouting;
+			} else {
+				var inputInfo = ordering.a;
+				var rest = ordering.b;
+				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
+				if (_v1.$ === 'Just') {
+					var newLineRouting = _v1.a;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = outputBurdenLeft,
+						$temp$outputBurdenRight = outputBurdenRight,
+						$temp$lineRouting = newLineRouting,
+						$temp$idToPos = idToPos,
 						$temp$isLeft = isLeft;
-					inputs = $temp$inputs;
-					indexToPos = $temp$indexToPos;
-					array = $temp$array;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
 					isLeft = $temp$isLeft;
-					continue updateConnectedArray;
+					continue buildLineRouting;
+				} else {
+					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
+					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
+					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
+					var newBurden = _v2.a;
+					var newRouting = _v2.b;
+					var newLeft = isLeft ? newBurden : outputBurdenLeft;
+					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = newLeft,
+						$temp$outputBurdenRight = newRight,
+						$temp$lineRouting = newRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = !isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
 				}
 			}
 		}
 	});
-var $author$project$ViewPositions$getOutputConnectedArrayHelper = F4(
-	function (func, indexToPos, array, isLeft) {
-		getOutputConnectedArrayHelper:
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
 		while (true) {
-			if (!func.b) {
-				return array;
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
 			} else {
-				var call = func.a;
-				var calls = func.b;
-				var update = A4($author$project$ViewPositions$updateConnectedArray, call.inputs, indexToPos, array, isLeft);
-				var $temp$func = calls,
-					$temp$indexToPos = indexToPos,
-					$temp$array = update.b,
-					$temp$isLeft = update.a;
-				func = $temp$func;
-				indexToPos = $temp$indexToPos;
-				array = $temp$array;
-				isLeft = $temp$isLeft;
-				continue getOutputConnectedArrayHelper;
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
 			}
 		}
 	});
-var $elm$core$Array$repeat = F2(
-	function (n, e) {
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $author$project$LineRouting$byOutput = F2(
+	function (idToPos, element) {
+		var _v0 = A2($elm$core$Dict$get, element.outputId, idToPos);
+		if (_v0.$ === 'Just') {
+			var pos = _v0.a;
+			return -pos;
+		} else {
+			return 100;
+		}
+	});
+var $author$project$LineRouting$InputInfo = F3(
+	function (call, index, outputId) {
+		return {call: call, index: index, outputId: outputId};
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$LineRouting$getCallOrderedInputs = function (call) {
+	return A2(
+		$elm$core$List$filterMap,
+		function (inputPair) {
+			var _v0 = inputPair.a;
+			if (_v0.$ === 'Output') {
+				var outputId = _v0.a;
+				return $elm$core$Maybe$Just(
+					A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A3(
+			$elm$core$List$map2,
+			$elm$core$Tuple$pair,
+			call.inputs,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(call.inputs) - 1)));
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$LineRouting$getOutputOrdering = F2(
+	function (func, idToPos) {
 		return A2(
-			$elm$core$Array$initialize,
-			n,
-			function (_v0) {
-				return e;
-			});
+			$elm$core$List$sortBy,
+			$author$project$LineRouting$byOutput(idToPos),
+			A2($elm$core$List$concatMap, $author$project$LineRouting$getCallOrderedInputs, func));
 	});
-var $author$project$ViewPositions$getOutputConnectedArray = F2(
-	function (func, indexToPos) {
-		var oneArray = A2(
-			$elm$core$Array$repeat,
-			$elm$core$List$length(func),
-			0);
-		return A4(
-			$author$project$ViewPositions$getOutputConnectedArrayHelper,
-			func,
-			indexToPos,
-			_Utils_Tuple2(oneArray, oneArray),
-			true);
-	});
+var $author$project$LineRouting$getLineRouting = function (func) {
+	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
+	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
+	var funcArray = $elm$core$Array$fromList(func);
+	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
+};
 var $author$project$ViewPositions$blockSorter = F2(
 	function (blockPositions, call) {
 		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
@@ -11907,39 +12076,18 @@ var $author$project$ViewPositions$blockSorter = F2(
 			return pos.ypos;
 		}
 	});
-var $author$project$ViewPositions$idToPosAdd = F3(
-	function (func, dict, currentPos) {
-		if (!func.b) {
-			return dict;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A3(
-				$elm$core$Dict$insert,
-				call.id,
-				currentPos,
-				A3($author$project$ViewPositions$idToPosAdd, calls, dict, currentPos + 1));
-		}
-	});
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$ViewPositions$makeIdToPos = F2(
+var $author$project$ViewPositions$makeSortedFunc = F2(
 	function (func, blockPositions) {
-		var sorted = A2(
+		return A2(
 			$elm$core$List$sortBy,
 			$author$project$ViewPositions$blockSorter(blockPositions),
 			func);
-		return _Utils_Tuple2(
-			sorted,
-			A3($author$project$ViewPositions$idToPosAdd, sorted, $elm$core$Dict$empty, 0));
 	});
 var $author$project$ViewPositions$getViewStructure = F7(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
 		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
-		var madePos = A2($author$project$ViewPositions$makeIdToPos, func, blockPositions);
-		var idToPos = madePos.b;
-		var sortedFunc = madePos.a;
-		var connectedArray = A2($author$project$ViewPositions$getOutputConnectedArray, sortedFunc, idToPos);
-		var lineRouting = A4($author$project$ViewPositions$getLineRouting, sortedFunc, connectedArray, idToPos, true);
+		var sortedFunc = A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions);
+		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
 		return A7($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, mouseState, isToolbar);
 	});
 var $author$project$DrawProgram$drawOnion = F4(

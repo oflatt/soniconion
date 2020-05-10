@@ -24,6 +24,15 @@ function getTime() {
     return (new Date()).getTime()/1000;
 }
 
+function mathMod(a, b) {
+    var res = a%b;
+    if (res < 0) {
+	return res + abs(b);
+    } else {
+	return res;
+    }
+}
+
 function update(state, notes) {
     for(var i = 0; i < notes.length; i++) {
 	if (state.synths.length <= i) {
@@ -45,8 +54,8 @@ function update(state, notes) {
 
 
 app.ports.evalJavascript.subscribe(function(javascriptCode) {
-    return Function('update', 'getTime', 'makeInitialState', '"use strict";' + javascriptCode)(
-        update, getTime, makeInitialState
+    return Function('update', 'getTime', 'makeInitialState', 'mathMod', '"use strict";' + javascriptCode)(
+        update, getTime, makeInitialState, mathMod
     );
 });
 
