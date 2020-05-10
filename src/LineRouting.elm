@@ -114,20 +114,33 @@ addLineRouting inputInfo outputBurden lineRouting fArray idToPos isLeft =
     in
         ((setOutputBurden outputBurden inputInfo.outputId thisRouting)
         ,(setLineRouting lineRouting inputInfo thisRouting isLeft))
-                    
+
+existingBurdenOne inputInfo burden lineRouting isLeft =
+    case getOutputBurden burden inputInfo.outputId of
+        0 -> Nothing
+        value -> Just (setLineRouting lineRouting inputInfo value isLeft)
+        
+existingBurden inputInfo burdenLeft burdenRight lineRouting =
+    case existingBurdenOne inputInfo burdenLeft lineRouting True of
+        Just newRouting -> Just newRouting
+        Nothing -> existingBurdenOne inputInfo burdenRight lineRouting False
+        
 buildLineRouting : Array Call -> OutputOrdering -> OutputBurden -> OutputBurden -> LineRouting -> IdToPos -> Bool -> LineRouting
 buildLineRouting fArray ordering outputBurdenLeft outputBurdenRight lineRouting idToPos isLeft =
     (case ordering of
          [] -> lineRouting
          (inputInfo::rest) ->
-             let currentBurden = (if isLeft then outputBurdenLeft else outputBurdenRight)
-                 otherBurden = (if (not isLeft) then outputBurdenLeft else outputBurdenRight)
-                 (newBurden, newRouting) = (addLineRouting inputInfo currentBurden lineRouting fArray idToPos isLeft)
-                 newLeft = (if isLeft then newBurden else outputBurdenLeft)
-                 newRight = (if (not isLeft) then newBurden else outputBurdenRight)
-             in
-                 (buildLineRouting fArray rest newLeft newRight newRouting idToPos (not isLeft)))
-                        
+             case existingBurden inputInfo outputBurdenLeft outputBurdenRight lineRouting of
+                 Just newLineRouting -> (buildLineRouting fArray rest outputBurdenLeft outputBurdenRight newLineRouting idToPos isLeft) -- added to existing line
+                 Nothing -> 
+                     (let currentBurden = (if isLeft then outputBurdenLeft else outputBurdenRight)
+                          otherBurden = (if (not isLeft) then outputBurdenLeft else outputBurdenRight)
+                          (newBurden, newRouting) = (addLineRouting inputInfo currentBurden lineRouting fArray idToPos isLeft)
+                          newLeft = (if isLeft then newBurden else outputBurdenLeft)
+                          newRight = (if (not isLeft) then newBurden else outputBurdenRight)
+                      in
+                          (buildLineRouting fArray rest newLeft newRight newRouting idToPos (not isLeft))))
+        
 getLineRouting : Function -> LineRouting
 getLineRouting func =
     let idToPos = idToPosition func Dict.empty 0
