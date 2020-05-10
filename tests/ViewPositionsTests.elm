@@ -48,34 +48,6 @@ fixInvalidInputs =
         ]
                 
 
-getLineRouting testModel =
-    (ViewPositions.getViewStructure testModel (MouseState 0 0 NoneSelected) 0 0 0 0 False).lineRouting
-        
-getLineRoutingTest : Test
-getLineRoutingTest =
-    describe "getLineRoutingTest"
-        [test "no connections"
-             (myexpect
-                  (getLineRouting TestModel.testFunctionHoles)
-                  [[Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Nothing]])
-        ,test "basic example"
-            (myexpect
-                 (getLineRouting TestModel.testFunction)
-                 [[Nothing, Nothing, Nothing], [Nothing, Nothing, Nothing], [Just -1, Just 0], [Just 0]])
-        ,test "complex routing"
-            (myexpect
-                 (getLineRouting TestModel.complexRoutingFunc)
-                 [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])
-        ,test "three levels on left"
-            (myexpect
-                 (getLineRouting TestModel.threeLeftRoutingFunc)
-                 [[]
-                 ,[]
-                 ,[Just -3]
-                 ,[Just 2,Just -2]
-                 ,[Just 1,Just -1]])]
-
-
 blockPositionToTuple blockPos =
     (blockPos.xpos, blockPos.ypos)
         

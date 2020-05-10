@@ -29,9 +29,12 @@ updateCallLineRoute inputInfo thisRouting lineRoute =
               Nothing -> Array.initialize (List.length inputInfo.call.inputs) (always Nothing)
               Just route -> route))
 
-setLineRouting : LineRouting -> InputInfo -> Int -> LineRouting
-setLineRouting lineRouting inputInfo thisRouting =
-    Dict.update inputInfo.call.id (updateCallLineRoute inputInfo thisRouting) lineRouting
+setLineRouting : LineRouting -> InputInfo -> Int -> Bool -> LineRouting
+setLineRouting lineRouting inputInfo thisRouting isLeft =
+    let correctRouting =
+            if isLeft then (-thisRouting) else thisRouting
+    in
+        Dict.update inputInfo.call.id (updateCallLineRoute inputInfo correctRouting) lineRouting
     
 updateOutputBurden burden otherBurden =
     case otherBurden of
@@ -82,7 +85,7 @@ findMaxBurden fArray outputBurden currentIndex maxIndex =
     then 0
     else
         let callId =
-                log "id" (Maybe.withDefault -100
+                (Maybe.withDefault -100
                      (Maybe.map (\call -> call.id)
                           (Array.get currentIndex fArray)))
         in
@@ -92,12 +95,12 @@ findMaxBurden fArray outputBurden currentIndex maxIndex =
 
 findThisRouting : InputInfo -> OutputBurden -> Array Call -> IdToPos -> Int
 findThisRouting inputInfo outputBurden fArray idToPos =
-    let cIndex = log "c" (case Dict.get inputInfo.call.id idToPos of
-                              Just callIndex -> callIndex
-                              Nothing -> 0)-- should never happen
-        oIndex = log "o" (case Dict.get inputInfo.outputId idToPos of
-                              Just outputIndex -> outputIndex
-                              Nothing -> 0)-- should never happen
+    let cIndex = (case Dict.get inputInfo.call.id idToPos of
+                      Just callIndex -> callIndex
+                      Nothing -> 0)-- should never happen
+        oIndex = (case Dict.get inputInfo.outputId idToPos of
+                      Just outputIndex -> outputIndex
+                      Nothing -> 0)-- should never happen
     in
         if cIndex == (1 + oIndex)
         then 0
@@ -105,22 +108,25 @@ findThisRouting inputInfo outputBurden fArray idToPos =
             (findMaxBurden fArray outputBurden (oIndex+1) (cIndex-1))+1
                     
 -- because of the ordering, we now assume that all outputBurdens between here
-addLineRouting : InputInfo -> OutputBurden -> LineRouting -> Array Call -> IdToPos -> (OutputBurden, LineRouting)
-addLineRouting inputInfo outputBurden lineRouting fArray idToPos =
+addLineRouting : InputInfo -> OutputBurden -> LineRouting -> Array Call -> IdToPos -> Bool -> (OutputBurden, LineRouting)
+addLineRouting inputInfo outputBurden lineRouting fArray idToPos isLeft =
     let thisRouting = findThisRouting inputInfo outputBurden fArray idToPos
     in
         ((setOutputBurden outputBurden inputInfo.outputId thisRouting)
-        ,(setLineRouting lineRouting inputInfo thisRouting))
+        ,(setLineRouting lineRouting inputInfo thisRouting isLeft))
                     
-buildLineRouting : Array Call -> OutputOrdering -> OutputBurden -> LineRouting -> IdToPos-> LineRouting
-buildLineRouting fArray ordering outputBurden lineRouting idToPos =
-    case ordering of
-        [] -> lineRouting
-        (inputInfo::rest) ->
-            let (newBurden, newRouting) = (addLineRouting inputInfo outputBurden lineRouting fArray idToPos)
-            in (buildLineRouting fArray rest newBurden newRouting idToPos)
-              
-                    
+buildLineRouting : Array Call -> OutputOrdering -> OutputBurden -> OutputBurden -> LineRouting -> IdToPos -> Bool -> LineRouting
+buildLineRouting fArray ordering outputBurdenLeft outputBurdenRight lineRouting idToPos isLeft =
+    (case ordering of
+         [] -> lineRouting
+         (inputInfo::rest) ->
+             let currentBurden = (if isLeft then outputBurdenLeft else outputBurdenRight)
+                 otherBurden = (if (not isLeft) then outputBurdenLeft else outputBurdenRight)
+                 (newBurden, newRouting) = (addLineRouting inputInfo currentBurden lineRouting fArray idToPos isLeft)
+                 newLeft = (if isLeft then newBurden else outputBurdenLeft)
+                 newRight = (if (not isLeft) then newBurden else outputBurdenRight)
+             in
+                 (buildLineRouting fArray rest newLeft newRight newRouting idToPos (not isLeft)))
                         
 getLineRouting : Function -> LineRouting
 getLineRouting func =
@@ -128,5 +134,5 @@ getLineRouting func =
         ordering = getOutputOrdering func idToPos
         funcArray = Array.fromList func
     in
-        buildLineRouting funcArray ordering Dict.empty Dict.empty idToPos
+        buildLineRouting funcArray ordering Dict.empty Dict.empty Dict.empty idToPos True
     
