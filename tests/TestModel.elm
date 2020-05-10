@@ -50,6 +50,9 @@ threeLeftRoutingFunc : Function
 threeLeftRoutingFunc =
     [(plusCall 0 [])
     ,(plusCall 1 [])
-    ,(plusCall 2 [0])
-    ,(plusCall 3 [1, 1])
-    ,(plusCall 4 [2, 2])]
+    ,(plusCall 2 [])
+    ,(plusCall 3 [0])
+    ,(plusCall 4 [1])
+    ,(plusCall 5 [2])
+    ,(plusCall 6 [3])
+    ,(plusCall 7 [4])]

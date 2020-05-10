@@ -6,7 +6,7 @@ import Test exposing (..)
 
 
 import Compiler.CompileBuiltIn exposing (buildUnaryWithDefault)
-import Compiler.CompModel exposing (Value(..), Expr, CompileExprFunction(..))
+import Compiler.CompModel exposing (Value(..), Expr, CompileExprFunction(..), AST(..))
 
 
 plusTest arguments result =
@@ -14,12 +14,13 @@ plusTest arguments result =
                   (Expect.equal
                        ((buildUnaryWithDefault "0")
                             (Expr "+" 0 arguments (CompileExprFunction (buildUnaryWithDefault "0"))))
-                       ("stack.push(" ++ result ++ ");")))
+                       result))
 
 buildUnaryTest =
     describe "buildUnary"
         [test "basic + two arguments"
-             (plusTest [(ConstV 0.5), (ConstV 0.5)] "(0.5+0.5)")
+             (plusTest [(ConstV 0.5), (ConstV 0.5)]
+                  (Unary "+" (Literal "0.5") (Literal "0.5")))
         ,test "no arguments"
-            (plusTest [] "0")]
+            (plusTest [] (Literal "0"))]
 

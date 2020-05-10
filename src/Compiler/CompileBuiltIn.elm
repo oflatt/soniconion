@@ -1,59 +1,47 @@
 module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault, buildUnaryWithSingleLead)
     
-import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..))
+import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..))
+import Compiler.CompileToAST exposing (getCacheValue)
+
 
 buildValue val =
     case val of
         StackIndex i ->
-            "stack[" ++ (String.fromInt i) ++ "]"
+            getCacheValue (Literal (String.fromInt i))
         ConstV c ->
-            String.fromFloat c
-
-stackPush str =
-    String.join "" ["stack.push(", str, ");"]
-
+            Literal (String.fromFloat c)
                 
-buildWave : Expr -> String
+buildWave : Expr -> AST
 buildWave expr =
     case expr.children of
         (time::frequency::duration::[]) ->
-            let timeStr = buildValue time
-                frequencyStr = buildValue frequency
-                durationStr = buildValue duration
-                endStr = "(" ++ timeStr ++ "+" ++ durationStr ++ ")"
+            let timeAST = buildValue time
+                frequencyAST = buildValue frequency
+                durationAST = buildValue duration
             in
-                String.join
-                    ""
-                    [
-                     stackPush endStr
-                    ,"if(time>"
-                    ,timeStr
-                    ," && time<"
-                    ,endStr
-                    ,"){"
-                        
-                    ,"notes.push({frequency: "
-                    ,frequencyStr
-                    ,"});"
-
-                    ,"}"
-                    ]
-        _ -> "" -- fail silently
+                (Begin
+                     [(If (Unary ">" timeAST durationAST)
+                          (NotesPush (Note frequencyAST))
+                          Empty)
+                     ,(Unary "+" timeAST durationAST)])
+        _ -> Empty -- fail silently
 
 
              
 buildUnaryMultiple children op =
     case children of
-        [] -> [")"]
-        (arg::[]) -> [buildValue arg, ")"]
-        (arg::args) -> buildValue arg :: op :: (buildUnaryMultiple args op)
+        [] -> Empty -- should not happen
+        (arg::[]) -> (buildValue arg)-- should not happen
+        (arg::args) -> (Unary op (buildValue arg) (buildUnaryMultiple args op))
 
 buildGeneralUnary defaultValue singleArgumentLead expr =
-    stackPush
     (case expr.children of
-         [] -> defaultValue
-         (arg::[]) -> ("(" ++ singleArgumentLead ++ buildValue arg ++ ")")
-         _ -> (String.join "" ("(" :: (buildUnaryMultiple expr.children expr.functionName))))
+         [] -> (Literal defaultValue)
+         (arg::[]) ->
+             case singleArgumentLead of
+                 "" -> (buildValue arg)
+                 lead -> SingleOp lead (buildValue arg)
+         _ -> (buildUnaryMultiple expr.children expr.functionName))
 
              
 buildUnary expr =
@@ -66,9 +54,5 @@ buildUnaryWithSingleLead lead expr =
     buildGeneralUnary "0" lead expr
 
 buildJavascriptCall funcName expr =
-    let values = String.join "," (List.map buildValue expr.children)
-    in
-        stackPush
-        (String.join ""
-             [funcName, "(", values, ")"])
+    CallFunction (Literal funcName) (List.map buildValue expr.children)
                                           

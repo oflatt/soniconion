@@ -14,7 +14,7 @@ systemValues =
 type Value = StackIndex Int
            | ConstV Float
 
-type CompileExprFunction = CompileExprFunction (Expr -> String)
+type CompileExprFunction = CompileExprFunction (Expr -> AST)
              
 type alias CompModel = List Method
 
@@ -26,3 +26,30 @@ type alias Expr =
     ,children : List Value
     ,compileExprFunction : CompileExprFunction}
 
+
+type AST = Begin (List AST)
+         | CallFunction AST (List AST)
+         | VarDeclaration AST AST
+         | VarSet AST AST
+         | Literal String
+
+         | Function (List String) (List AST) AST -- arguments, body, return value
+           
+         | CachePushNull
+         | CachePush AST
+         | CacheUpdate AST AST
+         | NotesPush AST
+         | FunctionsPush AST
+
+         | CacheRef AST
+         | FunctionRef AST
+
+         | If AST AST AST
+         | Unary String AST AST
+         | SingleOp String AST
+
+           
+         | Note AST -- frequency
+         | Empty
+
+    

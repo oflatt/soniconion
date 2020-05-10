@@ -8,41 +8,9 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 
 import TestModel exposing (myexpect)
+import ModelHelpers
 import ViewPositions
 import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock)
-
-
-outputConnectedArrayTest func expected =
-    let
-        svgScreenWidth = 1000
-        svgScreenHeight = 1000
-        mouseState = (MouseState 0 0 NoneSelected)
-        blockPositions = (ViewPositions.getBlockPositions func mouseState svgScreenWidth svgScreenHeight 0 0)
-        madePos = ViewPositions.makeIdToPos func blockPositions
-        sortedFunc = (Tuple.first madePos)
-        idToPos = (Tuple.second madePos)
-        connectedArray = ViewPositions.getOutputConnectedArray sortedFunc idToPos
-    in
-        (myexpect
-             connectedArray
-             (Tuple.mapBoth Array.fromList Array.fromList expected))
-        
-fixInvalidInputs : Test
-fixInvalidInputs =
-    describe "getOutputConnectedArray"
-        [test "no connections"
-             (outputConnectedArrayTest TestModel.testFunctionHoles
-                  ([0,0,0,0]
-                  ,[0,0,0,0]))
-        ,test "test connections"
-            (outputConnectedArrayTest TestModel.testFunction
-                  ([1, 0, 1, 0]
-                  ,[0, 1, 0, 0]))
-        ,test "test complex"
-            (outputConnectedArrayTest TestModel.complexRoutingFunc
-                 ([1, 1, 0, 0, 0]
-                 ,[1, 1, 0, 1, 0]))
-        ]
                 
 
 blockPositionToTuple blockPos =

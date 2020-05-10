@@ -41,7 +41,6 @@ inputToValue input idToIndex =
         Hole -> Err "No argument supplied to a function call"
 
                 
-                
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)
 inputsToValues inputs idToIndex =
     case inputs of

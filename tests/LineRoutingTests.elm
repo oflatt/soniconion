@@ -65,15 +65,18 @@ getLineRoutingTest =
             (testLineRoute
                  [[]
                  ,[Just 0, Nothing]
-                 , [Just -2, Nothing]
-                 , [Just 1, Just 1]
-                 , [Just 2, Just 0]]
+                 , [Just 1, Nothing]
+                 , [Just -1, Just -1]
+                 , [Just 1, Just 0]]
                  TestModel.complexRoutingFunc)
         ,test "three levels on left"
                  (testLineRoute
                       [[]
                       ,[]
+                      ,[]
                       ,[Just -3]
-                      ,[Just 2,Just -2]
-                      ,[Just 1,Just -1]]
+                      ,[Just 2]
+                      ,[Just -2]
+                      ,[Just 1]
+                      ,[Just -1]]
                       TestModel.threeLeftRoutingFunc)]
