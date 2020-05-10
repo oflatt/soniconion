@@ -34,29 +34,46 @@ outputOrderingTest =
                   ])]
              
 
-        
+listToLineRoute nested function =
+    case nested of
+        [] -> Dict.empty
+        (routes::restRoutes) ->
+            case function of
+                [] -> Dict.empty -- should not happen
+                (call::calls) ->
+                    case routes of
+                        [] -> listToLineRoute restRoutes calls
+                        _ ->
+                            Dict.update call.id (always (Just (Array.fromList routes)))
+                                (listToLineRoute restRoutes calls)
 
+testLineRoute : List (List (Maybe Int)) -> Function -> (b -> Expectation)
+testLineRoute route testFunction =
+    (myexpect (getLineRouting testFunction)
+         (listToLineRoute route testFunction))
 
 getLineRoutingTest : Test
 getLineRoutingTest =
     describe "getLineRoutingTest"
         [test "no connections"
-             (myexpect
-                  (getLineRouting TestModel.testFunctionHoles)
-                  [[Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Nothing]])
+             (testLineRoute []
+                  TestModel.testFunctionHoles)
         ,test "basic example"
-            (myexpect
-                 (getLineRouting TestModel.testFunction)
-                 [[Nothing, Nothing, Nothing], [Nothing, Nothing, Nothing], [Just -1, Just 0], [Just 0]])
+            (testLineRoute [[], [], [Just -1, Just 0], [Just 0]]
+                 TestModel.testFunction)
         ,test "complex routing"
-            (myexpect
-                 (getLineRouting TestModel.complexRoutingFunc)
-                 [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])
-        ,test "three levels on left"
-            (myexpect
-                 (getLineRouting TestModel.threeLeftRoutingFunc)
+            (testLineRoute
                  [[]
-                 ,[]
-                 ,[Just -3]
-                 ,[Just 2,Just -2]
-                 ,[Just 1,Just -1]])]
+                 ,[Just 0, Nothing]
+                 , [Just -2, Nothing]
+                 , [Just 1, Just 1]
+                 , [Just 2, Just 0]]
+                 TestModel.complexRoutingFunc)
+        ,test "three levels on left"
+                 (testLineRoute
+                      [[]
+                      ,[]
+                      ,[Just -3]
+                      ,[Just 2,Just -2]
+                      ,[Just 1,Just -1]]
+                      TestModel.threeLeftRoutingFunc)]

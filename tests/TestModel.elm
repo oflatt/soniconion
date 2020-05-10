@@ -1,6 +1,12 @@
 module TestModel exposing (..)
 
+import Expect
 import Model exposing (..)
+
+myexpect item1 item2 =
+    (\_ ->
+         (Expect.equal item1 item2))
+
 
 sine = (Call 80 [Text "1", Text "440", Text "1"] "sine" "")
 sine2 = (Call 89 [Text "2", Text "640", Text "2"] "sine" "")

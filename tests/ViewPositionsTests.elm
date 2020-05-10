@@ -7,13 +7,10 @@ import Model exposing (..)
 import Array exposing (Array)
 import Dict exposing (Dict)
 
-import TestModel
+import TestModel exposing (myexpect)
 import ViewPositions
 import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock)
 
-myexpect item1 item2 =
-    (\_ ->
-         (Expect.equal item1 item2))
 
 outputConnectedArrayTest func expected =
     let
