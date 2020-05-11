@@ -52,7 +52,7 @@ type AST = Empty
          | FunctionRef AST
 
          | If AST AST AST
-         | Unary String AST AST
+         | Unary String (List AST)
          | SingleOp String AST
 
          
@@ -60,6 +60,6 @@ type AST = Empty
     
 forRange varName beginAST endAST bodyAST =
     For (VarDeclaration (Literal varName) beginAST)
-        (Unary "<" (Literal varName) endAST)
+        (Unary "<" [(Literal varName), endAST])
         (Literal (varName ++ "++"))
         bodyAST

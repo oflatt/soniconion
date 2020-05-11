@@ -3,7 +3,7 @@ import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExp
 import Utils
 
 cacheIsNull ast =
-    Unary "==" (Literal "null") (CacheRef ast)
+    Unary "==" [(Literal "null"), (CacheRef ast)]
 
 updateCache cacheIndex localIndex =
     CacheUpdate cacheIndex (CallFunction (FunctionRef localIndex) [])
@@ -13,7 +13,7 @@ getValueFunctionAST =
         (Function ["cacheILocal", "PC"]
                   (Begin
                        [(VarDeclaration (Literal "res") (Literal "null"))
-                       ,(VarDeclaration (Literal "cacheI") (Unary "+" (Literal "cacheILocal") (Literal "PC")))
+                       ,(VarDeclaration (Literal "cacheI") (Unary "+" [(Literal "cacheILocal"), (Literal "PC")]))
                        ,(If
                          (cacheIsNull (Literal "cacheI"))
                          (Begin
@@ -28,7 +28,7 @@ getCacheValue ast =
 initialVariables =
     [VarSet (Literal "cache") (Literal "[]")
     ,VarSet (Literal "notes") (Literal "[]")
-    ,VarSet (Literal "time") (Unary "-" (Literal "getTime()") (Literal "startTime"))
+    ,VarSet (Literal "time") (Unary "-" [(Literal "getTime()"), (Literal "startTime")])
     ,VarSet (Literal "PC") (Literal "0")
      ]
 
@@ -54,7 +54,7 @@ recur =
         
 loopFunctionBody =
     BeginThunk (initialVariables ++
-                    [CallFunction (FunctionRef (Unary "-" (Literal "functions.length") (Literal "1"))) []
+                    [CallFunction (FunctionRef (Unary "-" [(Literal "functions.length"), (Literal "1")])) []
                     ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
                     ,recur])
 

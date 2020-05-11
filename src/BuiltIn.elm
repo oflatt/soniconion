@@ -1,7 +1,8 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
                         ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler)
 import MusicTheory
-import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault, buildUnaryWithSingleLead)
+import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
+                                             buildUnaryWithSingleLead, buildIf)
 import Dict exposing (Dict)
 import Model exposing (Function, Call, Input(..), Id)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
@@ -21,25 +22,36 @@ type alias BuiltInSpec = {functionName: String
 type alias BuiltInList = List BuiltInSpec
 
 waveCompiler = CompileExprFunction buildWave
-    
-waveList : List BuiltInSpec
-waveList = [(BuiltInSpec
-                 "sine"
-                 (Finite ["time", "frequency", "duration"])
-                 (CompileExprFunction buildWave))]
 
+generalList : List BuiltInSpec
+generalList = [(BuiltInSpec
+                    "sine"
+                    (Finite ["time", "frequency", "duration"])
+                    (CompileExprFunction buildWave))
+              ,(BuiltInSpec
+                    "if"
+                    (Finite ["condition", "thenValue", "elseValue"])
+                    (CompileExprFunction buildIf))]
+               
+
+compareUnary op =
+    (BuiltInSpec op (Infinite ["leftComparable", "rightComparable"] "comparables") (CompileExprFunction buildUnary))
+compareUnaryOpList =
+    (List.map compareUnary [">", "<", ">=", "<=", "==", "&&", "||"])
+    
 unaryList : List BuiltInSpec
 unaryList = [(BuiltInSpec "+" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "0")))
             ,(BuiltInSpec "-" (Infinite ["num"] "nums") (CompileExprFunction (buildUnaryWithSingleLead "-")))
             ,(BuiltInSpec "/" (Infinite ["numerator"] "denominators") (CompileExprFunction buildUnary))
-            ,(BuiltInSpec "*" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "1")))]
+            ,(BuiltInSpec "*" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "1")))] ++ compareUnaryOpList
+
 
 javascriptFunctionList =
     [(BuiltInSpec "mod" (Finite ["numerator", "divisor"]) (CompileExprFunction (buildJavascriptCall "mathMod")))]
     
            
 builtInFunctionList : BuiltInList
-builtInFunctionList = waveList ++ unaryList ++ javascriptFunctionList
+builtInFunctionList = generalList ++ unaryList ++ javascriptFunctionList
 
 
 nameTuple builtInList =

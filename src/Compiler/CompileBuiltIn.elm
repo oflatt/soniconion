@@ -1,4 +1,5 @@
-module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault, buildUnaryWithSingleLead)
+module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
+                                             buildUnaryWithSingleLead, buildIf)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..))
 import Compiler.CompileToAST exposing (getCacheValue)
@@ -12,6 +13,14 @@ buildValue val =
             Literal (String.fromFloat c)
         ScriptVariable str ->
             Literal str
+
+buildIf expr =
+    case expr.children of
+        (cond::thenValue::elseValue::[]) ->
+            (If (buildValue cond)
+                 (buildValue thenValue)
+                 (buildValue elseValue))
+        _ -> Empty -- fail silently
                 
 buildWave : Expr -> AST
 buildWave expr =
@@ -23,11 +32,11 @@ buildWave expr =
             in
                 (Begin
                      [(If (Unary "&&"
-                               (Unary ">=" (Literal "time") timeAST)
-                               (Unary "<" (Literal "time") (Unary "+" timeAST durationAST)))
+                               [(Unary ">=" [(Literal "time"), timeAST])
+                               ,(Unary "<" [(Literal "time"), (Unary "+" [timeAST, durationAST])])])
                           (NotesPush frequencyAST)
                           Empty)
-                     ,(Unary "+" timeAST durationAST)])
+                     ,(Unary "+" [timeAST, durationAST])])
         _ -> Empty -- fail silently
 
 
@@ -36,7 +45,7 @@ buildUnaryMultiple children op =
     case children of
         [] -> Empty -- should not happen
         (arg::[]) -> (buildValue arg)-- should not happen
-        (arg::args) -> (Unary op (buildValue arg) (buildUnaryMultiple args op))
+        args -> (Unary op (List.map buildValue args))
 
 buildGeneralUnary defaultValue singleArgumentLead expr =
     (case expr.children of
@@ -57,6 +66,8 @@ buildUnaryWithDefault default expr =
 buildUnaryWithSingleLead lead expr =
     buildGeneralUnary "0" lead expr
 
+    
+        
 buildJavascriptCall funcName expr =
     CallFunction (Literal funcName) (List.map buildValue expr.children)
                                           

@@ -18,16 +18,18 @@ javascriptFunction argNames body =
 javascriptElse elseCase =
     case aSTToJavascript elseCase of
         "" -> ""
-        str -> "else {" ++ str ++ "}"
+        str -> "else { return " ++ str ++ "}"
         
 javascriptIf bool thenCase elseCase =
     String.join ""
-        ["if("
+        ["(function() { if("
         ,aSTToJavascript bool
         ,") {"
+        ,"return "
         ,aSTToJavascript thenCase
         ,"}"
-        ,javascriptElse elseCase]
+        ,javascriptElse elseCase
+        ,"}())"]
 
 javascriptFor var check increment body =
     String.join ""
@@ -126,13 +128,9 @@ aSTToJavascript astArgument =
         If cond thenCase elseCase ->
             javascriptIf cond thenCase elseCase
 
-        Unary op left right ->
-            String.join ""
-                ["("
-                ,aSTToJavascript left
-                ,op
-                ,aSTToJavascript right
-                ,")"]
+        Unary op args ->
+            "(" ++ (String.join op (List.map aSTToJavascript args)) ++ ")"
+               
         SingleOp op arg ->
             "(" ++ op ++ (aSTToJavascript arg) ++ ")"
         
