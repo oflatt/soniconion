@@ -5146,9 +5146,9 @@ var $author$project$Model$Model = function (currentPage) {
 		};
 	};
 };
-var $author$project$Model$MouseState = F3(
-	function (mouseX, mouseY, mouseSelection) {
-		return {mouseSelection: mouseSelection, mouseX: mouseX, mouseY: mouseY};
+var $author$project$Model$MouseState = F5(
+	function (mouseX, mouseY, scrollX, scrollY, mouseSelection) {
+		return {mouseSelection: mouseSelection, mouseX: mouseX, mouseY: mouseY, scrollX: scrollX, scrollY: scrollY};
 	});
 var $author$project$Model$NoneSelected = {$: 'NoneSelected'};
 var $elm$url$Url$addPort = F2(
@@ -5257,7 +5257,7 @@ var $author$project$Model$initialModel = F3(
 			$author$project$Model$Model(
 				$author$project$Model$urlToPageName(url))('none')(key)(url)(
 				$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)(
-				A3($author$project$Model$MouseState, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing)(0),
+				A5($author$project$Model$MouseState, 0, 0, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing)(0),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
@@ -6029,6 +6029,40 @@ var $elm$browser$Browser$Events$onResize = function (func) {
 				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
 				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
 };
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Update$scrollChange = _Platform_incomingPort('scrollChange', $elm$json$Json$Decode$value);
+var $author$project$Model$Pos = F2(
+	function (xpos, ypos) {
+		return {xpos: xpos, ypos: ypos};
+	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Model$NoOp = {$: 'NoOp'};
+var $author$project$Model$ScrollChange = function (a) {
+	return {$: 'ScrollChange', a: a};
+};
+var $author$project$Model$handelScrollResult = function (scrollRes) {
+	if (scrollRes.$ === 'Ok') {
+		var res = scrollRes.a;
+		return $author$project$Model$ScrollChange(res);
+	} else {
+		var err = scrollRes.a;
+		return $author$project$Model$NoOp;
+	}
+};
+var $author$project$Model$scrollChangeDecoder = A2(
+	$elm$core$Basics$composeR,
+	$elm$json$Json$Decode$decodeValue(
+		A3(
+			$elm$json$Json$Decode$map2,
+			$author$project$Model$Pos,
+			A2($elm$json$Json$Decode$field, 'xpos', $elm$json$Json$Decode$int),
+			A2($elm$json$Json$Decode$field, 'ypos', $elm$json$Json$Decode$int))),
+	$author$project$Model$handelScrollResult);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
@@ -6039,7 +6073,8 @@ var $author$project$Main$subscriptions = function (model) {
 				$elm$browser$Browser$Events$onMouseUp(
 				$elm$json$Json$Decode$succeed($author$project$Model$MouseRelease)),
 				$elm$browser$Browser$Events$onKeyDown(
-				A2($elm$json$Json$Decode$map, $author$project$Model$KeyboardInput, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent))
+				A2($elm$json$Json$Decode$map, $author$project$Model$KeyboardInput, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent)),
+				$author$project$Update$scrollChange($author$project$Model$scrollChangeDecoder)
 			]));
 };
 var $author$project$Model$BlockSelected = function (a) {
@@ -6796,8 +6831,11 @@ var $author$project$Update$keyboardUpdate = F2(
 		}
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Debug$log = _Debug_log;
-var $author$project$ViewVariables$functionXSpacing = 100;
+var $author$project$ViewVariables$functionXSpacing = 50;
+var $author$project$ViewPositions$ViewStructure = F9(
+	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, funcBlockMaxWidth, funcHeight, mouseState, isToolbar) {
+		return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcHeight: funcHeight, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
+	});
 var $author$project$ViewVariables$blockHeight = 50;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
@@ -7040,19 +7078,19 @@ var $author$project$ViewPositions$getMovedInfo = F3(
 			}
 		}
 	});
-var $author$project$ViewVariables$viewportWidth = 1000;
-var $author$project$ViewPositions$getViewportHeight = F2(
-	function (windowWidth, windowHeight) {
-		return (($author$project$ViewVariables$viewportWidth * windowHeight) / windowWidth) | 0;
-	});
 var $author$project$ViewVariables$buttonHeight = 50;
 var $author$project$ViewVariables$titleHeight = 90;
 var $author$project$ViewVariables$svgYpos = $author$project$ViewVariables$titleHeight + $author$project$ViewVariables$buttonHeight;
+var $author$project$ViewVariables$viewportHeight = 500;
+var $author$project$ViewVariables$viewportWidth = F2(
+	function (svgWindowWidth, svgWindowHeight) {
+		return $elm$core$Basics$floor((svgWindowWidth / svgWindowHeight) * $author$project$ViewVariables$viewportHeight);
+	});
 var $author$project$ViewPositions$mouseToSvgCoordinates = F5(
 	function (mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
 		return _Utils_Tuple2(
-			(((mouseState.mouseX * $author$project$ViewVariables$viewportWidth) / svgScreenWidth) | 0) - xoffset,
-			((((mouseState.mouseY - $author$project$ViewVariables$svgYpos) * A2($author$project$ViewPositions$getViewportHeight, svgScreenWidth, svgScreenHeight)) / svgScreenHeight) | 0) - yoffset);
+			((((mouseState.mouseX + mouseState.scrollX) * A2($author$project$ViewVariables$viewportWidth, svgScreenWidth, svgScreenHeight)) / svgScreenWidth) | 0) - xoffset,
+			(((((mouseState.mouseY + mouseState.scrollY) - $author$project$ViewVariables$svgYpos) * $author$project$ViewVariables$viewportHeight) / svgScreenHeight) | 0) - yoffset);
 	});
 var $elm$core$Basics$negate = function (n) {
 	return -n;
@@ -7084,114 +7122,859 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 			return positionsWithoutMoved;
 		}
 	});
-var $author$project$Model$getCallById = F2(
-	function (id, func) {
-		getCallById:
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
 		while (true) {
-			if (!func.b) {
-				return $elm$core$Maybe$Nothing;
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
 			} else {
-				var call = func.a;
-				var calls = func.b;
-				if (_Utils_eq(call.id, id)) {
-					return $elm$core$Maybe$Just(call);
-				} else {
-					var $temp$id = id,
-						$temp$func = calls;
-					id = $temp$id;
-					func = $temp$func;
-					continue getCallById;
-				}
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
 			}
 		}
 	});
-var $author$project$Update$finishBlockAtPos = F2(
-	function (func, blockId) {
-		if (!func.b) {
-			return _List_Nil;
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
 		} else {
-			var currentCall = func.a;
-			var calls = func.b;
-			return _Utils_eq(currentCall.id, blockId) ? calls : A2(
-				$elm$core$List$cons,
-				currentCall,
-				A2($author$project$Update$finishBlockAtPos, calls, blockId));
+			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Update$placeBlockAtPos = F5(
-	function (func, blockId, blockPos, blockPositions, call) {
-		placeBlockAtPos:
-		while (true) {
-			if (!func.b) {
-				return _List_fromArray(
-					[call]);
+var $author$project$LineRouting$findMaxBurden = F4(
+	function (fArray, outputBurden, currentIndex, maxIndex) {
+		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
+			return 0;
+		} else {
+			var callId = A2(
+				$elm$core$Maybe$withDefault,
+				-100,
+				A2(
+					$elm$core$Maybe$map,
+					function (call) {
+						return call.id;
+					},
+					A2($elm$core$Array$get, currentIndex, fArray)));
+			return A2(
+				$elm$core$Basics$max,
+				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
+				A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					A2($elm$core$Dict$get, callId, outputBurden)));
+		}
+	});
+var $author$project$LineRouting$findThisRouting = F4(
+	function (inputInfo, outputBurden, fArray, idToPos) {
+		var oIndex = function () {
+			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var outputIndex = _v1.a;
+				return outputIndex;
 			} else {
-				var currentCall = func.a;
-				var calls = func.b;
-				if (_Utils_eq(currentCall.id, blockId)) {
-					var $temp$func = calls,
-						$temp$blockId = blockId,
-						$temp$blockPos = blockPos,
-						$temp$blockPositions = blockPositions,
-						$temp$call = call;
-					func = $temp$func;
-					blockId = $temp$blockId;
-					blockPos = $temp$blockPos;
-					blockPositions = $temp$blockPositions;
-					call = $temp$call;
-					continue placeBlockAtPos;
-				} else {
-					var _v1 = A2($elm$core$Dict$get, currentCall.id, blockPositions);
-					if (_v1.$ === 'Nothing') {
-						return A2($elm$core$Debug$log, 'No block in placeBlockAtPos', func);
+				return 0;
+			}
+		}();
+		var cIndex = function () {
+			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v0.$ === 'Just') {
+				var callIndex = _v0.a;
+				return callIndex;
+			} else {
+				return 0;
+			}
+		}();
+		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
 					} else {
-						var currentBlockPos = _v1.a;
-						return (_Utils_cmp(blockPos.ypos, currentBlockPos.ypos) < 0) ? A2(
-							$elm$core$List$cons,
-							call,
-							A2($author$project$Update$finishBlockAtPos, func, blockId)) : A2(
-							$elm$core$List$cons,
-							currentCall,
-							A5($author$project$Update$placeBlockAtPos, calls, blockId, blockPos, blockPositions, call));
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
 					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var $author$project$LineRouting$updateCallLineRoute = F3(
+	function (inputInfo, thisRouting, lineRoute) {
+		return $elm$core$Maybe$Just(
+			A3(
+				$elm$core$Array$set,
+				inputInfo.index,
+				$elm$core$Maybe$Just(thisRouting),
+				function () {
+					if (lineRoute.$ === 'Nothing') {
+						return A2(
+							$elm$core$Array$initialize,
+							$elm$core$List$length(inputInfo.call.inputs),
+							$elm$core$Basics$always($elm$core$Maybe$Nothing));
+					} else {
+						var route = lineRoute.a;
+						return route;
+					}
+				}()));
+	});
+var $author$project$LineRouting$setLineRouting = F4(
+	function (lineRouting, inputInfo, thisRouting, isLeft) {
+		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
+		return A3(
+			$elm$core$Dict$update,
+			inputInfo.call.id,
+			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
+			lineRouting);
+	});
+var $author$project$LineRouting$updateOutputBurden = F2(
+	function (burden, otherBurden) {
+		if (otherBurden.$ === 'Just') {
+			var ob = otherBurden.a;
+			return $elm$core$Maybe$Just(
+				A2($elm$core$Basics$max, burden, ob));
+		} else {
+			return $elm$core$Maybe$Just(burden);
+		}
+	});
+var $author$project$LineRouting$setOutputBurden = F3(
+	function (outputBurden, id, burden) {
+		return A3(
+			$elm$core$Dict$update,
+			id,
+			$author$project$LineRouting$updateOutputBurden(burden),
+			outputBurden);
+	});
+var $author$project$LineRouting$addLineRouting = F6(
+	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
+		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
+		return _Utils_Tuple2(
+			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
+			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
+	});
+var $author$project$LineRouting$getOutputBurden = F2(
+	function (outputBurden, id) {
+		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
+		if (_v0.$ === 'Nothing') {
+			return 0;
+		} else {
+			var burden = _v0.a;
+			return burden;
+		}
+	});
+var $author$project$LineRouting$existingBurdenOne = F4(
+	function (inputInfo, burden, lineRouting, isLeft) {
+		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
+		if (!_v0) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var value = _v0;
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
+		}
+	});
+var $author$project$LineRouting$isDirectlyAbove = F2(
+	function (inputInfo, idToPos) {
+		var _v0 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+		if (_v0.$ === 'Just') {
+			var outputPos = _v0.a;
+			var _v1 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v1.$ === 'Just') {
+				var inputPos = _v1.a;
+				return _Utils_eq(inputPos, outputPos + 1);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	});
+var $author$project$LineRouting$existingBurden = F5(
+	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
+		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
+		} else {
+			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
+			if (_v0.$ === 'Just') {
+				var newRouting = _v0.a;
+				return $elm$core$Maybe$Just(newRouting);
+			} else {
+				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
+			}
+		}
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$LineRouting$buildLineRouting = F7(
+	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
+		buildLineRouting:
+		while (true) {
+			if (!ordering.b) {
+				return lineRouting;
+			} else {
+				var inputInfo = ordering.a;
+				var rest = ordering.b;
+				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
+				if (_v1.$ === 'Just') {
+					var newLineRouting = _v1.a;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = outputBurdenLeft,
+						$temp$outputBurdenRight = outputBurdenRight,
+						$temp$lineRouting = newLineRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
+				} else {
+					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
+					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
+					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
+					var newBurden = _v2.a;
+					var newRouting = _v2.b;
+					var newLeft = isLeft ? newBurden : outputBurdenLeft;
+					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = newLeft,
+						$temp$outputBurdenRight = newRight,
+						$temp$lineRouting = newRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = !isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
 				}
 			}
 		}
 	});
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $author$project$LineRouting$byOutput = F2(
+	function (idToPos, element) {
+		var _v0 = A2($elm$core$Dict$get, element.outputId, idToPos);
+		if (_v0.$ === 'Just') {
+			var pos = _v0.a;
+			return -pos;
+		} else {
+			return 100;
+		}
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$LineRouting$InputInfo = F3(
+	function (call, index, outputId) {
+		return {call: call, index: index, outputId: outputId};
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$LineRouting$getCallOrderedInputs = function (call) {
+	return A2(
+		$elm$core$List$filterMap,
+		function (inputPair) {
+			var _v0 = inputPair.a;
+			if (_v0.$ === 'Output') {
+				var outputId = _v0.a;
+				return $elm$core$Maybe$Just(
+					A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A3(
+			$elm$core$List$map2,
+			$elm$core$Tuple$pair,
+			call.inputs,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(call.inputs) - 1)));
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$LineRouting$getOutputOrdering = F2(
+	function (func, idToPos) {
+		return A2(
+			$elm$core$List$sortBy,
+			$author$project$LineRouting$byOutput(idToPos),
+			A2($elm$core$List$concatMap, $author$project$LineRouting$getCallOrderedInputs, func));
+	});
+var $author$project$LineRouting$getLineRouting = function (func) {
+	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
+	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
+	var funcArray = $elm$core$Array$fromList(func);
+	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
+};
+var $author$project$ViewPositions$getMaxBlockBottom = function (blockPositions) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, blockpos, acc) {
+				return A2($elm$core$Basics$max, blockpos.ypos + $author$project$ViewVariables$blockHeight, acc);
+			}),
+		0,
+		blockPositions);
+};
+var $author$project$ViewPositions$getMaxBlockWidth = function (blockPositions) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, blockpos, acc) {
+				return A2($elm$core$Basics$max, blockpos.width, acc);
+			}),
+		0,
+		blockPositions);
+};
+var $author$project$ViewPositions$blockSorter = F2(
+	function (blockPositions, call) {
+		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
+		if (_v0.$ === 'Nothing') {
+			return -100;
+		} else {
+			var pos = _v0.a;
+			return pos.ypos;
+		}
+	});
+var $author$project$ViewPositions$makeSortedFunc = F2(
+	function (func, blockPositions) {
+		return A2(
+			$elm$core$List$sortBy,
+			$author$project$ViewPositions$blockSorter(blockPositions),
+			func);
+	});
+var $author$project$ViewPositions$getViewStructure = F7(
+	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
+		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
+		var funcHeight = $author$project$ViewPositions$getMaxBlockBottom(blockPositions);
+		var maxWidth = $author$project$ViewPositions$getMaxBlockWidth(blockPositions);
+		var sortedFunc = A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions);
+		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
+		return A9($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, maxWidth, funcHeight, mouseState, isToolbar);
+	});
+var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
+	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$buttonHeight;
+};
 var $author$project$ViewVariables$scrollbarWidth = 40;
-var $author$project$ViewVariables$programHeight = function (windowHeight) {
-	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$scrollbarWidth;
+var $author$project$ViewVariables$toSvgWindowWidth = function (windowWidth) {
+	return windowWidth - ($author$project$ViewVariables$scrollbarWidth + 1);
 };
-var $author$project$ViewVariables$programWidth = function (windowWidth) {
-	return windowWidth - (2 * $author$project$ViewVariables$scrollbarWidth);
-};
-var $author$project$ViewVariables$toolbarWidth = function (windowWidth) {
-	return ($author$project$ViewVariables$viewportWidth / 4) | 0;
-};
+var $author$project$ViewVariables$toolbarWidth = F2(
+	function (windowWidth, windowHeight) {
+		return 100;
+	});
 var $author$project$Update$funcBlockDropped = F5(
 	function (func, blockId, oldMouse, windowWidth, windowHeight) {
-		var blockPositions = A6(
-			$author$project$ViewPositions$getBlockPositions,
+		var viewStructure = A7(
+			$author$project$ViewPositions$getViewStructure,
 			func,
 			oldMouse,
-			$author$project$ViewVariables$programWidth(windowWidth),
-			$author$project$ViewVariables$programHeight(windowHeight),
-			$author$project$ViewVariables$functionXSpacing + $author$project$ViewVariables$toolbarWidth(windowWidth),
-			0);
-		var _v0 = A2($elm$core$Dict$get, blockId, blockPositions);
-		if (_v0.$ === 'Nothing') {
-			return A2($elm$core$Debug$log, 'No block in funcBlockDropped', func);
-		} else {
-			var blockPos = _v0.a;
-			var _v1 = A2($author$project$Model$getCallById, blockId, func);
-			if (_v1.$ === 'Nothing') {
-				return A2($elm$core$Debug$log, 'No block in func in funcBlockDropped', func);
-			} else {
-				var call = _v1.a;
-				return $author$project$ModelHelpers$fixInvalidInputs(
-					A5($author$project$Update$placeBlockAtPos, func, blockId, blockPos, blockPositions, call));
-			}
-		}
+			$author$project$ViewVariables$toSvgWindowWidth(windowWidth),
+			$author$project$ViewVariables$toSvgWindowHeight(windowHeight),
+			$author$project$ViewVariables$functionXSpacing + A2(
+				$author$project$ViewVariables$toolbarWidth,
+				$author$project$ViewVariables$toSvgWindowWidth(windowWidth),
+				$author$project$ViewVariables$toSvgWindowHeight(windowHeight)),
+			0,
+			false);
+		return $author$project$ModelHelpers$fixInvalidInputs(viewStructure.sortedFunc);
 	});
 var $author$project$Update$programBlockDropped = F5(
 	function (program, blockId, oldMouse, windowWidth, windowHeight) {
@@ -7216,13 +7999,7 @@ var $author$project$Update$modelBlockDropped = F2(
 				model,
 				{
 					mouseState: newMouse,
-					program: A5(
-						$author$project$Update$programBlockDropped,
-						model.program,
-						id,
-						oldMouse,
-						$author$project$ViewVariables$programWidth(model.windowWidth),
-						$author$project$ViewVariables$programHeight(model.windowHeight))
+					program: A5($author$project$Update$programBlockDropped, model.program, id, oldMouse, model.windowWidth, model.windowHeight)
 				}),
 			$elm$core$Platform$Cmd$none);
 	});
@@ -7859,6 +8636,7 @@ var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
 					$author$project$Compiler$CompileToAST$loopAST
 				])));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Compiler$Compile$compile = function (compModel) {
 	return A2(
 		$elm$core$Debug$log,
@@ -7944,395 +8722,6 @@ var $author$project$BuiltIn$makeJavascriptBuiltIn = function (pair) {
 		pair.a,
 		$author$project$BuiltIn$JavaScript(pair.b));
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
 var $author$project$Utils$dictAppend = F3(
 	function (dict, key, val) {
 		return A3(
@@ -8808,6 +9197,17 @@ var $author$project$Update$update = F2(
 						model,
 						{mouseState: newMouse}),
 					$elm$core$Platform$Cmd$none);
+			case 'ScrollChange':
+				var pos = msg.a;
+				var oldMouse = model.mouseState;
+				var newMouse = _Utils_update(
+					oldMouse,
+					{scrollX: pos.xpos, scrollY: pos.ypos});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{mouseState: newMouse}),
+					$elm$core$Platform$Cmd$none);
 			case 'KeyboardInput':
 				var keyevent = msg.a;
 				return A2($author$project$Update$keyboardUpdate, model, keyevent);
@@ -8834,7 +9234,6 @@ var $author$project$Update$update = F2(
 			case 'InputClick':
 				var id = msg.a;
 				var index = msg.b;
-				var l = A2($elm$core$Debug$log, 'left', 2);
 				return A3($author$project$Update$inputClickModel, model, id, index);
 			case 'InputUpdate':
 				var id = msg.a;
@@ -8847,7 +9246,6 @@ var $author$project$Update$update = F2(
 			case 'InputRightClick':
 				var id = msg.a;
 				var index = msg.b;
-				var m = A2($elm$core$Debug$log, 'r', 2);
 				return A3($author$project$Update$inputRightClickModel, model, id, index);
 			case 'OutputRightClick':
 				var id = msg.a;
@@ -8958,7 +9356,6 @@ var $rtfeldman$elm_css$Css$bottom = $rtfeldman$elm_css$Css$prop1('bottom');
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 'UniversalSelectorSequence', a: a};
 };
-var $elm$core$Basics$not = _Basics_not;
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
 		return !A2(
@@ -9075,16 +9472,6 @@ var $rtfeldman$elm_css$Css$Structure$compactStylesheet = function (_v0) {
 	var finalDeclarations = A2($rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations, keyframesByName, compactedDeclarations);
 	return {charset: charset, declarations: finalDeclarations, imports: imports, namespaces: namespaces};
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset) {
 	return A2(
 		$elm$core$Maybe$withDefault,
@@ -9781,9 +10168,6 @@ var $Skinney$murmur3$Murmur3$HashData = F4(
 	});
 var $Skinney$murmur3$Murmur3$c1 = 3432918353;
 var $Skinney$murmur3$Murmur3$c2 = 461845907;
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $Skinney$murmur3$Murmur3$multiplyBy = F2(
 	function (b, a) {
 		return ((a & 65535) * b) + ((((a >>> 16) * b) & 65535) << 16);
@@ -11211,7 +11595,6 @@ var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultO
 var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
 	return _Utils_Tuple2(msg, true);
 };
-var $author$project$Model$NoOp = {$: 'NoOp'};
 var $author$project$SvgDraw$createLeftDecoder = F2(
 	function (msg, button) {
 		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
@@ -12061,44 +12444,6 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
 var $author$project$DrawFunc$getInputRouting = F3(
 	function (call, inputCounter, viewStructure) {
 		return A2(
@@ -12395,389 +12740,10 @@ var $author$project$DrawFunc$drawFuncWithConnections = F2(
 					A3($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc, viewStructure.blockPositions, mouseState))
 				]));
 	});
-var $author$project$ViewPositions$ViewStructure = F8(
-	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, funcBlockMaxWidth, mouseState, isToolbar) {
-		return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
-	});
-var $author$project$LineRouting$findMaxBurden = F4(
-	function (fArray, outputBurden, currentIndex, maxIndex) {
-		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
-			return 0;
-		} else {
-			var callId = A2(
-				$elm$core$Maybe$withDefault,
-				-100,
-				A2(
-					$elm$core$Maybe$map,
-					function (call) {
-						return call.id;
-					},
-					A2($elm$core$Array$get, currentIndex, fArray)));
-			return A2(
-				$elm$core$Basics$max,
-				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
-				A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					A2($elm$core$Dict$get, callId, outputBurden)));
-		}
-	});
-var $author$project$LineRouting$findThisRouting = F4(
-	function (inputInfo, outputBurden, fArray, idToPos) {
-		var oIndex = function () {
-			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-			if (_v1.$ === 'Just') {
-				var outputIndex = _v1.a;
-				return outputIndex;
-			} else {
-				return 0;
-			}
-		}();
-		var cIndex = function () {
-			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-			if (_v0.$ === 'Just') {
-				var callIndex = _v0.a;
-				return callIndex;
-			} else {
-				return 0;
-			}
-		}();
-		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
-	});
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
-var $author$project$LineRouting$updateCallLineRoute = F3(
-	function (inputInfo, thisRouting, lineRoute) {
-		return $elm$core$Maybe$Just(
-			A3(
-				$elm$core$Array$set,
-				inputInfo.index,
-				$elm$core$Maybe$Just(thisRouting),
-				function () {
-					if (lineRoute.$ === 'Nothing') {
-						return A2(
-							$elm$core$Array$initialize,
-							$elm$core$List$length(inputInfo.call.inputs),
-							$elm$core$Basics$always($elm$core$Maybe$Nothing));
-					} else {
-						var route = lineRoute.a;
-						return route;
-					}
-				}()));
-	});
-var $author$project$LineRouting$setLineRouting = F4(
-	function (lineRouting, inputInfo, thisRouting, isLeft) {
-		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
-		return A3(
-			$elm$core$Dict$update,
-			inputInfo.call.id,
-			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
-			lineRouting);
-	});
-var $author$project$LineRouting$updateOutputBurden = F2(
-	function (burden, otherBurden) {
-		if (otherBurden.$ === 'Just') {
-			var ob = otherBurden.a;
-			return $elm$core$Maybe$Just(
-				A2($elm$core$Basics$max, burden, ob));
-		} else {
-			return $elm$core$Maybe$Just(burden);
-		}
-	});
-var $author$project$LineRouting$setOutputBurden = F3(
-	function (outputBurden, id, burden) {
-		return A3(
-			$elm$core$Dict$update,
-			id,
-			$author$project$LineRouting$updateOutputBurden(burden),
-			outputBurden);
-	});
-var $author$project$LineRouting$addLineRouting = F6(
-	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
-		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
-		return _Utils_Tuple2(
-			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
-			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
-	});
-var $author$project$LineRouting$getOutputBurden = F2(
-	function (outputBurden, id) {
-		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
-		if (_v0.$ === 'Nothing') {
-			return 0;
-		} else {
-			var burden = _v0.a;
-			return burden;
-		}
-	});
-var $author$project$LineRouting$existingBurdenOne = F4(
-	function (inputInfo, burden, lineRouting, isLeft) {
-		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
-		if (!_v0) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var value = _v0;
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
-		}
-	});
-var $author$project$LineRouting$isDirectlyAbove = F2(
-	function (inputInfo, idToPos) {
-		var _v0 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-		if (_v0.$ === 'Just') {
-			var outputPos = _v0.a;
-			var _v1 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-			if (_v1.$ === 'Just') {
-				var inputPos = _v1.a;
-				return _Utils_eq(inputPos, outputPos + 1);
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	});
-var $author$project$LineRouting$existingBurden = F5(
-	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
-		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
-		} else {
-			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
-			if (_v0.$ === 'Just') {
-				var newRouting = _v0.a;
-				return $elm$core$Maybe$Just(newRouting);
-			} else {
-				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
-			}
-		}
-	});
-var $author$project$LineRouting$buildLineRouting = F7(
-	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
-		buildLineRouting:
-		while (true) {
-			if (!ordering.b) {
-				return lineRouting;
-			} else {
-				var inputInfo = ordering.a;
-				var rest = ordering.b;
-				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
-				if (_v1.$ === 'Just') {
-					var newLineRouting = _v1.a;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = outputBurdenLeft,
-						$temp$outputBurdenRight = outputBurdenRight,
-						$temp$lineRouting = newLineRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				} else {
-					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
-					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
-					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
-					var newBurden = _v2.a;
-					var newRouting = _v2.b;
-					var newLeft = isLeft ? newBurden : outputBurdenLeft;
-					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = newLeft,
-						$temp$outputBurdenRight = newRight,
-						$temp$lineRouting = newRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = !isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				}
-			}
-		}
-	});
-var $elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
-			var jsArray = _v0.a;
-			var remainingItems = _v0.b;
-			if (_Utils_cmp(
-				$elm$core$Elm$JsArray$length(jsArray),
-				$elm$core$Array$branchFactor) < 0) {
-				return A2(
-					$elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					$elm$core$List$cons,
-					$elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var $elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return $elm$core$Array$empty;
-	} else {
-		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
-};
-var $author$project$LineRouting$byOutput = F2(
-	function (idToPos, element) {
-		var _v0 = A2($elm$core$Dict$get, element.outputId, idToPos);
-		if (_v0.$ === 'Just') {
-			var pos = _v0.a;
-			return -pos;
-		} else {
-			return 100;
-		}
-	});
-var $author$project$LineRouting$InputInfo = F3(
-	function (call, index, outputId) {
-		return {call: call, index: index, outputId: outputId};
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $author$project$LineRouting$getCallOrderedInputs = function (call) {
-	return A2(
-		$elm$core$List$filterMap,
-		function (inputPair) {
-			var _v0 = inputPair.a;
-			if (_v0.$ === 'Output') {
-				var outputId = _v0.a;
-				return $elm$core$Maybe$Just(
-					A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
-			} else {
-				return $elm$core$Maybe$Nothing;
-			}
-		},
-		A3(
-			$elm$core$List$map2,
-			$elm$core$Tuple$pair,
-			call.inputs,
-			A2(
-				$elm$core$List$range,
-				0,
-				$elm$core$List$length(call.inputs) - 1)));
-};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$LineRouting$getOutputOrdering = F2(
-	function (func, idToPos) {
-		return A2(
-			$elm$core$List$sortBy,
-			$author$project$LineRouting$byOutput(idToPos),
-			A2($elm$core$List$concatMap, $author$project$LineRouting$getCallOrderedInputs, func));
-	});
-var $author$project$LineRouting$getLineRouting = function (func) {
-	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
-	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
-	var funcArray = $elm$core$Array$fromList(func);
-	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
-};
-var $author$project$ViewPositions$getMaxBlockWidth = function (blockPositions) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, blockpos, acc) {
-				return A2($elm$core$Basics$max, blockpos.width, acc);
-			}),
-		0,
-		blockPositions);
-};
-var $author$project$ViewPositions$blockSorter = F2(
-	function (blockPositions, call) {
-		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
-		if (_v0.$ === 'Nothing') {
-			return -100;
-		} else {
-			var pos = _v0.a;
-			return pos.ypos;
-		}
-	});
-var $author$project$ViewPositions$makeSortedFunc = F2(
-	function (func, blockPositions) {
-		return A2(
-			$elm$core$List$sortBy,
-			$author$project$ViewPositions$blockSorter(blockPositions),
-			func);
-	});
-var $author$project$ViewPositions$getViewStructure = F7(
-	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
-		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
-		var maxWidth = $author$project$ViewPositions$getMaxBlockWidth(blockPositions);
-		var sortedFunc = A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions);
-		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
-		return A8($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, maxWidth, mouseState, isToolbar);
-	});
 var $author$project$DrawProgram$drawOnion = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
 		if (!onion.b) {
-			return _List_Nil;
+			return _Utils_Tuple2(0, _List_Nil);
 		} else {
 			var func = onion.a;
 			var funcs = onion.b;
@@ -12787,13 +12753,16 @@ var $author$project$DrawProgram$drawOnion = F4(
 				mouseState,
 				svgWindowWidth,
 				svgWindowHeight,
-				$author$project$ViewVariables$functionXSpacing + $author$project$ViewVariables$toolbarWidth(svgWindowWidth),
+				$author$project$ViewVariables$functionXSpacing + A2($author$project$ViewVariables$toolbarWidth, svgWindowWidth, svgWindowHeight),
 				0,
 				false);
-			return A2(
-				$elm$core$List$cons,
-				A2($author$project$DrawFunc$drawFuncWithConnections, viewStructure, mouseState),
-				A4($author$project$DrawProgram$drawOnion, funcs, mouseState, svgWindowWidth, svgWindowHeight));
+			var restOnion = A4($author$project$DrawProgram$drawOnion, funcs, mouseState, svgWindowWidth, svgWindowHeight);
+			return _Utils_Tuple2(
+				A2($elm$core$Basics$max, viewStructure.funcHeight, restOnion.a),
+				A2(
+					$elm$core$List$cons,
+					A2($author$project$DrawFunc$drawFuncWithConnections, viewStructure, mouseState),
+					restOnion.b));
 		}
 	});
 var $author$project$BuiltIn$callFromSpec = F2(
@@ -12816,10 +12785,10 @@ var $author$project$BuiltIn$makeAllFunction = F2(
 var $author$project$BuiltIn$allBuiltInAsFunction = A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100);
 var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
-		return A2(
-			$author$project$DrawFunc$drawFuncWithConnections,
-			A7($author$project$ViewPositions$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, true),
-			mouseState);
+		var viewStructure = A7($author$project$ViewPositions$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, true);
+		return _Utils_Tuple2(
+			viewStructure.funcHeight,
+			A2($author$project$DrawFunc$drawFuncWithConnections, viewStructure, mouseState));
 	});
 var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
 var $rtfeldman$elm_css$Html$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
@@ -12827,8 +12796,12 @@ var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $author$project$DrawProgram$drawProgram = F4(
 	function (program, mouseState, svgWindowWidth, svgWindowHeight) {
-		var elementHeight = svgWindowHeight * 2;
-		var viewportHeight = A2($author$project$ViewPositions$getViewportHeight, svgWindowWidth, elementHeight);
+		var viewportWidth = A2($author$project$ViewVariables$viewportWidth, svgWindowWidth, svgWindowHeight);
+		var viewportHeight = $author$project$ViewVariables$viewportHeight;
+		var drawnToolbar = A4($author$project$DrawToolbar$drawToolbar, program, mouseState, svgWindowWidth, svgWindowHeight);
+		var drawnOnion = A4($author$project$DrawProgram$drawOnion, program, mouseState, svgWindowWidth, svgWindowHeight);
+		var actualViewportHeight = A2($elm$core$Basics$max, drawnOnion.a, drawnToolbar.a);
+		var actualWindowHeight = $elm$core$Basics$floor(svgWindowHeight * (actualViewportHeight / viewportHeight));
 		return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
 			A2(
 				$elm$svg$Svg$svg,
@@ -12837,21 +12810,16 @@ var $author$project$DrawProgram$drawProgram = F4(
 						$elm$svg$Svg$Attributes$width(
 						$elm$core$String$fromInt(svgWindowWidth)),
 						$elm$svg$Svg$Attributes$height(
-						$elm$core$String$fromInt(elementHeight)),
+						$elm$core$String$fromInt(actualWindowHeight)),
 						$elm$svg$Svg$Attributes$viewBox(
-						'0 0 ' + A2($author$project$ViewPositions$createViewboxDimensions, $author$project$ViewVariables$viewportWidth, viewportHeight)),
+						'0 0 ' + A2($author$project$ViewPositions$createViewboxDimensions, viewportWidth, actualViewportHeight)),
 						$elm$svg$Svg$Attributes$display('inline-block')
 					]),
-				A2(
-					$elm$core$List$cons,
-					A4($author$project$DrawToolbar$drawToolbar, program, mouseState, svgWindowWidth, svgWindowHeight),
-					A4($author$project$DrawProgram$drawOnion, program, mouseState, svgWindowWidth, svgWindowHeight))));
+				A2($elm$core$List$cons, drawnToolbar.b, drawnOnion.b)));
 	});
-var $rtfeldman$elm_css$Css$overflowY = $rtfeldman$elm_css$Css$prop1('overflow-y');
-var $rtfeldman$elm_css$Css$scroll = {backgroundAttachment: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, scroll: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'scroll'};
 var $author$project$View$programPage = function (model) {
-	var programWidth = $author$project$ViewVariables$programWidth(model.windowWidth);
-	var programSectionHeight = $author$project$ViewVariables$programHeight(model.windowHeight);
+	var programWidth = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
+	var programSectionHeight = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
 	var drawnProgram = A4($author$project$DrawProgram$drawProgram, model.program, model.mouseState, programWidth, programSectionHeight);
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
@@ -12860,12 +12828,7 @@ var $author$project$View$programPage = function (model) {
 				$rtfeldman$elm_css$Html$Styled$Attributes$css(
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
-						$rtfeldman$elm_css$Css$overflowY($rtfeldman$elm_css$Css$scroll),
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$px(programWidth + $author$project$ViewVariables$scrollbarWidth)),
-						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$px(programSectionHeight))
+						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock)
 					]))
 			]),
 		function () {

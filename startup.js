@@ -59,6 +59,11 @@ app.ports.evalJavascript.subscribe(function(javascriptCode) {
     );
 });
 
+window.onscroll = function() {
+    app.ports.scrollChange.send({xpos: document.documentElement.scrollLeft,
+				 ypos: document.documentElement.scrollTop});
+};
+
 
 // example program
 function exampleCompiledProgram() {
