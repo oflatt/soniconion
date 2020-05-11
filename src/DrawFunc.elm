@@ -43,7 +43,7 @@ drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlig
     Maybe.withDefault (SvgDraw.errorSvgNode "Can't find line output")
         (Maybe.map2
              (\otherBlockPos routing ->
-                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing)
+                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing viewStructure)
              (Dict.get outputId viewStructure.blockPositions)
              (getInputRouting call inputCounter viewStructure))    
 
@@ -72,6 +72,7 @@ drawInput call input blockPos inputCounter viewStructure =
         nodeWithEvent =
             (\_ ->
                  (SvgDraw.drawNodeWithEvent
+                      blockPos.xpos
                       nodePosition
                       (blockPos.ypos + ViewVariables.nodeRadius)
                       nodeEvents
@@ -98,6 +99,7 @@ drawInput call input blockPos inputCounter viewStructure =
                      call
                      str
                      nodeEvents
+                     blockPos.xpos
                      nodePosition
                      (blockPos.ypos + ViewVariables.nodeRadius)
                      inputCounter
@@ -107,7 +109,7 @@ drawInput call input blockPos inputCounter viewStructure =
                         
 drawInputLines call inputs blockPos inputCounter viewStructure =
     case inputs of
-        [] -> [SvgDraw.nodeEvent (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id)]
+        [] -> [SvgDraw.nodeEvent 0 (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id)]
         (input::rest) ->
             (drawInput call input blockPos inputCounter viewStructure) ::
                 (drawInputLines call rest blockPos (inputCounter + 1) viewStructure)
@@ -139,7 +141,8 @@ drawCallEnding call blockPositions mouseState =
                         _ -> False
             in
                 (SvgDraw.drawNode
-                     ((ViewVariables.outputNodeX + blockPos.xpos-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
+                     blockPos.xpos
+                     (((blockPos.width//2)-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
                      (ViewVariables.outputNodeY + blockPos.ypos)
                      [(SvgDraw.svgLeftClick (OutputClick call.id))
                      ,(SvgDraw.svgRightClick (OutputRightClick call.id))]

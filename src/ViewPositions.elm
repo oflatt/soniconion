@@ -5,6 +5,7 @@ import LineRouting exposing (LineRouting, getLineRouting)
 import Model exposing (..)
 import ModelHelpers exposing (idToPosition, IdToPos)
 import ViewVariables
+import Utils
 
 import Dict exposing (Dict)
 import Debug exposing (log)
@@ -32,15 +33,17 @@ getMovedInfo func mouseState mouseSvgCoordinates =
                     then
                         Just (MovedBlockInfo
                                   call
-                                  ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
+                                  ((Tuple.first mouseSvgCoordinates)
                                   ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
                     else getMovedInfo calls mouseState mouseSvgCoordinates
                 _ -> getMovedInfo calls mouseState mouseSvgCoordinates
-                     
+
+-- xpos and width, with xpos relative to the block
 type alias InputPosition = (Int, Int)
                      
 type alias BlockPosition = {xpos: Int
                            ,ypos: Int
+                           ,width: Int
                            ,inputPositions: Dict Int InputPosition}
     
 type alias BlockPositions = Dict Id BlockPosition
@@ -49,6 +52,7 @@ type alias ViewStructure = {blockPositions : BlockPositions
                            ,sortedFunc : Function
                            ,funcxoffset : Int
                            ,funcyoffset : Int
+                           ,funcBlockMaxWidth : Int
                            ,mouseState : MouseState
                            ,isToolbar : Bool}
 
@@ -96,17 +100,34 @@ inputPositionList inputs counter currentX =
             in
                 (counter, (currentX, width)) :: (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing))
         
-makeInputPositions call xpos =
-    Dict.fromList (inputPositionList call.inputs 0 (ViewVariables.inputPadding + xpos))
+makeInputPositions call =
+    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding)
 
-makeBlockPosition xpos ypos call =
-    (BlockPosition xpos ypos (makeInputPositions call xpos))
+inputPositionsMax inputPositions =
+    case Dict.get ((Dict.size inputPositions)-1) inputPositions of
+        Just lastPos -> (Tuple.first lastPos)+(Tuple.second lastPos) + ViewVariables.blockTextXPadding
+        Nothing -> 0
+
+        
+getBlockWidth call inputPositions =
+    max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
+        
+makeBlockPosition xpos ypos call shouldCenterX =
+    let inputPositions = (makeInputPositions call)
+        blockW = getBlockWidth call inputPositions
+        blockXpos =
+            if shouldCenterX then
+                xpos - (blockW//2)
+            else
+                xpos
+    in
+        (BlockPosition blockXpos ypos blockW inputPositions)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Id -> Maybe MovedBlockInfo -> Function -> Int -> BlockPositions
 getAllBlockPositions idToSkip maybeMoveInfo func currentY =
     let iterate = (\call calls ->
-                       Dict.insert call.id (makeBlockPosition 0 (currentY+(callLinesSpace call)) call)
+                       Dict.insert call.id (makeBlockPosition 0 (currentY+(callLinesSpace call)) call False)
                            (getAllBlockPositions idToSkip maybeMoveInfo calls
                                 (currentY+ViewVariables.blockSpace+(callLinesSpace call))))
     in
@@ -143,7 +164,7 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset
         case moveInfo of
             Just info -> (Dict.insert
                               info.movedCall.id
-                              (makeBlockPosition (Tuple.first info.movedPos) (Tuple.second info.movedPos) info.movedCall)
+                              (makeBlockPosition (Tuple.first info.movedPos) (Tuple.second info.movedPos) info.movedCall True)
                               positionsWithoutMoved)
             Nothing -> positionsWithoutMoved
 
@@ -155,12 +176,19 @@ blockSorter blockPositions call =
         Nothing -> -100 -- todo some sort of error handeling
         Just pos -> pos.ypos
                    
-
+getMaxBlockWidth blockPositions =
+    Dict.foldr
+        (\key blockpos acc ->
+             max blockpos.width acc)
+        0
+        blockPositions
+                    
                     
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         sortedFunc = makeSortedFunc func blockPositions
         lineRouting = getLineRouting sortedFunc
+        maxWidth = getMaxBlockWidth blockPositions
     in
         (ViewStructure
              blockPositions
@@ -168,6 +196,7 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
              sortedFunc
              xoffset
              yoffset
+             maxWidth
              mouseState
              isToolbar)
 

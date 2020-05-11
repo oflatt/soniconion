@@ -54,7 +54,7 @@ drawBuiltIn call index viewStructure =
     in
         case get of
             Just names ->
-                functionNameshape call viewStructure
+                drawBlock call viewStructure
             Nothing ->
                 errorSvgNode ("not a built in function " ++ call.functionName)
 
@@ -63,7 +63,8 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     text_
     [x (String.fromInt xpos)
     ,y (String.fromInt ypos)
-    ,textAnchor "middle"
+    ,textAnchor "start"
+    ,fontFamily "monospace"
     ,dominantBaseline "central"
     ,fontSize (String.fromInt fontSizeIn)
     ,pointerEvents "none"
@@ -72,11 +73,11 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> InputPosition -> Int -> Int -> String -> (Svg Msg)
-drawTextInput call str events inputPos ypos index domId =
+drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String -> (Svg Msg)
+drawTextInput call str events xpos inputPos ypos index domId =
     Svg.foreignObject
         (events ++
-             [x (String.fromInt (Tuple.first inputPos))
+             [x (String.fromInt ((Tuple.first inputPos)+xpos))
              ,y (String.fromInt (ypos - (ViewVariables.inputHeight//2)))
              ,width (String.fromInt (Tuple.second inputPos))
              ,height (String.fromInt (ViewVariables.inputHeight))])
@@ -103,9 +104,9 @@ drawTextInput call str events inputPos ypos index domId =
                   [])]
 
 
-nodeEvent inputPos ypos event domId =
+nodeEvent xpos inputPos ypos event domId =
     Svg.foreignObject
-        [x (String.fromInt (Tuple.first inputPos))
+        [x (String.fromInt ((Tuple.first inputPos)+xpos))
         ,y (String.fromInt ypos)
         ,width (String.fromInt ViewVariables.nodeRadius)
         ,height (String.fromInt ViewVariables.nodeRadius)]
@@ -116,22 +117,22 @@ nodeEvent inputPos ypos event domId =
               ,(onFocus event)]
              [])]
 
-drawNode inputPosition ypos events isHighlighted =
+drawNode xpos inputPosition ypos events isHighlighted =
     (circle (events ++
                  [r (String.fromInt ((Tuple.second inputPosition)//2))
-                 , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2)))
+                 , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2) + xpos))
                  , cy (String.fromInt ypos)
                  , fill (if isHighlighted then "blue" else "black")])
          [])
 
         
 -- nodes has inputs underneath them so that they can be tabbed
-drawNodeWithEvent inputPos ypos events highlightevent eventId isHighlighted =
+drawNodeWithEvent xpos inputPos ypos events highlightevent eventId isHighlighted =
     Svg.g
         []
         [
-         nodeEvent inputPos ypos highlightevent eventId
-        ,drawNode inputPos ypos events isHighlighted
+         nodeEvent xpos inputPos ypos highlightevent eventId
+        ,drawNode xpos inputPos ypos events isHighlighted
         ]
 
         
@@ -168,8 +169,8 @@ svgRightClick msg =
 
 
 -- shape for functionName objects
-functionNameshape: Call -> ViewStructure -> (Svg Msg)
-functionNameshape call viewStructure =
+drawBlock: Call -> ViewStructure -> (Svg Msg)
+drawBlock call viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.node "g"
@@ -183,7 +184,7 @@ functionNameshape call viewStructure =
                  rect
                      [ x "0"
                      , y (String.fromInt ViewVariables.nodeRadius)
-                     , width (String.fromInt (ViewVariables.blockWidth))
+                     , width (String.fromInt blockPos.width)
                      , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
                      , fill ViewVariables.blockColor
                      , stroke ViewVariables.blockColor
@@ -191,34 +192,35 @@ functionNameshape call viewStructure =
                      , ry (String.fromInt ViewVariables.nodeRadius)
                      ]
                      []
-                , svgText (ViewVariables.blockWidth // 2) (ViewVariables.blockHeight // 2) call.functionName ViewVariables.funcNameFontHeight "white"
+                , svgText ViewVariables.blockTextXPadding (ViewVariables.blockHeight // 2) call.functionName ViewVariables.blockTextHeight "white"
                 ]
         Nothing ->
             errorSvgNode "function call without block pos"
                         
 
-drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> Svg Msg
-drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routeOffset =
-    let lineX =
+drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> ViewStructure -> Svg Msg
+drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routeOffset viewStructure =
+    let otherBlockOutputX = otherBlockPos.xpos + (otherBlockPos.width // 2)
+        lineX =
             (if routeOffset < 0
              then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset
              else
                  if routeOffset > 0
-                 then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + ViewVariables.blockWidth
-                 else otherBlockPos.xpos + ViewVariables.outputNodeX)
+                 then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + viewStructure.funcBlockMaxWidth
+                 else otherBlockOutputX)
         lastY =
             (blockPos.ypos + ViewVariables.nodeRadius)
             - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
         nodeX =
             (case (Dict.get inputCounter blockPos.inputPositions ) of
-                 Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius
+                 Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius + blockPos.xpos
                  Nothing -> -100) -- something went wrong
         linepoints =
             [
-             (otherBlockPos.xpos + ViewVariables.outputNodeX)
+             otherBlockOutputX
             ,(otherBlockPos.ypos + ViewVariables.outputNodeY)
             -- just below
-            ,(otherBlockPos.xpos + ViewVariables.outputNodeX)
+            ,otherBlockOutputX
             ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
             -- to right or left
             ,lineX

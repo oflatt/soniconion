@@ -25,14 +25,10 @@ toolbarWidth windowWidth = viewportWidth // 4
                                            
 functionXSpacing = 100
 
-blockWidth = 200
-blockHeight = blockWidth // 4
+blockHeight = 50
 blockSpacing = blockHeight // 6
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing
-
-
-funcNameFontHeight = floor ((toFloat blockHeight) * 0.4)
              
 
 lineXSpace = blockHeight // 2
@@ -46,14 +42,22 @@ inputSpacing = nodeRadius * 1
 
                
 outputNodeY = blockHeight - nodeRadius
-outputNodeX = blockWidth // 2
 
 inputHeight = floor ((toFloat nodeRadius) * 2.5)
 
 inputFontSizePercent = 0.85
-characterOverestimate = (toFloat inputHeight) * 0.5 * inputFontSizePercent
+charOverestimatePercent = 0.5
+characterOverestimate = (toFloat inputHeight) * inputFontSizePercent * charOverestimatePercent
 numCharactersToInputWidth numChars = floor (characterOverestimate * (toFloat (numChars+1)))
-                     
+
+blockTextHeight = floor ((toFloat blockHeight) * 0.4)
+blockCharacterOverestimate = (toFloat blockTextHeight) * charOverestimatePercent
+blockTextXPadding = floor blockCharacterOverestimate
+
+callTextBlockSize text =
+    (floor (blockCharacterOverestimate * (toFloat (String.length text))))
+        + 2 * blockTextXPadding
+                    
 toolbarProportion = 0.25
 
 blockColor = "rgb(50, 214, 232)"
