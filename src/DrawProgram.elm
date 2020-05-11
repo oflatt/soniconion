@@ -29,34 +29,40 @@ import Debug exposing (log)
 
 
 -- function for drawing the onion
-drawOnion: Onion -> MouseState -> Int -> Int -> List (Svg Msg)
+drawOnion: Onion -> MouseState -> Int -> Int -> (Int, List (Svg Msg)) -- funcs and max height
 drawOnion onion mouseState svgWindowWidth svgWindowHeight = 
   case onion of
-    [] -> []
+    [] -> (0, [])
     (func::funcs) ->
         let viewStructure =
                 (ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
-                     (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth svgWindowWidth))
+                     (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth svgWindowWidth svgWindowHeight))
                      0 False)
+            restOnion = (drawOnion funcs mouseState svgWindowWidth svgWindowHeight)
         in
-            (drawFuncWithConnections
+            ((Basics.max viewStructure.funcHeight (Tuple.first restOnion))
+            ,(drawFuncWithConnections
                  viewStructure
-                 mouseState) ::
-            (drawOnion funcs mouseState svgWindowWidth svgWindowHeight)
+                 mouseState) :: (Tuple.second restOnion))
+            
 
 
                      
 drawProgram : Onion -> MouseState -> Int -> Int -> Html Msg
 drawProgram program mouseState svgWindowWidth svgWindowHeight =
-    let elementHeight = svgWindowHeight * 2 -- TODO detect how big to make it
-        viewportHeight = (ViewPositions.getViewportHeight svgWindowWidth elementHeight)
+    let viewportWidth = (ViewVariables.viewportWidth svgWindowWidth svgWindowHeight)
+        viewportHeight = (ViewVariables.viewportHeight)
+        drawnOnion = (drawOnion program mouseState svgWindowWidth svgWindowHeight)
+        drawnToolbar = (DrawToolbar.drawToolbar program mouseState svgWindowWidth svgWindowHeight)
+        actualViewportHeight = Basics.max (Tuple.first drawnOnion) (Tuple.first drawnToolbar)
+        actualWindowHeight = floor ((toFloat svgWindowHeight) * ((toFloat actualViewportHeight) / (toFloat viewportHeight)))
     in
         fromUnstyled
         (Svg.svg
              [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
-             , Svg.Attributes.height(String.fromInt elementHeight) -- define the height of the svg
-             , Svg.Attributes.viewBox("0 0 " ++ (ViewPositions.createViewboxDimensions ViewVariables.viewportWidth viewportHeight)) -- define the viewbox
+             , Svg.Attributes.height(String.fromInt actualWindowHeight) -- define the height of the svg
+             , Svg.Attributes.viewBox("0 0 " ++ (ViewPositions.createViewboxDimensions viewportWidth actualViewportHeight)) -- define the viewbox
              , display "inline-block"
              ]
-             ((DrawToolbar.drawToolbar program mouseState svgWindowWidth svgWindowHeight) ::
-                  (drawOnion program mouseState svgWindowWidth svgWindowHeight)))
+             ((Tuple.second drawnToolbar) ::
+                  (Tuple.second drawnOnion)))

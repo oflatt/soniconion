@@ -16,8 +16,8 @@ type alias MovedBlockInfo = {movedCall : Call
 
 mouseToSvgCoordinates: MouseState -> Int -> Int -> Int -> Int -> (Int, Int)
 mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
-    ((mouseState.mouseX * ViewVariables.viewportWidth) // svgScreenWidth - xoffset
-    ,((mouseState.mouseY - ViewVariables.svgYpos) * (getViewportHeight svgScreenWidth svgScreenHeight)) // svgScreenHeight - yoffset)
+    (((mouseState.mouseX+mouseState.scrollX) * (ViewVariables.viewportWidth svgScreenWidth svgScreenHeight)) // svgScreenWidth - xoffset
+    ,(((mouseState.mouseY+mouseState.scrollY) - ViewVariables.svgYpos) * ViewVariables.viewportHeight) // svgScreenHeight - yoffset)
 
 svgYposToIndex: Int -> Int
 svgYposToIndex yPos =
@@ -53,6 +53,7 @@ type alias ViewStructure = {blockPositions : BlockPositions
                            ,funcxoffset : Int
                            ,funcyoffset : Int
                            ,funcBlockMaxWidth : Int
+                           ,funcHeight : Int
                            ,mouseState : MouseState
                            ,isToolbar : Bool}
 
@@ -182,13 +183,20 @@ getMaxBlockWidth blockPositions =
              max blockpos.width acc)
         0
         blockPositions
-                    
+
+getMaxBlockBottom blockPositions =
+    Dict.foldr
+        (\key blockpos acc ->
+             max (blockpos.ypos+ViewVariables.blockHeight) acc)
+        0
+        blockPositions
                     
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         sortedFunc = makeSortedFunc func blockPositions
         lineRouting = getLineRouting sortedFunc
         maxWidth = getMaxBlockWidth blockPositions
+        funcHeight = getMaxBlockBottom blockPositions
     in
         (ViewStructure
              blockPositions
@@ -197,6 +205,7 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
              xoffset
              yoffset
              maxWidth
+             funcHeight
              mouseState
              isToolbar)
 
@@ -208,6 +217,4 @@ createViewboxDimensions w h =
     in
         width ++ " " ++ height
 
-getViewportHeight windowWidth windowHeight =
-    ViewVariables.viewportWidth * windowHeight // windowWidth
             

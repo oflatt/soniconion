@@ -148,8 +148,8 @@ drawErrorBox errorBox =
     
 programPage : Model -> Html Msg
 programPage model =
-    let programWidth = ViewVariables.programWidth model.windowWidth
-        programSectionHeight = ViewVariables.programHeight model.windowHeight
+    let programWidth = ViewVariables.toSvgWindowWidth model.windowWidth
+        programSectionHeight = ViewVariables.toSvgWindowHeight model.windowHeight
         drawnProgram = (drawProgram
                             model.program
                             model.mouseState
@@ -157,10 +157,7 @@ programPage model =
                             programSectionHeight)
     in
         div
-        [css[display (inlineBlock)
-            ,overflowY scroll
-            ,width (px (toFloat programWidth + ViewVariables.scrollbarWidth)) 
-            ,height (px (toFloat programSectionHeight))]]
+        [css[display (inlineBlock)]]
         (case model.errorBoxMaybe of
              Nothing -> [drawnProgram]
              Just errorBox ->

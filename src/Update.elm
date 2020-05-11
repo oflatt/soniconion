@@ -1,4 +1,4 @@
-port module Update exposing (update, nodeInputId, nodeOutputId)
+port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange)
 import Debug exposing (log)
 
 import Task
@@ -16,14 +16,20 @@ import Browser.Dom as Dom
 import ViewVariables
 import ViewPositions
 
+import Json.Decode as Decode
 import Model exposing (..)
 import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition)
 
 
--- just need a port for javascript
+
 port evalJavascript : String -> Cmd msg
+
+                      
+port scrollChange : (Decode.Value ->  msg) -> Sub msg
+                      
+                      
 
 -- UPDATE
 
@@ -155,19 +161,16 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                             currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
                                 
 funcBlockDropped func blockId oldMouse windowWidth windowHeight =
-    let blockPositions =
-            (ViewPositions.getBlockPositions func oldMouse
-                 (ViewVariables.programWidth windowWidth)
-                 (ViewVariables.programHeight windowHeight)
-                 (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth windowWidth)) 0)
+    let viewStructure =
+            (ViewPositions.getViewStructure func oldMouse
+                 (ViewVariables.toSvgWindowWidth windowWidth)
+                 (ViewVariables.toSvgWindowHeight windowHeight)
+                 (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth
+                                                        (ViewVariables.toSvgWindowWidth windowWidth)
+                                                        (ViewVariables.toSvgWindowHeight windowHeight)))
+                 0 False)
     in
-        case Dict.get blockId blockPositions of
-            Nothing -> log "No block in funcBlockDropped" func
-            Just blockPos ->
-                case getCallById blockId func of
-                    Nothing -> log "No block in func in funcBlockDropped" func
-                    Just call ->
-                        fixInvalidInputs (placeBlockAtPos func blockId blockPos blockPositions call)
+        fixInvalidInputs viewStructure.sortedFunc
 
     
 -- todo handle multiple functions
@@ -187,7 +190,7 @@ modelBlockDropped model id =
               mouseState = newMouse
               ,program =
                   (programBlockDropped model.program id oldMouse
-                       (ViewVariables.programWidth model.windowWidth) (ViewVariables.programHeight model.windowHeight))}
+                       model.windowWidth model.windowHeight)}
         ,Cmd.none)
 
 modelWithError : Model -> String -> Model
@@ -284,6 +287,17 @@ update msg model =
                 ({model |
                       mouseState = newMouse}
                 , Cmd.none)
+        ScrollChange pos ->
+            let oldMouse = model.mouseState
+                newMouse =
+                    {oldMouse |
+                         scrollX = pos.xpos,
+                         scrollY = pos.ypos}
+            in
+                ({model |
+                      mouseState = newMouse}
+                ,Cmd.none)
+            
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
         BlockClick id ->
@@ -302,9 +316,7 @@ update msg model =
             outputHighlightModel model id
                     
         InputClick id index ->
-            let l = log "left" 2
-            in
-                inputClickModel model id index
+            inputClickModel model id index
 
         InputUpdate id index str ->
             inputUpdateModel model id index str
@@ -313,9 +325,7 @@ update msg model =
             outputClickModel model id
 
         InputRightClick id index ->
-            let m = log "r" 2
-            in
-                (inputRightClickModel model id index)
+            (inputRightClickModel model id index)
 
         OutputRightClick id ->
             (outputRightClickModel model id)

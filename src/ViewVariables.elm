@@ -11,19 +11,20 @@ scrollbarWidth = 40
 titleHeight = 90
 buttonHeight = 50
 svgYpos = titleHeight + buttonHeight
-programWidth windowWidth = windowWidth - (2*scrollbarWidth)
--- height of the html object, but might scroll bigger
-programHeight windowHeight = windowHeight - svgYpos - scrollbarWidth
-
+toSvgWindowWidth windowWidth = windowWidth - (scrollbarWidth+1)
+toSvgWindowHeight windowHeight = windowHeight - svgYpos - buttonHeight
 
                              
 -- svg attributes ------------------------------------------------
-viewportWidth = 1000 -- defines the coordinate space
--- viewport Height doesn't matter because we scroll down
+-- defines coordinate system for svg drawing
+viewportHeight = 500
+viewportWidth svgWindowWidth svgWindowHeight = floor (((toFloat svgWindowWidth) / (toFloat svgWindowHeight))
+                                                          * (toFloat viewportHeight))
 
-toolbarWidth windowWidth = viewportWidth // 4
+
+toolbarWidth windowWidth windowHeight = 100
                                            
-functionXSpacing = 100
+functionXSpacing = 50
 
 blockHeight = 50
 blockSpacing = blockHeight // 6

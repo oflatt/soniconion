@@ -19,8 +19,12 @@ import Svg exposing (Svg)
 import Svg.Attributes
 
         
-drawToolbar : Onion -> MouseState -> Int -> Int -> Svg Msg
+drawToolbar : Onion -> MouseState -> Int -> Int -> (Int, Svg Msg)
 drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
-    (DrawFunc.drawFuncWithConnections
-         (ViewPositions.getViewStructure allBuiltInAsFunction mouseState svgWindowWidth svgWindowHeight 0 0 True)
-         mouseState)
+    let viewStructure = (ViewPositions.getViewStructure allBuiltInAsFunction mouseState
+                             svgWindowWidth svgWindowHeight 0 0 True)
+    in
+        (viewStructure.funcHeight,
+             (DrawFunc.drawFuncWithConnections
+                  viewStructure
+                  mouseState))

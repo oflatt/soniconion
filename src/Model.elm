@@ -15,11 +15,27 @@ type alias MousePos =
     , y : Int
     }
 
+type alias Pos =
+    { xpos : Int
+    , ypos : Int}
+
 mouseDecoder : Decode.Decoder MousePos
 mouseDecoder = 
     Decode.map2 MousePos
         (Decode.field "clientX" Decode.int)
         (Decode.field "clientY" Decode.int)
+            
+handelScrollResult scrollRes =
+    case scrollRes of
+        Ok res -> ScrollChange res
+        Err err -> NoOp
+            
+scrollChangeDecoder =
+    (Decode.decodeValue
+        (Decode.map2 Pos
+             (Decode.field "xpos" Decode.int)
+             (Decode.field "ypos" Decode.int))) >> handelScrollResult
+            
 
 type Msg = MouseOver PageName
          | MouseLeave PageName
@@ -27,6 +43,7 @@ type Msg = MouseOver PageName
          | LinkClicked Browser.UrlRequest
          | PageChange String
          | UrlChanged Url.Url
+         | ScrollChange Pos
          | WindowResize Int Int
          | PlaySound
          | MouseMoved MousePos
@@ -94,8 +111,11 @@ type MouseSelection = BlockSelected Id
 
 type alias MouseState = {mouseX : Int
                         ,mouseY : Int
+                        ,scrollX : Int
+                        ,scrollY : Int
                         ,mouseSelection : MouseSelection}
-
+                        
+    
 type alias ErrorBox = {error : String}
 
 type alias Model = {currentPage: PageName
@@ -135,6 +155,8 @@ initialModel flags url key = ((Model
                                    flags.innerWindowHeight
                                    initialProgram
                                    (MouseState
+                                        0
+                                        0
                                         0
                                         0
                                         NoneSelected)
