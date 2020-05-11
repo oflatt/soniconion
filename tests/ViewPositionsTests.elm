@@ -19,13 +19,15 @@ callBlockPositions testFunc mouse =
     Result.map (List.map blockPositionToYpos)
         (ViewPositions.blockPositionsToPositionList testFunc
              (ViewPositions.getViewStructure testFunc
-                  mouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0 False).blockPositions)
+                  mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 False).blockPositions)
 
             
-emptyMouse = (MouseState 0 0 NoneSelected)
+emptyMouse = (MouseState 0 0 0 0 NoneSelected)
 
 secondToLastMouse = (MouseState 1
                          (blockSpace+2*lineSpaceBeforeBlock+ViewVariables.svgYpos+(ViewVariables.blockHeight//2))
+                         0
+                         0
                          (BlockSelected 23))
                     
 blockPositionsTest : Test
@@ -63,7 +65,8 @@ movedInfoTest =
         [test "test select second to last"
              (myexpect
                   (ViewPositions.getMovedInfo TestModel.complexRoutingFunc secondToLastMouse
-                       (ViewPositions.mouseToSvgCoordinates secondToLastMouse ViewVariables.viewportWidth ViewVariables.viewportWidth 0 0))
+                       (ViewPositions.mouseToSvgCoordinates secondToLastMouse
+                            (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight 0 0))
                   (Just (ViewPositions.MovedBlockInfo TestModel.secondToLastSine
                              (1, blockSpace + 2*lineSpaceBeforeBlock))))
                                        
