@@ -2,6 +2,18 @@ module Utils exposing (..)
 
 import Dict exposing (Dict)
 
+splitLast : List t -> Maybe (List t, t)
+splitLast func =
+    case func of
+        [] -> Nothing
+        [a] -> Just ([], a)
+        (c::cs) ->
+            case splitLast cs of
+                Just (rest, final) -> Just (c::rest, final)
+                Nothing -> Nothing -- can't happen
+                
+                
+
 
 last : List t -> Maybe t
 last func =

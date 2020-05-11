@@ -20,8 +20,10 @@ buildWave expr =
                 durationAST = buildValue duration
             in
                 (Begin
-                     [(If (Unary ">" timeAST durationAST)
-                          (NotesPush (Note frequencyAST))
+                     [(If (Unary "&&"
+                               (Unary ">=" (Literal "time") timeAST)
+                               (Unary "<" (Literal "time") (Unary "+" timeAST durationAST)))
+                          (NotesPush frequencyAST)
                           Empty)
                      ,(Unary "+" timeAST durationAST)])
         _ -> Empty -- fail silently

@@ -27,13 +27,17 @@ type alias Expr =
     ,compileExprFunction : CompileExprFunction}
 
 
-type AST = Begin (List AST)
-         | CallFunction AST (List AST)
-         | VarDeclaration AST AST
-         | VarSet AST AST
+type AST = Empty
          | Literal String
 
-         | Function (List String) (List AST) AST -- arguments, body, return value
+         | Begin (List AST)
+         | CallFunction AST (List AST)
+         | Function (List String) AST -- arguments, body
+         | For AST AST AST AST -- three parts of for loop and body
+           
+         | VarDeclaration AST AST
+         | VarSet AST AST
+         
            
          | CachePushNull
          | CachePush AST
@@ -48,8 +52,11 @@ type AST = Begin (List AST)
          | Unary String AST AST
          | SingleOp String AST
 
-           
-         | Note AST -- frequency
-         | Empty
+         
 
     
+forRange varName beginAST endAST bodyAST =
+    For (VarDeclaration (Literal varName) beginAST)
+        (Unary "<" (Literal varName) endAST)
+        (Literal (varName ++ "++"))
+        bodyAST

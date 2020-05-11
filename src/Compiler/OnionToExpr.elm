@@ -107,7 +107,7 @@ onionToCompModel onion =
     case onion of
         [] -> Ok []
         (f::fs) ->
-            case functionToMethod f (makeIdToIndex f Dict.empty (List.length CompModel.systemValues)) of
+            case functionToMethod f (makeIdToIndex f Dict.empty 0) of
                 Ok method ->
                     case onionToCompModel fs of
                         Ok rest -> Ok (method :: rest)

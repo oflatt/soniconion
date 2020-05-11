@@ -1,59 +1,36 @@
 module Compiler.CompileToAST exposing (compileToAST, getCacheValue)
-import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), systemValues)
+import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), systemValues, forRange)
 import Utils
-
-javascriptHead =
-    String.join
-        ""
-        [
-         "var startTime = getTime();"
-        ,"function step(state){" -- the big loop function begins
-        ,"var cache = [];"
-        ,"var functions = [];"
-        ,"var notes = [];"
-        ,"var time = getTime()-startTime;"
-        ]
-
-
-javascriptTail =
-    String.join
-        ""
-        [
-         "update(state, notes);" -- update updates the playing synthesizers in javascript code
-        ,"function recur() {" -- recur func with state
-        ,"step(state);"
-        ,"}"
-        ,"window.setTimeout(recur, 0);"
-        ,"}"
-        ,"step(makeInitialState());" -- start the anim loop
-        ]
 
 cacheIsNull ast =
     Unary "==" (Literal "null") (CacheRef ast)
 
-updateCache astForIndex =
-    CacheUpdate astForIndex (CallFunction (FunctionRef astForIndex) [])
+updateCache cacheIndex localIndex =
+    CacheUpdate cacheIndex (CallFunction (FunctionRef localIndex) [])
         
 getValueFunctionAST =
     VarDeclaration (Literal "getValueAt")
-        (Function ["cacheI"]
-                  [(VarDeclaration (Literal "res") (Literal "null"))
-                  ,(If
-                    (cacheIsNull (Literal "cacheI"))
-                    (Begin
-                         [(updateCache (Literal "cacheI"))
-                         ,(CacheRef (Literal "cacheI"))])
-                    (CacheRef (Literal "cacheI")))]
-                  (Literal "res"))
+        (Function ["cacheILocal", "PC"]
+                  (Begin
+                       [(VarDeclaration (Literal "res") (Literal "null"))
+                       ,(VarDeclaration (Literal "cacheI") (Unary "+" (Literal "cacheILocal") (Literal "PC")))
+                       ,(If
+                         (cacheIsNull (Literal "cacheI"))
+                         (Begin
+                              [(updateCache (Literal "cacheI") (Literal "cacheILocal"))
+                              ,(VarSet (Literal "res") (CacheRef (Literal "cacheI")))])
+                         (VarSet (Literal "res") (CacheRef (Literal "cacheI"))))
+                       ,(Literal "res")]))
 
 getCacheValue ast =
-    CallFunction (Literal "getValueAt") [ast]
+    CallFunction (Literal "getValueAt") [ast, (Literal "PC")]
         
 initialVariables =
     [VarSet (Literal "cache") (Literal "[]")
     ,VarSet (Literal "notes") (Literal "[]")
     ,VarSet (Literal "time") (Unary "-" (Literal "getTime()") (Literal "startTime"))
-     ]    
+    ,VarSet (Literal "PC") (Literal (String.fromInt (List.length systemValues)))
+     ]
 
 globals =
     [(VarDeclaration (Literal "startTime") (Literal "getTime()"))
@@ -69,55 +46,74 @@ initialVariablesDeclaration =
 
     
 astHead =
-    Begin
     (getValueFunctionAST ::
          (globals ++ initialVariablesDeclaration))
 
 pushSystemValue sysVal =
     CachePush (Literal (Tuple.second sysVal))
 
-systemValuesAST : AST
-systemValuesAST =
-        Begin (List.map pushSystemValue systemValues)
+systemValuesList =
+        (List.map pushSystemValue systemValues)
 
 loopFunctionBody =
-    [Begin initialVariables
-    ,CallFunction (FunctionRef (Literal "functions.length")) []
-    ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
-    ,VarDeclaration (Literal "recur") (Function [] [] (CallFunction (Literal "step") [(Literal "state")]))]
+    Begin (initialVariables ++
+               systemValuesList ++
+               [CallFunction (FunctionRef (Unary "-" (Literal "functions.length") (Literal "1"))) []
+               ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
+               ,VarDeclaration (Literal "recur") (Function [] (CallFunction (Literal "step") [(Literal "state")]))
+               ,(CallFunction (Literal "window.setTimeout") [(Literal "recur"), (Literal "0")])])
 
 loopFunctionAST =
     VarDeclaration (Literal "step")
         (Function ["state"]
-             loopFunctionBody
-             (CallFunction (Literal "window.setTimeout") [(Literal "recur"), (Literal "0")]))
+             loopFunctionBody)
             
 loopAST =
     Begin
         [loopFunctionAST
         ,CallFunction (Literal "step") [(CallFunction  (Literal "makeInitialState") [])]
         ]
-            
+
+        
        
-wrapFunction ast =
-    case ast of
-        Begin subexprs ->
-            case Utils.last subexprs of
-                Nothing -> Function [] [] Empty
-                Just final -> 
-                    Function [] (List.take ((List.length subexprs)-1) subexprs) final
-        subexpr -> Function [] [] subexpr
+functionStart method =
+    (forRange "i"
+         (Literal "0")
+         (Literal (String.fromInt (List.length method)))
+         (CachePushNull))
 
+functionEnd method =
+    Empty
+
+        
 
             
-compileExpr expr =
+compileExpr expr isReturnFunction entireMethod =
     (FunctionsPush
-         (wrapFunction
-              (case expr.compileExprFunction of
-                   CompileExprFunction func -> func expr)))
-            
+         (Function
+              []
+              (let compiledExpr =
+                       (case expr.compileExprFunction of
+                            CompileExprFunction func -> func expr)
+               in
+                   if isReturnFunction
+                   then
+                       Begin
+                       [(functionStart entireMethod)
+                       ,compiledExpr
+                       ,(functionEnd entireMethod)]
+                   else
+                       compiledExpr)))
+        
+compileExprs method entireMethod =
+    case method of
+        [] -> []
+        (expr::[]) -> [compileExpr expr True entireMethod]
+        (expr::exprs) -> (compileExpr expr False entireMethod) :: (compileExprs exprs entireMethod)
+        
 compileMethod method =
-    Begin (List.map compileExpr method)
+    Begin
+    (compileExprs method method)
             
 
 compileFunctions compModel =
@@ -127,6 +123,6 @@ compileFunctions compModel =
 
 compileToAST : CompModel -> AST
 compileToAST compModel =
-    Begin [astHead
-          ,(compileFunctions compModel)
-          ,loopAST]
+    Begin (astHead ++
+               [(compileFunctions compModel)
+               ,loopAST])
