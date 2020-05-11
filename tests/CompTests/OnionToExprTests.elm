@@ -40,9 +40,9 @@ onionToCompModelTest =
                        ,(makeExpr "sine" TestModel.sine2.id [(ConstV 2)
                                                             ,(ConstV 640)
                                                             ,(ConstV 2)])
-                       ,(makeExpr "+" TestModel.join.id [(StackIndex (numSystemValues + 0))
-                                                        ,(StackIndex (numSystemValues + 1))])
-                       ,(makeExpr "+" TestModel.plus.id [(StackIndex (numSystemValues + 2))])
+                       ,(makeExpr "+" TestModel.join.id [(StackIndex 0)
+                                                        ,(StackIndex 1)])
+                       ,(makeExpr "+" TestModel.plus.id [(StackIndex 2)])
                        ]
                       ])))
         ]
