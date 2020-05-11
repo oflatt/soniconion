@@ -6798,8 +6798,7 @@ var $author$project$Update$keyboardUpdate = F2(
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$ViewVariables$functionXSpacing = 100;
-var $author$project$ViewVariables$blockWidth = 200;
-var $author$project$ViewVariables$blockHeight = ($author$project$ViewVariables$blockWidth / 4) | 0;
+var $author$project$ViewVariables$blockHeight = 50;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
 var $author$project$ViewPositions$countOutputsBefore = F2(
@@ -6838,15 +6837,66 @@ var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewV
 var $author$project$ViewPositions$callLinesSpace = function (call) {
 	return $author$project$ViewPositions$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
 };
-var $author$project$ViewPositions$BlockPosition = F3(
-	function (xpos, ypos, inputPositions) {
-		return {inputPositions: inputPositions, xpos: xpos, ypos: ypos};
+var $author$project$ViewPositions$BlockPosition = F4(
+	function (xpos, ypos, width, inputPositions) {
+		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
+	});
+var $author$project$ViewVariables$blockTextHeight = $elm$core$Basics$floor($author$project$ViewVariables$blockHeight * 0.4);
+var $author$project$ViewVariables$charOverestimatePercent = 0.5;
+var $author$project$ViewVariables$blockCharacterOverestimate = $author$project$ViewVariables$blockTextHeight * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
+var $author$project$ViewVariables$callTextBlockSize = function (text) {
+	return $elm$core$Basics$floor(
+		$author$project$ViewVariables$blockCharacterOverestimate * $elm$core$String$length(text)) + (2 * $author$project$ViewVariables$blockTextXPadding);
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $author$project$ViewPositions$inputPositionsMax = function (inputPositions) {
+	var _v0 = A2(
+		$elm$core$Dict$get,
+		$elm$core$Dict$size(inputPositions) - 1,
+		inputPositions);
+	if (_v0.$ === 'Just') {
+		var lastPos = _v0.a;
+		return (lastPos.a + lastPos.b) + $author$project$ViewVariables$blockTextXPadding;
+	} else {
+		return 0;
+	}
+};
+var $author$project$ViewPositions$getBlockWidth = F2(
+	function (call, inputPositions) {
+		return A2(
+			$elm$core$Basics$max,
+			$author$project$ViewPositions$inputPositionsMax(inputPositions),
+			$author$project$ViewVariables$callTextBlockSize(call.functionName));
 	});
 var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
 var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
 var $author$project$ViewVariables$inputFontSizePercent = 0.85;
 var $author$project$ViewVariables$inputHeight = $elm$core$Basics$floor($author$project$ViewVariables$nodeRadius * 2.5);
-var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * 0.5) * $author$project$ViewVariables$inputFontSizePercent;
+var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
 var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
 	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
 };
@@ -6876,23 +6926,17 @@ var $author$project$ViewPositions$inputPositionList = F3(
 				A3($author$project$ViewPositions$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing));
 		}
 	});
-var $author$project$ViewPositions$makeInputPositions = F2(
-	function (call, xpos) {
-		return $elm$core$Dict$fromList(
-			A3($author$project$ViewPositions$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding + xpos));
-	});
-var $author$project$ViewPositions$makeBlockPosition = F3(
-	function (xpos, ypos, call) {
-		return A3(
-			$author$project$ViewPositions$BlockPosition,
-			xpos,
-			ypos,
-			A2($author$project$ViewPositions$makeInputPositions, call, xpos));
-	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
+var $author$project$ViewPositions$makeInputPositions = function (call) {
+	return $elm$core$Dict$fromList(
+		A3($author$project$ViewPositions$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding));
 };
+var $author$project$ViewPositions$makeBlockPosition = F4(
+	function (xpos, ypos, call, shouldCenterX) {
+		var inputPositions = $author$project$ViewPositions$makeInputPositions(call);
+		var blockW = A2($author$project$ViewPositions$getBlockWidth, call, inputPositions);
+		var blockXpos = shouldCenterX ? (xpos - ((blockW / 2) | 0)) : xpos;
+		return A4($author$project$ViewPositions$BlockPosition, blockXpos, ypos, blockW, inputPositions);
+	});
 var $author$project$ViewPositions$getAllBlockPositions = F4(
 	function (idToSkip, maybeMoveInfo, func, currentY) {
 		getAllBlockPositions:
@@ -6902,11 +6946,12 @@ var $author$project$ViewPositions$getAllBlockPositions = F4(
 					return A3(
 						$elm$core$Dict$insert,
 						call.id,
-						A3(
+						A4(
 							$author$project$ViewPositions$makeBlockPosition,
 							0,
 							currentY + $author$project$ViewPositions$callLinesSpace(call),
-							call),
+							call,
+							false),
 						A4(
 							$author$project$ViewPositions$getAllBlockPositions,
 							idToSkip,
@@ -6973,7 +7018,7 @@ var $author$project$ViewPositions$getMovedInfo = F3(
 							A2(
 								$author$project$ViewPositions$MovedBlockInfo,
 								call,
-								_Utils_Tuple2(mouseSvgCoordinates.a - (($author$project$ViewVariables$blockWidth / 2) | 0), mouseSvgCoordinates.b - (($author$project$ViewVariables$blockHeight / 2) | 0))));
+								_Utils_Tuple2(mouseSvgCoordinates.a, mouseSvgCoordinates.b - (($author$project$ViewVariables$blockHeight / 2) | 0))));
 					} else {
 						var $temp$func = calls,
 							$temp$mouseState = mouseState,
@@ -7033,7 +7078,7 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 			return A3(
 				$elm$core$Dict$insert,
 				info.movedCall.id,
-				A3($author$project$ViewPositions$makeBlockPosition, info.movedPos.a, info.movedPos.b, info.movedCall),
+				A4($author$project$ViewPositions$makeBlockPosition, info.movedPos.a, info.movedPos.b, info.movedCall, true),
 				positionsWithoutMoved);
 		} else {
 			return positionsWithoutMoved;
@@ -11090,6 +11135,13 @@ var $author$project$ViewPositions$createViewboxDimensions = F2(
 		return width + (' ' + height);
 	});
 var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
+var $author$project$Model$BlockClick = function (a) {
+	return {$: 'BlockClick', a: a};
+};
+var $author$project$Model$SpawnBlock = function (a) {
+	return {$: 'SpawnBlock', a: a};
+};
+var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -11143,14 +11195,6 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 					]))
 			]));
 };
-var $author$project$Model$BlockClick = function (a) {
-	return {$: 'BlockClick', a: a};
-};
-var $author$project$Model$SpawnBlock = function (a) {
-	return {$: 'SpawnBlock', a: a};
-};
-var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
-var $author$project$ViewVariables$funcNameFontHeight = $elm$core$Basics$floor($author$project$ViewVariables$blockHeight * 0.4);
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
@@ -11191,6 +11235,7 @@ var $author$project$SvgDraw$svgLeftClick = function (msg) {
 		$author$project$SvgDraw$svgLeftDecoder(msg));
 };
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$fontFamily = _VirtualDom_attribute('font-family');
 var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
 var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
 var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
@@ -11204,7 +11249,8 @@ var $author$project$SvgDraw$svgText = F5(
 					$elm$core$String$fromInt(xpos)),
 					$elm$svg$Svg$Attributes$y(
 					$elm$core$String$fromInt(ypos)),
-					$elm$svg$Svg$Attributes$textAnchor('middle'),
+					$elm$svg$Svg$Attributes$textAnchor('start'),
+					$elm$svg$Svg$Attributes$fontFamily('monospace'),
 					$elm$svg$Svg$Attributes$dominantBaseline('central'),
 					$elm$svg$Svg$Attributes$fontSize(
 					$elm$core$String$fromInt(fontSizeIn)),
@@ -11224,7 +11270,7 @@ var $author$project$SvgDraw$svgTranslate = F2(
 		return $elm$svg$Svg$Attributes$transform(
 			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
 	});
-var $author$project$SvgDraw$functionNameshape = F2(
+var $author$project$SvgDraw$drawBlock = F2(
 	function (call, viewStructure) {
 		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
 		if (_v0.$ === 'Just') {
@@ -11254,7 +11300,7 @@ var $author$project$SvgDraw$functionNameshape = F2(
 								$elm$svg$Svg$Attributes$y(
 								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
 								$elm$svg$Svg$Attributes$width(
-								$elm$core$String$fromInt($author$project$ViewVariables$blockWidth)),
+								$elm$core$String$fromInt(blockPos.width)),
 								$elm$svg$Svg$Attributes$height(
 								$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
 								$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
@@ -11265,7 +11311,7 @@ var $author$project$SvgDraw$functionNameshape = F2(
 								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
 							]),
 						_List_Nil),
-						A5($author$project$SvgDraw$svgText, ($author$project$ViewVariables$blockWidth / 2) | 0, ($author$project$ViewVariables$blockHeight / 2) | 0, call.functionName, $author$project$ViewVariables$funcNameFontHeight, 'white')
+						A5($author$project$SvgDraw$svgText, $author$project$ViewVariables$blockTextXPadding, ($author$project$ViewVariables$blockHeight / 2) | 0, call.functionName, $author$project$ViewVariables$blockTextHeight, 'white')
 					]));
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
@@ -11276,7 +11322,7 @@ var $author$project$SvgDraw$drawBuiltIn = F3(
 		var get = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
 		if (get.$ === 'Just') {
 			var names = get.a;
-			return A2($author$project$SvgDraw$functionNameshape, call, viewStructure);
+			return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('not a built in function ' + call.functionName);
 		}
@@ -11308,8 +11354,8 @@ var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$SvgDraw$drawNode = F4(
-	function (inputPosition, ypos, events, isHighlighted) {
+var $author$project$SvgDraw$drawNode = F5(
+	function (xpos, inputPosition, ypos, events, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$circle,
 			_Utils_ap(
@@ -11319,7 +11365,7 @@ var $author$project$SvgDraw$drawNode = F4(
 						$elm$svg$Svg$Attributes$r(
 						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
 						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt(inputPosition.a + ((inputPosition.b / 2) | 0))),
+						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
 						$elm$svg$Svg$Attributes$cy(
 						$elm$core$String$fromInt(ypos)),
 						$elm$svg$Svg$Attributes$fill(
@@ -11327,7 +11373,6 @@ var $author$project$SvgDraw$drawNode = F4(
 					])),
 			_List_Nil);
 	});
-var $author$project$ViewVariables$outputNodeX = ($author$project$ViewVariables$blockWidth / 2) | 0;
 var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
 var $author$project$SvgDraw$svgRightClick = function (msg) {
 	return A2(
@@ -11352,9 +11397,10 @@ var $author$project$DrawFunc$drawCallEnding = F3(
 					return false;
 				}
 			}();
-			return A4(
+			return A5(
 				$author$project$SvgDraw$drawNode,
-				_Utils_Tuple2(($author$project$ViewVariables$outputNodeX + blockPos.xpos) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
+				blockPos.xpos,
+				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
 				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
 				_List_fromArray(
 					[
@@ -11903,14 +11949,14 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 	}
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
-var $author$project$SvgDraw$nodeEvent = F4(
-	function (inputPos, ypos, event, domId) {
+var $author$project$SvgDraw$nodeEvent = F5(
+	function (xpos, inputPos, ypos, event, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(inputPos.a)),
+					$elm$core$String$fromInt(inputPos.a + xpos)),
 					$elm$svg$Svg$Attributes$y(
 					$elm$core$String$fromInt(ypos)),
 					$elm$svg$Svg$Attributes$width(
@@ -11932,15 +11978,15 @@ var $author$project$SvgDraw$nodeEvent = F4(
 						_List_Nil))
 				]));
 	});
-var $author$project$SvgDraw$drawNodeWithEvent = F6(
-	function (inputPos, ypos, events, highlightevent, eventId, isHighlighted) {
+var $author$project$SvgDraw$drawNodeWithEvent = F7(
+	function (xpos, inputPos, ypos, events, highlightevent, eventId, isHighlighted) {
 		return A2(
 			$elm$svg$Svg$g,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A4($author$project$SvgDraw$nodeEvent, inputPos, ypos, highlightevent, eventId),
-					A4($author$project$SvgDraw$drawNode, inputPos, ypos, events, isHighlighted)
+					A5($author$project$SvgDraw$nodeEvent, xpos, inputPos, ypos, highlightevent, eventId),
+					A5($author$project$SvgDraw$drawNode, xpos, inputPos, ypos, events, isHighlighted)
 				]));
 	});
 var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
@@ -11988,21 +12034,22 @@ var $author$project$SvgDraw$taxiLine = F3(
 				]),
 			_List_Nil);
 	});
-var $author$project$SvgDraw$drawConnector = F7(
-	function (call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routeOffset) {
+var $author$project$SvgDraw$drawConnector = F8(
+	function (call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routeOffset, viewStructure) {
+		var otherBlockOutputX = otherBlockPos.xpos + ((otherBlockPos.width / 2) | 0);
 		var nodeX = function () {
 			var _v0 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
 			if (_v0.$ === 'Just') {
 				var inputPos = _v0.a;
-				return inputPos.a + $author$project$ViewVariables$nodeRadius;
+				return (inputPos.a + $author$project$ViewVariables$nodeRadius) + blockPos.xpos;
 			} else {
 				return -100;
 			}
 		}();
-		var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + $author$project$ViewVariables$blockWidth) : (otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX));
+		var lineX = (routeOffset < 0) ? (otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) : ((routeOffset > 0) ? ((otherBlockPos.xpos + ($author$project$ViewVariables$lineXSpace * routeOffset)) + viewStructure.funcBlockMaxWidth) : otherBlockOutputX);
 		var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewPositions$countOutputsBefore, call.inputs, inputCounter)));
 		var linepoints = _List_fromArray(
-			[otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockPos.xpos + $author$project$ViewVariables$outputNodeX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
+			[otherBlockOutputX, otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY, otherBlockOutputX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, (otherBlockPos.ypos + $author$project$ViewVariables$outputNodeY) + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
 		return A3($author$project$SvgDraw$taxiLine, linepoints, inputEvent, isLineHighlighted);
 	});
 var $elm$core$Maybe$andThen = F2(
@@ -12086,7 +12133,7 @@ var $author$project$DrawFunc$drawOutputLine = F7(
 				$elm$core$Maybe$map2,
 				F2(
 					function (otherBlockPos, routing) {
-						return A7($author$project$SvgDraw$drawConnector, call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routing);
+						return A8($author$project$SvgDraw$drawConnector, call, blockPos, inputCounter, otherBlockPos, inputEvent, isLineHighlighted, routing, viewStructure);
 					}),
 				A2($elm$core$Dict$get, outputId, viewStructure.blockPositions),
 				A3($author$project$DrawFunc$getInputRouting, call, inputCounter, viewStructure)));
@@ -12134,8 +12181,8 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 var $author$project$ViewVariables$textInputColor = A3($rtfeldman$elm_css$Css$rgb, 186, 232, 188);
 var $author$project$ViewVariables$textInputColorVariable = A3($rtfeldman$elm_css$Css$rgb, 108, 230, 113);
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
-var $author$project$SvgDraw$drawTextInput = F7(
-	function (call, str, events, inputPos, ypos, index, domId) {
+var $author$project$SvgDraw$drawTextInput = F8(
+	function (call, str, events, xpos, inputPos, ypos, index, domId) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_Utils_ap(
@@ -12143,7 +12190,7 @@ var $author$project$SvgDraw$drawTextInput = F7(
 				_List_fromArray(
 					[
 						$elm$svg$Svg$Attributes$x(
-						$elm$core$String$fromInt(inputPos.a)),
+						$elm$core$String$fromInt(inputPos.a + xpos)),
 						$elm$svg$Svg$Attributes$y(
 						$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
 						$elm$svg$Svg$Attributes$width(
@@ -12239,7 +12286,7 @@ var $author$project$DrawFunc$drawInput = F5(
 		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
 		var nodeWithEvent = function (_v2) {
-			return A6($author$project$SvgDraw$drawNodeWithEvent, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted);
+			return A7($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted);
 		};
 		switch (input.$) {
 			case 'Output':
@@ -12271,7 +12318,7 @@ var $author$project$DrawFunc$drawInput = F5(
 						]));
 			case 'Text':
 				var str = input.a;
-				return A7($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId);
+				return A8($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId);
 			default:
 				return nodeWithEvent(_Utils_Tuple0);
 		}
@@ -12281,8 +12328,9 @@ var $author$project$DrawFunc$drawInputLines = F5(
 		if (!inputs.b) {
 			return _List_fromArray(
 				[
-					A4(
+					A5(
 					$author$project$SvgDraw$nodeEvent,
+					0,
 					_Utils_Tuple2(0, 0),
 					0,
 					$author$project$Model$OutputHighlight(call.id),
@@ -12347,9 +12395,9 @@ var $author$project$DrawFunc$drawFuncWithConnections = F2(
 					A3($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc, viewStructure.blockPositions, mouseState))
 				]));
 	});
-var $author$project$ViewPositions$ViewStructure = F7(
-	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, mouseState, isToolbar) {
-		return {blockPositions: blockPositions, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
+var $author$project$ViewPositions$ViewStructure = F8(
+	function (blockPositions, lineRouting, sortedFunc, funcxoffset, funcyoffset, funcBlockMaxWidth, mouseState, isToolbar) {
+		return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcxoffset: funcxoffset, funcyoffset: funcyoffset, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc};
 	});
 var $author$project$LineRouting$findMaxBurden = F4(
 	function (fArray, outputBurden, currentIndex, maxIndex) {
@@ -12691,6 +12739,16 @@ var $author$project$LineRouting$getLineRouting = function (func) {
 	var funcArray = $elm$core$Array$fromList(func);
 	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
 };
+var $author$project$ViewPositions$getMaxBlockWidth = function (blockPositions) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, blockpos, acc) {
+				return A2($elm$core$Basics$max, blockpos.width, acc);
+			}),
+		0,
+		blockPositions);
+};
 var $author$project$ViewPositions$blockSorter = F2(
 	function (blockPositions, call) {
 		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
@@ -12711,9 +12769,10 @@ var $author$project$ViewPositions$makeSortedFunc = F2(
 var $author$project$ViewPositions$getViewStructure = F7(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
 		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
+		var maxWidth = $author$project$ViewPositions$getMaxBlockWidth(blockPositions);
 		var sortedFunc = A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions);
 		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
-		return A7($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, mouseState, isToolbar);
+		return A8($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, maxWidth, mouseState, isToolbar);
 	});
 var $author$project$DrawProgram$drawOnion = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
