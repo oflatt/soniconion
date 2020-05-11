@@ -54,6 +54,14 @@ javascriptBegin commands =
                 ,(aSTToJavascript final)
                 ,"}())"]
         Nothing -> ""
+
+javascriptBeginThunk commands =
+    String.join ""
+        ["(function(){"
+        ,(String.join ";" (List.map aSTToJavascript commands))
+        ,"}())"]
+        
+
                    
 aSTToJavascript astArgument =
     case astArgument of
@@ -62,6 +70,9 @@ aSTToJavascript astArgument =
         
         Begin commands ->
             javascriptBegin commands
+        BeginThunk commands ->
+            javascriptBeginThunk commands
+                
         CallFunction funcName args ->
             (String.join ""
                  [aSTToJavascript funcName
@@ -76,7 +87,7 @@ aSTToJavascript astArgument =
                 
         VarDeclaration varName varBody ->
             String.join " "
-                ["var"
+                ["let"
                 ,aSTToJavascript varName
                 ,"="
                 ,aSTToJavascript varBody]

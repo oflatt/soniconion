@@ -12,7 +12,8 @@ getValueFunctionAST =
     VarDeclaration (Literal "getValueAt")
         (Function ["cacheILocal", "PC"]
                   (Begin
-                       [(VarDeclaration (Literal "res") (Literal "null"))
+                       [(Literal "console.log(cacheILocal)")
+                       ,(VarDeclaration (Literal "res") (Literal "null"))
                        ,(VarDeclaration (Literal "cacheI") (Unary "+" (Literal "cacheILocal") (Literal "PC")))
                        ,(If
                          (cacheIsNull (Literal "cacheI"))
@@ -56,24 +57,19 @@ systemValuesList =
         (List.map pushSystemValue systemValues)
 
 loopFunctionBody =
-    Begin (initialVariables ++
-               systemValuesList ++
-               [CallFunction (FunctionRef (Unary "-" (Literal "functions.length") (Literal "1"))) []
-               ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
-               ,VarDeclaration (Literal "recur") (Function [] (CallFunction (Literal "step") [(Literal "state")]))
-               ,(CallFunction (Literal "window.setTimeout") [(Literal "recur"), (Literal "0")])])
+    BeginThunk (initialVariables ++
+                    systemValuesList ++
+                    [CallFunction (FunctionRef (Unary "-" (Literal "functions.length") (Literal "1"))) []
+                    ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]])
 
 loopFunctionAST =
-    VarDeclaration (Literal "step")
-        (Function ["state"]
-             loopFunctionBody)
+    (For Empty (Literal "true") Empty
+         loopFunctionBody)
             
 loopAST =
-    Begin
-        [loopFunctionAST
-        ,CallFunction (Literal "step") [(CallFunction  (Literal "makeInitialState") [])]
-        ]
-
+    BeginThunk
+        [(VarDeclaration (Literal "state") (Literal "makeInitialState()"))
+         ,loopFunctionAST]
         
        
 functionStart method =
@@ -112,7 +108,7 @@ compileExprs method entireMethod =
         (expr::exprs) -> (compileExpr expr False entireMethod) :: (compileExprs exprs entireMethod)
         
 compileMethod method =
-    Begin
+    BeginThunk
     (compileExprs method method)
             
 

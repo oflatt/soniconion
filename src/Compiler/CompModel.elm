@@ -31,6 +31,8 @@ type AST = Empty
          | Literal String
 
          | Begin (List AST)
+         | BeginThunk (List AST)
+           
          | CallFunction AST (List AST)
          | Function (List String) AST -- arguments, body
          | For AST AST AST AST -- three parts of for loop and body
