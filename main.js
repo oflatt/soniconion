@@ -6296,18 +6296,25 @@ var $author$project$Compiler$CompileToAST$getCacheValue = function (ast) {
 		$author$project$Compiler$CompModel$CallFunction,
 		$author$project$Compiler$CompModel$Literal('getValueAt'),
 		_List_fromArray(
-			[ast]));
+			[
+				ast,
+				$author$project$Compiler$CompModel$Literal('PC')
+			]));
 };
 var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
-	if (val.$ === 'StackIndex') {
-		var i = val.a;
-		return $author$project$Compiler$CompileToAST$getCacheValue(
-			$author$project$Compiler$CompModel$Literal(
-				$elm$core$String$fromInt(i)));
-	} else {
-		var c = val.a;
-		return $author$project$Compiler$CompModel$Literal(
-			$elm$core$String$fromFloat(c));
+	switch (val.$) {
+		case 'StackIndex':
+			var i = val.a;
+			return $author$project$Compiler$CompileToAST$getCacheValue(
+				$author$project$Compiler$CompModel$Literal(
+					$elm$core$String$fromInt(i)));
+		case 'ConstV':
+			var c = val.a;
+			return $author$project$Compiler$CompModel$Literal(
+				$elm$core$String$fromFloat(c));
+		default:
+			var str = val.a;
+			return $author$project$Compiler$CompModel$Literal(str);
 	}
 };
 var $author$project$Compiler$CompileBuiltIn$buildJavascriptCall = F2(
@@ -6434,9 +6441,6 @@ var $author$project$Compiler$CompModel$If = F3(
 	function (a, b, c) {
 		return {$: 'If', a: a, b: b, c: c};
 	});
-var $author$project$Compiler$CompModel$Note = function (a) {
-	return {$: 'Note', a: a};
-};
 var $author$project$Compiler$CompModel$NotesPush = function (a) {
 	return {$: 'NotesPush', a: a};
 };
@@ -6456,9 +6460,20 @@ var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
 				[
 					A3(
 					$author$project$Compiler$CompModel$If,
-					A3($author$project$Compiler$CompModel$Unary, '>', timeAST, durationAST),
-					$author$project$Compiler$CompModel$NotesPush(
-						$author$project$Compiler$CompModel$Note(frequencyAST)),
+					A3(
+						$author$project$Compiler$CompModel$Unary,
+						'&&',
+						A3(
+							$author$project$Compiler$CompModel$Unary,
+							'>=',
+							$author$project$Compiler$CompModel$Literal('time'),
+							timeAST),
+						A3(
+							$author$project$Compiler$CompModel$Unary,
+							'<',
+							$author$project$Compiler$CompModel$Literal('time'),
+							A3($author$project$Compiler$CompModel$Unary, '+', timeAST, durationAST))),
+					$author$project$Compiler$CompModel$NotesPush(frequencyAST),
 					$author$project$Compiler$CompModel$Empty),
 					A3($author$project$Compiler$CompModel$Unary, '+', timeAST, durationAST)
 				]));
@@ -7187,8 +7202,558 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Utils$splitLast = function (func) {
+	if (!func.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		if (!func.b.b) {
+			var a = func.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(_List_Nil, a));
+		} else {
+			var c = func.a;
+			var cs = func.b;
+			var _v1 = $author$project$Utils$splitLast(cs);
+			if (_v1.$ === 'Just') {
+				var _v2 = _v1.a;
+				var rest = _v2.a;
+				var _final = _v2.b;
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$List$cons, c, rest),
+						_final));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		}
+	}
+};
+var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgument) {
+	switch (astArgument.$) {
+		case 'Empty':
+			return '';
+		case 'Literal':
+			var str = astArgument.a;
+			return str;
+		case 'Begin':
+			var commands = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptBegin(commands);
+		case 'BeginThunk':
+			var commands = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptBeginThunk(commands);
+		case 'CallFunction':
+			var funcName = astArgument.a;
+			var args = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(funcName),
+						'(',
+						$author$project$Compiler$ASTToJavascript$javascriptCommas(args),
+						')'
+					]));
+		case 'Function':
+			var argNames = astArgument.a;
+			var body = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptFunction, argNames, body);
+		case 'For':
+			var _var = astArgument.a;
+			var check = astArgument.b;
+			var increment = astArgument.c;
+			var body = astArgument.d;
+			return A4($author$project$Compiler$ASTToJavascript$javascriptFor, _var, check, increment, body);
+		case 'VarDeclaration':
+			var varName = astArgument.a;
+			var varBody = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'let',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
+						'=',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
+					]));
+		case 'VarSet':
+			var varName = astArgument.a;
+			var varBody = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
+						'=',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
+					]));
+		case 'CachePushNull':
+			return 'cache.push(null)';
+		case 'CachePush':
+			var ast = astArgument.a;
+			return 'cache.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
+		case 'CacheUpdate':
+			var index = astArgument.a;
+			var ast = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						'cache[',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(index),
+						']',
+						' = ',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(ast)
+					]));
+		case 'NotesPush':
+			var frequency = astArgument.a;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						'notes.push({frequency:',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(frequency),
+						'})'
+					]));
+		case 'FunctionsPush':
+			var ast = astArgument.a;
+			return 'functions.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
+		case 'CacheRef':
+			var index = astArgument.a;
+			return 'cache[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
+		case 'FunctionRef':
+			var index = astArgument.a;
+			return 'functions[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
+		case 'If':
+			var cond = astArgument.a;
+			var thenCase = astArgument.b;
+			var elseCase = astArgument.c;
+			return A3($author$project$Compiler$ASTToJavascript$javascriptIf, cond, thenCase, elseCase);
+		case 'Unary':
+			var op = astArgument.a;
+			var left = astArgument.b;
+			var right = astArgument.c;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						'(',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(left),
+						op,
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(right),
+						')'
+					]));
+		default:
+			var op = astArgument.a;
+			var arg = astArgument.b;
+			return '(' + (op + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(arg) + ')'));
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (commands) {
+	var _v1 = $author$project$Utils$splitLast(commands);
+	if (_v1.$ === 'Just') {
+		var _v2 = _v1.a;
+		var beforeFinal = _v2.a;
+		var _final = _v2.b;
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'(function(){',
+					A2(
+					$elm$core$String$join,
+					';',
+					A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, beforeFinal)),
+					';',
+					function () {
+					if (_final.$ === 'VarSet') {
+						return '';
+					} else {
+						return 'return ';
+					}
+				}(),
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_final),
+					'}())'
+				]));
+	} else {
+		return '';
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptBeginThunk = function (commands) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			[
+				'(function(){',
+				A2(
+				$elm$core$String$join,
+				';',
+				A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, commands)),
+				'}())'
+			]));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptCommas = function (args) {
+	return A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase) {
+	var _v0 = $author$project$Compiler$ASTToJavascript$aSTToJavascript(elseCase);
+	if (_v0 === '') {
+		return '';
+	} else {
+		var str = _v0;
+		return 'else {' + (str + '}');
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
+	function (_var, check, increment, body) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'for(',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_var),
+					';',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(check),
+					';',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(increment),
+					') {',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
+					'}'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptFunction = F2(
+	function (argNames, body) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'function(',
+					A2($elm$core$String$join, ',', argNames),
+					'){',
+					'return ',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
+					'}'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
+	function (bool, thenCase, elseCase) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'if(',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(bool),
+					') {',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(thenCase),
+					'}',
+					$author$project$Compiler$ASTToJavascript$javascriptElse(elseCase)
+				]));
+	});
+var $author$project$Compiler$CompModel$CacheRef = function (a) {
+	return {$: 'CacheRef', a: a};
+};
+var $author$project$Compiler$CompModel$Function = F2(
+	function (a, b) {
+		return {$: 'Function', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$VarDeclaration = F2(
+	function (a, b) {
+		return {$: 'VarDeclaration', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$VarSet = F2(
+	function (a, b) {
+		return {$: 'VarSet', a: a, b: b};
+	});
+var $author$project$Compiler$CompileToAST$cacheIsNull = function (ast) {
+	return A3(
+		$author$project$Compiler$CompModel$Unary,
+		'==',
+		$author$project$Compiler$CompModel$Literal('null'),
+		$author$project$Compiler$CompModel$CacheRef(ast));
+};
+var $author$project$Compiler$CompModel$CacheUpdate = F2(
+	function (a, b) {
+		return {$: 'CacheUpdate', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$FunctionRef = function (a) {
+	return {$: 'FunctionRef', a: a};
+};
+var $author$project$Compiler$CompileToAST$updateCache = F2(
+	function (cacheIndex, localIndex) {
+		return A2(
+			$author$project$Compiler$CompModel$CacheUpdate,
+			cacheIndex,
+			A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$FunctionRef(localIndex),
+				_List_Nil));
+	});
+var $author$project$Compiler$CompileToAST$getValueFunctionAST = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Literal('getValueAt'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['cacheILocal', 'PC']),
+		$author$project$Compiler$CompModel$Begin(
+			_List_fromArray(
+				[
+					A2(
+					$author$project$Compiler$CompModel$VarDeclaration,
+					$author$project$Compiler$CompModel$Literal('res'),
+					$author$project$Compiler$CompModel$Literal('null')),
+					A2(
+					$author$project$Compiler$CompModel$VarDeclaration,
+					$author$project$Compiler$CompModel$Literal('cacheI'),
+					A3(
+						$author$project$Compiler$CompModel$Unary,
+						'+',
+						$author$project$Compiler$CompModel$Literal('cacheILocal'),
+						$author$project$Compiler$CompModel$Literal('PC'))),
+					A3(
+					$author$project$Compiler$CompModel$If,
+					$author$project$Compiler$CompileToAST$cacheIsNull(
+						$author$project$Compiler$CompModel$Literal('cacheI')),
+					$author$project$Compiler$CompModel$Begin(
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompileToAST$updateCache,
+								$author$project$Compiler$CompModel$Literal('cacheI'),
+								$author$project$Compiler$CompModel$Literal('cacheILocal')),
+								A2(
+								$author$project$Compiler$CompModel$VarSet,
+								$author$project$Compiler$CompModel$Literal('res'),
+								$author$project$Compiler$CompModel$CacheRef(
+									$author$project$Compiler$CompModel$Literal('cacheI')))
+							])),
+					A2(
+						$author$project$Compiler$CompModel$VarSet,
+						$author$project$Compiler$CompModel$Literal('res'),
+						$author$project$Compiler$CompModel$CacheRef(
+							$author$project$Compiler$CompModel$Literal('cacheI')))),
+					$author$project$Compiler$CompModel$Literal('res')
+				]))));
+var $author$project$Compiler$CompileToAST$globals = _List_fromArray(
+	[
+		A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Literal('startTime'),
+		$author$project$Compiler$CompModel$Literal('getTime()')),
+		A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Literal('functions'),
+		$author$project$Compiler$CompModel$Literal('[]'))
+	]);
+var $author$project$Compiler$CompileToAST$initialVariables = _List_fromArray(
+	[
+		A2(
+		$author$project$Compiler$CompModel$VarSet,
+		$author$project$Compiler$CompModel$Literal('cache'),
+		$author$project$Compiler$CompModel$Literal('[]')),
+		A2(
+		$author$project$Compiler$CompModel$VarSet,
+		$author$project$Compiler$CompModel$Literal('notes'),
+		$author$project$Compiler$CompModel$Literal('[]')),
+		A2(
+		$author$project$Compiler$CompModel$VarSet,
+		$author$project$Compiler$CompModel$Literal('time'),
+		A3(
+			$author$project$Compiler$CompModel$Unary,
+			'-',
+			$author$project$Compiler$CompModel$Literal('getTime()'),
+			$author$project$Compiler$CompModel$Literal('startTime'))),
+		A2(
+		$author$project$Compiler$CompModel$VarSet,
+		$author$project$Compiler$CompModel$Literal('PC'),
+		$author$project$Compiler$CompModel$Literal('0'))
+	]);
+var $author$project$Compiler$CompileToAST$varSetToVarDec = function (ast) {
+	if (ast.$ === 'VarSet') {
+		var a = ast.a;
+		var b = ast.b;
+		return A2($author$project$Compiler$CompModel$VarDeclaration, a, b);
+	} else {
+		return A2(
+			$author$project$Compiler$CompModel$VarDeclaration,
+			$author$project$Compiler$CompModel$Literal('bad'),
+			$author$project$Compiler$CompModel$Literal('shouldnothappen'));
+	}
+};
+var $author$project$Compiler$CompileToAST$initialVariablesDeclaration = A2($elm$core$List$map, $author$project$Compiler$CompileToAST$varSetToVarDec, $author$project$Compiler$CompileToAST$initialVariables);
+var $author$project$Compiler$CompileToAST$astHead = A2(
+	$elm$core$List$cons,
+	$author$project$Compiler$CompileToAST$getValueFunctionAST,
+	_Utils_ap($author$project$Compiler$CompileToAST$globals, $author$project$Compiler$CompileToAST$initialVariablesDeclaration));
+var $author$project$Compiler$CompModel$BeginThunk = function (a) {
+	return {$: 'BeginThunk', a: a};
+};
+var $author$project$Compiler$CompModel$FunctionsPush = function (a) {
+	return {$: 'FunctionsPush', a: a};
+};
+var $author$project$Compiler$CompileToAST$functionEnd = function (method) {
+	return $author$project$Compiler$CompModel$Empty;
+};
+var $author$project$Compiler$CompModel$CachePushNull = {$: 'CachePushNull'};
+var $author$project$Compiler$CompModel$For = F4(
+	function (a, b, c, d) {
+		return {$: 'For', a: a, b: b, c: c, d: d};
+	});
+var $author$project$Compiler$CompModel$forRange = F4(
+	function (varName, beginAST, endAST, bodyAST) {
+		return A4(
+			$author$project$Compiler$CompModel$For,
+			A2(
+				$author$project$Compiler$CompModel$VarDeclaration,
+				$author$project$Compiler$CompModel$Literal(varName),
+				beginAST),
+			A3(
+				$author$project$Compiler$CompModel$Unary,
+				'<',
+				$author$project$Compiler$CompModel$Literal(varName),
+				endAST),
+			$author$project$Compiler$CompModel$Literal(varName + '++'),
+			bodyAST);
+	});
+var $author$project$Compiler$CompileToAST$functionStart = function (method) {
+	return A4(
+		$author$project$Compiler$CompModel$forRange,
+		'i',
+		$author$project$Compiler$CompModel$Literal('0'),
+		$author$project$Compiler$CompModel$Literal(
+			$elm$core$String$fromInt(
+				$elm$core$List$length(method))),
+		$author$project$Compiler$CompModel$CachePushNull);
+};
+var $author$project$Compiler$CompileToAST$compileExpr = F3(
+	function (expr, isReturnFunction, entireMethod) {
+		return $author$project$Compiler$CompModel$FunctionsPush(
+			A2(
+				$author$project$Compiler$CompModel$Function,
+				_List_Nil,
+				function () {
+					var compiledExpr = function () {
+						var _v0 = expr.compileExprFunction;
+						var func = _v0.a;
+						return func(expr);
+					}();
+					return isReturnFunction ? $author$project$Compiler$CompModel$Begin(
+						_List_fromArray(
+							[
+								$author$project$Compiler$CompileToAST$functionStart(entireMethod),
+								compiledExpr,
+								$author$project$Compiler$CompileToAST$functionEnd(entireMethod)
+							])) : compiledExpr;
+				}()));
+	});
+var $author$project$Compiler$CompileToAST$compileExprs = F2(
+	function (method, entireMethod) {
+		if (!method.b) {
+			return _List_Nil;
+		} else {
+			if (!method.b.b) {
+				var expr = method.a;
+				return _List_fromArray(
+					[
+						A3($author$project$Compiler$CompileToAST$compileExpr, expr, true, entireMethod)
+					]);
+			} else {
+				var expr = method.a;
+				var exprs = method.b;
+				return A2(
+					$elm$core$List$cons,
+					A3($author$project$Compiler$CompileToAST$compileExpr, expr, false, entireMethod),
+					A2($author$project$Compiler$CompileToAST$compileExprs, exprs, entireMethod));
+			}
+		}
+	});
+var $author$project$Compiler$CompileToAST$compileMethod = function (method) {
+	return $author$project$Compiler$CompModel$BeginThunk(
+		A2($author$project$Compiler$CompileToAST$compileExprs, method, method));
+};
+var $author$project$Compiler$CompileToAST$compileFunctions = function (compModel) {
+	if (compModel.b && (!compModel.b.b)) {
+		var method = compModel.a;
+		return $author$project$Compiler$CompileToAST$compileMethod(method);
+	} else {
+		return $author$project$Compiler$CompModel$Empty;
+	}
+};
+var $author$project$Compiler$CompileToAST$recur = A2(
+	$author$project$Compiler$CompModel$CallFunction,
+	$author$project$Compiler$CompModel$Literal('setTimeout'),
+	_List_fromArray(
+		[
+			$author$project$Compiler$CompModel$Literal('recur'),
+			$author$project$Compiler$CompModel$Literal('4')
+		]));
+var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$BeginThunk(
+	_Utils_ap(
+		$author$project$Compiler$CompileToAST$initialVariables,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$FunctionRef(
+					A3(
+						$author$project$Compiler$CompModel$Unary,
+						'-',
+						$author$project$Compiler$CompModel$Literal('functions.length'),
+						$author$project$Compiler$CompModel$Literal('1'))),
+				_List_Nil),
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Literal('update'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Literal('state'),
+						$author$project$Compiler$CompModel$Literal('notes')
+					])),
+				$author$project$Compiler$CompileToAST$recur
+			])));
+var $author$project$Compiler$CompileToAST$loopFunctionAST = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Literal('recur'),
+	A2($author$project$Compiler$CompModel$Function, _List_Nil, $author$project$Compiler$CompileToAST$loopFunctionBody));
+var $author$project$Compiler$CompileToAST$loopAST = $author$project$Compiler$CompModel$BeginThunk(
+	_List_fromArray(
+		[
+			A2(
+			$author$project$Compiler$CompModel$VarDeclaration,
+			$author$project$Compiler$CompModel$Literal('state'),
+			$author$project$Compiler$CompModel$Literal('makeInitialState()')),
+			$author$project$Compiler$CompileToAST$loopFunctionAST,
+			$author$project$Compiler$CompileToAST$recur
+		]));
+var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
+	return $author$project$Compiler$CompModel$Begin(
+		_Utils_ap(
+			$author$project$Compiler$CompileToAST$astHead,
+			_List_fromArray(
+				[
+					$author$project$Compiler$CompileToAST$compileFunctions(compModel),
+					$author$project$Compiler$CompileToAST$loopAST
+				])));
+};
 var $author$project$Compiler$Compile$compile = function (compModel) {
-	return '';
+	return A2(
+		$elm$core$Debug$log,
+		'Running Program',
+		$author$project$Compiler$ASTToJavascript$aSTToJavascript(
+			$author$project$Compiler$CompileToAST$compileToAST(compModel)));
 };
 var $author$project$Compiler$CompModel$Expr = F4(
 	function (functionName, id, children, compileExprFunction) {
@@ -7246,6 +7811,9 @@ var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
 var $author$project$Compiler$CompModel$ConstV = function (a) {
 	return {$: 'ConstV', a: a};
 };
+var $author$project$Compiler$CompModel$ScriptVariable = function (a) {
+	return {$: 'ScriptVariable', a: a};
+};
 var $author$project$Compiler$CompModel$StackIndex = function (a) {
 	return {$: 'StackIndex', a: a};
 };
@@ -7257,24 +7825,14 @@ var $author$project$BuiltIn$makeBuiltInNumber = function (pair) {
 		pair.a,
 		$author$project$BuiltIn$Number(pair.b));
 };
-var $author$project$BuiltIn$StackReference = function (a) {
-	return {$: 'StackReference', a: a};
+var $author$project$BuiltIn$JavaScript = function (a) {
+	return {$: 'JavaScript', a: a};
 };
-var $author$project$BuiltIn$makeStackIndices = F2(
-	function (pairs, counter) {
-		if (!pairs.b) {
-			return _List_Nil;
-		} else {
-			var pair = pairs.a;
-			var rest = pairs.b;
-			return A2(
-				$elm$core$List$cons,
-				_Utils_Tuple2(
-					pair.a,
-					$author$project$BuiltIn$StackReference(counter)),
-				A2($author$project$BuiltIn$makeStackIndices, rest, counter + 1));
-		}
-	});
+var $author$project$BuiltIn$makeJavascriptBuiltIn = function (pair) {
+	return _Utils_Tuple2(
+		pair.a,
+		$author$project$BuiltIn$JavaScript(pair.b));
+};
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -7821,7 +8379,7 @@ var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
 var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
 	_Utils_ap(
 		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
-		A2($author$project$BuiltIn$makeStackIndices, $author$project$Compiler$CompModel$systemValues, 0)));
+		A2($elm$core$List$map, $author$project$BuiltIn$makeJavascriptBuiltIn, $author$project$Compiler$CompModel$systemValues)));
 var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Compiler$OnionToExpr$inputToValue = F2(
 	function (input, idToIndex) {
@@ -7849,14 +8407,19 @@ var $author$project$Compiler$OnionToExpr$inputToValue = F2(
 							$author$project$Compiler$CompModel$ConstV(_float));
 					}
 				} else {
-					if (_v2.a.$ === 'Number') {
-						var value = _v2.a.a;
-						return $elm$core$Result$Ok(
-							$author$project$Compiler$CompModel$ConstV(value));
-					} else {
-						var index = _v2.a.a;
-						return $elm$core$Result$Ok(
-							$author$project$Compiler$CompModel$StackIndex(index));
+					switch (_v2.a.$) {
+						case 'Number':
+							var value = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$ConstV(value));
+						case 'StackReference':
+							var index = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$StackIndex(index));
+						default:
+							var varName = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$ScriptVariable(varName));
 					}
 				}
 			default:
@@ -7963,11 +8526,7 @@ var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
 		var _v1 = A2(
 			$author$project$Compiler$OnionToExpr$functionToMethod,
 			f,
-			A3(
-				$author$project$Compiler$OnionToExpr$makeIdToIndex,
-				f,
-				$elm$core$Dict$empty,
-				$elm$core$List$length($author$project$Compiler$CompModel$systemValues)));
+			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f, $elm$core$Dict$empty, 0));
 		if (_v1.$ === 'Ok') {
 			var method = _v1.a;
 			var _v2 = $author$project$Compiler$OnionToExpr$onionToCompModel(fs);
