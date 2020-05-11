@@ -13,6 +13,7 @@ type ArgList = Finite (List String)
 
 type BuiltInVariableValue = Number Float
                           | StackReference Int
+                          | JavaScript String
 
 type alias BuiltInSpec = {functionName: String
                          ,argList: ArgList
@@ -34,8 +35,7 @@ unaryList = [(BuiltInSpec "+" (Infinite [] "nums") (CompileExprFunction (buildUn
             ,(BuiltInSpec "*" (Infinite [] "nums") (CompileExprFunction (buildUnaryWithDefault "1")))]
 
 javascriptFunctionList =
-    [(BuiltInSpec "mod" (Finite ["numerator", "divisor"]) (CompileExprFunction (buildJavascriptCall "mathMod")))
-    ]
+    [(BuiltInSpec "mod" (Finite ["numerator", "divisor"]) (CompileExprFunction (buildJavascriptCall "mathMod")))]
     
            
 builtInFunctionList : BuiltInList
@@ -51,21 +51,17 @@ builtInFunctions =
     Dict.fromList (List.map nameTuple builtInFunctionList)
 
 makeBuiltInNumber pair =
-    ((Tuple.first pair), Number (Tuple.second pair))
-
-makeStackIndices pairs counter =
-    case pairs of
-        [] -> []
-        (pair::rest) -> ((Tuple.first pair), StackReference counter)
-                        :: (makeStackIndices rest (counter+1))
-              
+    ((Tuple.first pair), Number (Tuple.second pair))              
                    
+makeJavascriptBuiltIn pair =
+    ((Tuple.first pair), JavaScript (Tuple.second pair))
 
+        
 builtInVariables : Dict String BuiltInVariableValue
 builtInVariables =
     Dict.fromList
         ((List.map makeBuiltInNumber MusicTheory.namedFrequencies)
-                        ++ (makeStackIndices systemValues 0))
+                        ++ (List.map makeJavascriptBuiltIn systemValues))
         
 
 callFromSpec : BuiltInSpec -> Id -> Call

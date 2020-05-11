@@ -10,6 +10,8 @@ buildValue val =
             getCacheValue (Literal (String.fromInt i))
         ConstV c ->
             Literal (String.fromFloat c)
+        ScriptVariable str ->
+            Literal str
                 
 buildWave : Expr -> AST
 buildWave expr =

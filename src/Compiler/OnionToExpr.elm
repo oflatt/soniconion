@@ -38,6 +38,7 @@ inputToValue input idToIndex =
                          Just float -> Ok (ConstV float))
                 Just (Number value) -> Ok (ConstV value)
                 Just (StackReference index) -> Ok (StackIndex index)
+                Just (JavaScript varName) -> Ok (ScriptVariable varName)
         Hole -> Err "No argument supplied to a function call"
 
                 

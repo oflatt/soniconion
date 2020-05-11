@@ -13,6 +13,7 @@ systemValues =
 
 type Value = StackIndex Int
            | ConstV Float
+           | ScriptVariable String
 
 type CompileExprFunction = CompileExprFunction (Expr -> AST)
              

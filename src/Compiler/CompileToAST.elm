@@ -12,8 +12,7 @@ getValueFunctionAST =
     VarDeclaration (Literal "getValueAt")
         (Function ["cacheILocal", "PC"]
                   (Begin
-                       [(Literal "console.log(cacheILocal)")
-                       ,(VarDeclaration (Literal "res") (Literal "null"))
+                       [(VarDeclaration (Literal "res") (Literal "null"))
                        ,(VarDeclaration (Literal "cacheI") (Unary "+" (Literal "cacheILocal") (Literal "PC")))
                        ,(If
                          (cacheIsNull (Literal "cacheI"))
@@ -30,7 +29,7 @@ initialVariables =
     [VarSet (Literal "cache") (Literal "[]")
     ,VarSet (Literal "notes") (Literal "[]")
     ,VarSet (Literal "time") (Unary "-" (Literal "getTime()") (Literal "startTime"))
-    ,VarSet (Literal "PC") (Literal (String.fromInt (List.length systemValues)))
+    ,VarSet (Literal "PC") (Literal "0")
      ]
 
 globals =
@@ -50,26 +49,25 @@ astHead =
     (getValueFunctionAST ::
          (globals ++ initialVariablesDeclaration))
 
-pushSystemValue sysVal =
-    CachePush (Literal (Tuple.second sysVal))
-
-systemValuesList =
-        (List.map pushSystemValue systemValues)
-
+recur =
+    (CallFunction (Literal "setTimeout") [(Literal "recur"), (Literal "4")])
+        
 loopFunctionBody =
     BeginThunk (initialVariables ++
-                    systemValuesList ++
                     [CallFunction (FunctionRef (Unary "-" (Literal "functions.length") (Literal "1"))) []
-                    ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]])
+                    ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
+                    ,recur])
 
 loopFunctionAST =
-    (For Empty (Literal "true") Empty
-         loopFunctionBody)
+    (VarDeclaration (Literal "recur")
+         (Function []
+              loopFunctionBody))
             
 loopAST =
     BeginThunk
         [(VarDeclaration (Literal "state") (Literal "makeInitialState()"))
-         ,loopFunctionAST]
+        ,loopFunctionAST
+        ,recur]
         
        
 functionStart method =
