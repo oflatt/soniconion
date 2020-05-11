@@ -6283,14 +6283,19 @@ var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
 var $author$project$BuiltIn$Finite = function (a) {
 	return {$: 'Finite', a: a};
 };
-var $author$project$Compiler$CompModel$CallFunction = F2(
-	function (a, b) {
-		return {$: 'CallFunction', a: a, b: b};
+var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
+var $author$project$Compiler$CompModel$If = F3(
+	function (a, b, c) {
+		return {$: 'If', a: a, b: b, c: c};
 	});
 var $author$project$Compiler$CompModel$Literal = function (a) {
 	return {$: 'Literal', a: a};
 };
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Compiler$CompModel$CallFunction = F2(
+	function (a, b) {
+		return {$: 'CallFunction', a: a, b: b};
+	});
 var $author$project$Compiler$CompileToAST$getCacheValue = function (ast) {
 	return A2(
 		$author$project$Compiler$CompModel$CallFunction,
@@ -6317,6 +6322,104 @@ var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
 			return $author$project$Compiler$CompModel$Literal(str);
 	}
 };
+var $author$project$Compiler$CompileBuiltIn$buildIf = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var cond = _v0.a;
+		var _v1 = _v0.b;
+		var thenValue = _v1.a;
+		var _v2 = _v1.b;
+		var elseValue = _v2.a;
+		return A3(
+			$author$project$Compiler$CompModel$If,
+			$author$project$Compiler$CompileBuiltIn$buildValue(cond),
+			$author$project$Compiler$CompileBuiltIn$buildValue(thenValue),
+			$author$project$Compiler$CompileBuiltIn$buildValue(elseValue));
+	} else {
+		return $author$project$Compiler$CompModel$Empty;
+	}
+};
+var $author$project$Compiler$CompModel$Begin = function (a) {
+	return {$: 'Begin', a: a};
+};
+var $author$project$Compiler$CompModel$NotesPush = function (a) {
+	return {$: 'NotesPush', a: a};
+};
+var $author$project$Compiler$CompModel$Unary = F2(
+	function (a, b) {
+		return {$: 'Unary', a: a, b: b};
+	});
+var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var time = _v0.a;
+		var _v1 = _v0.b;
+		var frequency = _v1.a;
+		var _v2 = _v1.b;
+		var duration = _v2.a;
+		var timeAST = $author$project$Compiler$CompileBuiltIn$buildValue(time);
+		var frequencyAST = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
+		var durationAST = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
+		return $author$project$Compiler$CompModel$Begin(
+			_List_fromArray(
+				[
+					A3(
+					$author$project$Compiler$CompModel$If,
+					A2(
+						$author$project$Compiler$CompModel$Unary,
+						'&&',
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompModel$Unary,
+								'>=',
+								_List_fromArray(
+									[
+										$author$project$Compiler$CompModel$Literal('time'),
+										timeAST
+									])),
+								A2(
+								$author$project$Compiler$CompModel$Unary,
+								'<',
+								_List_fromArray(
+									[
+										$author$project$Compiler$CompModel$Literal('time'),
+										A2(
+										$author$project$Compiler$CompModel$Unary,
+										'+',
+										_List_fromArray(
+											[timeAST, durationAST]))
+									]))
+							])),
+					$author$project$Compiler$CompModel$NotesPush(frequencyAST),
+					$author$project$Compiler$CompModel$Empty),
+					A2(
+					$author$project$Compiler$CompModel$Unary,
+					'+',
+					_List_fromArray(
+						[timeAST, durationAST]))
+				]));
+	} else {
+		return $author$project$Compiler$CompModel$Empty;
+	}
+};
+var $author$project$BuiltIn$generalList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'sine',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['time', 'frequency', 'duration'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave)),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'if',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['condition', 'thenValue', 'elseValue'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildIf))
+	]);
 var $author$project$Compiler$CompileBuiltIn$buildJavascriptCall = F2(
 	function (funcName, expr) {
 		return A2(
@@ -6343,11 +6446,6 @@ var $author$project$Compiler$CompModel$SingleOp = F2(
 	function (a, b) {
 		return {$: 'SingleOp', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
-var $author$project$Compiler$CompModel$Unary = F3(
-	function (a, b, c) {
-		return {$: 'Unary', a: a, b: b, c: c};
-	});
 var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
 	function (children, op) {
 		if (!children.b) {
@@ -6357,13 +6455,11 @@ var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
 				var arg = children.a;
 				return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
 			} else {
-				var arg = children.a;
-				var args = children.b;
-				return A3(
+				var args = children;
+				return A2(
 					$author$project$Compiler$CompModel$Unary,
 					op,
-					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
-					A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, args, op));
+					A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, args));
 			}
 		}
 	});
@@ -6400,99 +6496,60 @@ var $author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead = F2(
 	function (lead, expr) {
 		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', lead, expr);
 	});
-var $author$project$BuiltIn$unaryList = _List_fromArray(
-	[
-		A3(
+var $author$project$BuiltIn$compareUnary = function (op) {
+	return A3(
 		$author$project$BuiltIn$BuiltInSpec,
-		'+',
-		A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
-		$author$project$Compiler$CompModel$CompileExprFunction(
-			$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('0'))),
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'-',
+		op,
 		A2(
 			$author$project$BuiltIn$Infinite,
 			_List_fromArray(
-				['num']),
-			'nums'),
-		$author$project$Compiler$CompModel$CompileExprFunction(
-			$author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead('-'))),
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'/',
-		A2(
-			$author$project$BuiltIn$Infinite,
-			_List_fromArray(
-				['numerator']),
-			'denominators'),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary)),
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'*',
-		A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
-		$author$project$Compiler$CompModel$CompileExprFunction(
-			$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('1')))
-	]);
-var $author$project$Compiler$CompModel$Begin = function (a) {
-	return {$: 'Begin', a: a};
+				['leftComparable', 'rightComparable']),
+			'comparables'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary));
 };
-var $author$project$Compiler$CompModel$If = F3(
-	function (a, b, c) {
-		return {$: 'If', a: a, b: b, c: c};
-	});
-var $author$project$Compiler$CompModel$NotesPush = function (a) {
-	return {$: 'NotesPush', a: a};
-};
-var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
-	var _v0 = expr.children;
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var time = _v0.a;
-		var _v1 = _v0.b;
-		var frequency = _v1.a;
-		var _v2 = _v1.b;
-		var duration = _v2.a;
-		var timeAST = $author$project$Compiler$CompileBuiltIn$buildValue(time);
-		var frequencyAST = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
-		var durationAST = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
-		return $author$project$Compiler$CompModel$Begin(
-			_List_fromArray(
-				[
-					A3(
-					$author$project$Compiler$CompModel$If,
-					A3(
-						$author$project$Compiler$CompModel$Unary,
-						'&&',
-						A3(
-							$author$project$Compiler$CompModel$Unary,
-							'>=',
-							$author$project$Compiler$CompModel$Literal('time'),
-							timeAST),
-						A3(
-							$author$project$Compiler$CompModel$Unary,
-							'<',
-							$author$project$Compiler$CompModel$Literal('time'),
-							A3($author$project$Compiler$CompModel$Unary, '+', timeAST, durationAST))),
-					$author$project$Compiler$CompModel$NotesPush(frequencyAST),
-					$author$project$Compiler$CompModel$Empty),
-					A3($author$project$Compiler$CompModel$Unary, '+', timeAST, durationAST)
-				]));
-	} else {
-		return $author$project$Compiler$CompModel$Empty;
-	}
-};
-var $author$project$BuiltIn$waveList = _List_fromArray(
-	[
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'sine',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['time', 'frequency', 'duration'])),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave))
-	]);
+var $author$project$BuiltIn$compareUnaryOpList = A2(
+	$elm$core$List$map,
+	$author$project$BuiltIn$compareUnary,
+	_List_fromArray(
+		['>', '<', '>=', '<=', '==', '&&', '||']));
+var $author$project$BuiltIn$unaryList = _Utils_ap(
+	_List_fromArray(
+		[
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'+',
+			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('0'))),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'-',
+			A2(
+				$author$project$BuiltIn$Infinite,
+				_List_fromArray(
+					['num']),
+				'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead('-'))),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'/',
+			A2(
+				$author$project$BuiltIn$Infinite,
+				_List_fromArray(
+					['numerator']),
+				'denominators'),
+			$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary)),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'*',
+			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('1')))
+		]),
+	$author$project$BuiltIn$compareUnaryOpList);
 var $author$project$BuiltIn$builtInFunctionList = _Utils_ap(
-	$author$project$BuiltIn$waveList,
+	$author$project$BuiltIn$generalList,
 	_Utils_ap($author$project$BuiltIn$unaryList, $author$project$BuiltIn$javascriptFunctionList));
 var $author$project$BuiltIn$nameTuple = function (builtInList) {
 	return _Utils_Tuple2(builtInList.functionName, builtInList);
@@ -7335,19 +7392,11 @@ var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgu
 			return A3($author$project$Compiler$ASTToJavascript$javascriptIf, cond, thenCase, elseCase);
 		case 'Unary':
 			var op = astArgument.a;
-			var left = astArgument.b;
-			var right = astArgument.c;
-			return A2(
+			var args = astArgument.b;
+			return '(' + (A2(
 				$elm$core$String$join,
-				'',
-				_List_fromArray(
-					[
-						'(',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(left),
-						op,
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(right),
-						')'
-					]));
+				op,
+				A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args)) + ')');
 		default:
 			var op = astArgument.a;
 			var arg = astArgument.b;
@@ -7411,7 +7460,7 @@ var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase
 		return '';
 	} else {
 		var str = _v0;
-		return 'else {' + (str + '}');
+		return 'else { return ' + (str + '}');
 	}
 };
 var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
@@ -7454,12 +7503,14 @@ var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
 			'',
 			_List_fromArray(
 				[
-					'if(',
+					'(function() { if(',
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(bool),
 					') {',
+					'return ',
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(thenCase),
 					'}',
-					$author$project$Compiler$ASTToJavascript$javascriptElse(elseCase)
+					$author$project$Compiler$ASTToJavascript$javascriptElse(elseCase),
+					'}())'
 				]));
 	});
 var $author$project$Compiler$CompModel$CacheRef = function (a) {
@@ -7478,11 +7529,14 @@ var $author$project$Compiler$CompModel$VarSet = F2(
 		return {$: 'VarSet', a: a, b: b};
 	});
 var $author$project$Compiler$CompileToAST$cacheIsNull = function (ast) {
-	return A3(
+	return A2(
 		$author$project$Compiler$CompModel$Unary,
 		'==',
-		$author$project$Compiler$CompModel$Literal('null'),
-		$author$project$Compiler$CompModel$CacheRef(ast));
+		_List_fromArray(
+			[
+				$author$project$Compiler$CompModel$Literal('null'),
+				$author$project$Compiler$CompModel$CacheRef(ast)
+			]));
 };
 var $author$project$Compiler$CompModel$CacheUpdate = F2(
 	function (a, b) {
@@ -7518,11 +7572,14 @@ var $author$project$Compiler$CompileToAST$getValueFunctionAST = A2(
 					A2(
 					$author$project$Compiler$CompModel$VarDeclaration,
 					$author$project$Compiler$CompModel$Literal('cacheI'),
-					A3(
+					A2(
 						$author$project$Compiler$CompModel$Unary,
 						'+',
-						$author$project$Compiler$CompModel$Literal('cacheILocal'),
-						$author$project$Compiler$CompModel$Literal('PC'))),
+						_List_fromArray(
+							[
+								$author$project$Compiler$CompModel$Literal('cacheILocal'),
+								$author$project$Compiler$CompModel$Literal('PC')
+							]))),
 					A3(
 					$author$project$Compiler$CompModel$If,
 					$author$project$Compiler$CompileToAST$cacheIsNull(
@@ -7571,11 +7628,14 @@ var $author$project$Compiler$CompileToAST$initialVariables = _List_fromArray(
 		A2(
 		$author$project$Compiler$CompModel$VarSet,
 		$author$project$Compiler$CompModel$Literal('time'),
-		A3(
+		A2(
 			$author$project$Compiler$CompModel$Unary,
 			'-',
-			$author$project$Compiler$CompModel$Literal('getTime()'),
-			$author$project$Compiler$CompModel$Literal('startTime'))),
+			_List_fromArray(
+				[
+					$author$project$Compiler$CompModel$Literal('getTime()'),
+					$author$project$Compiler$CompModel$Literal('startTime')
+				]))),
 		A2(
 		$author$project$Compiler$CompModel$VarSet,
 		$author$project$Compiler$CompModel$Literal('PC'),
@@ -7620,11 +7680,14 @@ var $author$project$Compiler$CompModel$forRange = F4(
 				$author$project$Compiler$CompModel$VarDeclaration,
 				$author$project$Compiler$CompModel$Literal(varName),
 				beginAST),
-			A3(
+			A2(
 				$author$project$Compiler$CompModel$Unary,
 				'<',
-				$author$project$Compiler$CompModel$Literal(varName),
-				endAST),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Literal(varName),
+						endAST
+					])),
 			$author$project$Compiler$CompModel$Literal(varName + '++'),
 			bodyAST);
 	});
@@ -7708,11 +7771,14 @@ var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Com
 				A2(
 				$author$project$Compiler$CompModel$CallFunction,
 				$author$project$Compiler$CompModel$FunctionRef(
-					A3(
+					A2(
 						$author$project$Compiler$CompModel$Unary,
 						'-',
-						$author$project$Compiler$CompModel$Literal('functions.length'),
-						$author$project$Compiler$CompModel$Literal('1'))),
+						_List_fromArray(
+							[
+								$author$project$Compiler$CompModel$Literal('functions.length'),
+								$author$project$Compiler$CompModel$Literal('1')
+							]))),
 				_List_Nil),
 				A2(
 				$author$project$Compiler$CompModel$CallFunction,
