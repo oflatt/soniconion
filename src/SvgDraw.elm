@@ -1,6 +1,6 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgLeftClick, svgRightClick,
-                             nodeEvents)
+                             nodeEvents, drawBlockNameInput)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -196,37 +196,39 @@ drawBlock: Call -> ViewStructure -> (Svg Msg)
 drawBlock call viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
-            Svg.node "g"
-                ((svgTranslate blockPos.xpos blockPos.ypos) ::
-                     (if viewStructure.isToolbar
-                      then
-                          [(svgLeftClick (SpawnBlock call.functionName))]
-                      else
-                          [(svgLeftClick (BlockClick call.id))]))
-                [
-                 rect
-                     [ x "0"
-                     , y (String.fromInt ViewVariables.nodeRadius)
-                     , width (String.fromInt blockPos.width)
-                     , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
-                     , fill ViewVariables.blockColor
-                     , stroke ViewVariables.blockColor
-                     , rx (String.fromInt ViewVariables.nodeRadius)
-                     , ry (String.fromInt ViewVariables.nodeRadius)
-                     ]
-                     []
-                , (svgTextInput call.functionName ViewVariables.blockTextXPadding (ViewVariables.blockTextInputYpos)
-                       (blockPos.width - 2*ViewVariables.blockTextXPadding)
-                       (ViewVariables.blockTextInputHeight)
-                       (BlockNameHighlight call.id)
-                       (BlockNameUpdate call.id)
-                       Css.transparent
-                       (blockNameEvents call viewStructure)
-                       (Update.nodeNameId call.id))
-                ]
+            (rect
+                 [(svgTranslate blockPos.xpos blockPos.ypos)
+                 ,(if viewStructure.isToolbar
+                   then
+                       (svgLeftClick (SpawnBlock call.functionName))
+                   else
+                       (svgLeftClick (BlockClick call.id)))
+                 ,x "0"
+                 , y (String.fromInt ViewVariables.nodeRadius)
+                 , width (String.fromInt blockPos.width)
+                 , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
+                 , fill ViewVariables.blockColor
+                 , stroke ViewVariables.blockColor
+                 , rx (String.fromInt ViewVariables.nodeRadius)
+                 , ry (String.fromInt ViewVariables.nodeRadius)
+                 ]
+                 [])
+                
         Nothing ->
             errorSvgNode "function call without block pos"
 
+drawBlockNameInput call viewStructure blockPos =
+    (svgTextInput call.functionName
+         (blockPos.xpos + ViewVariables.blockTextXPadding)
+         ((ViewVariables.blockTextInputYpos) + blockPos.ypos)
+         (blockPos.width - 2*ViewVariables.blockTextXPadding)
+         (ViewVariables.blockTextInputHeight)
+         (BlockNameHighlight call.id)
+         (BlockNameUpdate call.id)
+         Css.transparent
+         (blockNameEvents call viewStructure)
+         (Update.nodeNameId call.id))
+                
         
                 
 drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> ViewStructure -> Svg Msg
