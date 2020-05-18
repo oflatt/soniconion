@@ -11605,65 +11605,10 @@ var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
 var $author$project$Model$BlockClick = function (a) {
 	return {$: 'BlockClick', a: a};
 };
-var $author$project$Model$BlockNameHighlight = function (a) {
-	return {$: 'BlockNameHighlight', a: a};
-};
-var $author$project$Model$BlockNameUpdate = F2(
-	function (a, b) {
-		return {$: 'BlockNameUpdate', a: a, b: b};
-	});
 var $author$project$Model$SpawnBlock = function (a) {
 	return {$: 'SpawnBlock', a: a};
 };
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
-var $author$project$Model$BlockNameClick = function (a) {
-	return {$: 'BlockNameClick', a: a};
-};
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
-var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $author$project$SvgDraw$createLeftDecoder = F2(
-	function (msg, button) {
-		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
-	});
-var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		$author$project$SvgDraw$createLeftDecoder(msg),
-		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-};
-var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$author$project$SvgDraw$alwaysPreventDefault,
-		$author$project$SvgDraw$checkLeftDecoder(msg));
-};
-var $author$project$SvgDraw$svgLeftClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'mousedown',
-		$author$project$SvgDraw$svgLeftDecoder(msg));
-};
-var $author$project$SvgDraw$blockNameEvents = F2(
-	function (call, viewStructure) {
-		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
-			[
-				$author$project$SvgDraw$svgLeftClick(
-				$author$project$Model$BlockNameClick(call.id))
-			]);
-	});
-var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -11719,6 +11664,206 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 };
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $author$project$SvgDraw$createLeftDecoder = F2(
+	function (msg, button) {
+		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
+	});
+var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		$author$project$SvgDraw$createLeftDecoder(msg),
+		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+};
+var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$author$project$SvgDraw$alwaysPreventDefault,
+		$author$project$SvgDraw$checkLeftDecoder(msg));
+};
+var $author$project$SvgDraw$svgLeftClick = function (msg) {
+	return A2(
+		$elm$svg$Svg$Events$preventDefaultOn,
+		'mousedown',
+		$author$project$SvgDraw$svgLeftDecoder(msg));
+};
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$SvgDraw$svgTranslate = F2(
+	function (xpos, ypos) {
+		return $elm$svg$Svg$Attributes$transform(
+			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
+	});
+var $author$project$SvgDraw$drawBlock = F2(
+	function (call, viewStructure) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			return A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
+						viewStructure.isToolbar ? $author$project$SvgDraw$svgLeftClick(
+						$author$project$Model$SpawnBlock(call.functionName)) : $author$project$SvgDraw$svgLeftClick(
+						$author$project$Model$BlockClick(call.id)),
+						$elm$svg$Svg$Attributes$x('0'),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+						$elm$svg$Svg$Attributes$width(
+						$elm$core$String$fromInt(blockPos.width)),
+						$elm$svg$Svg$Attributes$height(
+						$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
+						$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+						$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
+						$elm$svg$Svg$Attributes$rx(
+						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+						$elm$svg$Svg$Attributes$ry(
+						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
+					]),
+				_List_Nil);
+		} else {
+			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
+		}
+	});
+var $author$project$SvgDraw$drawBuiltIn = F3(
+	function (call, index, viewStructure) {
+		return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
+	});
+var $author$project$DrawFunc$drawCall = F3(
+	function (call, counter, viewStructure) {
+		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
+	});
+var $author$project$DrawFunc$drawFunc = F3(
+	function (func, viewStructure, counter) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
+				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
+		}
+	});
+var $author$project$Model$OutputClick = function (a) {
+	return {$: 'OutputClick', a: a};
+};
+var $author$project$Model$OutputRightClick = function (a) {
+	return {$: 'OutputRightClick', a: a};
+};
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $author$project$SvgDraw$drawNode = F5(
+	function (xpos, inputPosition, ypos, events, isHighlighted) {
+		return A2(
+			$elm$svg$Svg$circle,
+			_Utils_ap(
+				events,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$r(
+						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
+						$elm$svg$Svg$Attributes$cx(
+						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+						$elm$svg$Svg$Attributes$cy(
+						$elm$core$String$fromInt(ypos)),
+						$elm$svg$Svg$Attributes$fill(
+						isHighlighted ? 'blue' : 'black')
+					])),
+			_List_Nil);
+	});
+var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
+var $author$project$SvgDraw$svgRightClick = function (msg) {
+	return A2(
+		$elm$svg$Svg$Events$preventDefaultOn,
+		'contextmenu',
+		A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
+var $author$project$DrawFunc$drawCallEnding = F3(
+	function (call, blockPositions, mouseState) {
+		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			var isOutputHighlighted = function () {
+				var _v1 = mouseState.mouseSelection;
+				if (_v1.$ === 'OutputSelected') {
+					var outputId = _v1.a;
+					return _Utils_eq(outputId, call.id);
+				} else {
+					return false;
+				}
+			}();
+			return A5(
+				$author$project$SvgDraw$drawNode,
+				blockPos.xpos,
+				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
+				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
+				_List_fromArray(
+					[
+						$author$project$SvgDraw$svgLeftClick(
+						$author$project$Model$OutputClick(call.id)),
+						$author$project$SvgDraw$svgRightClick(
+						$author$project$Model$OutputRightClick(call.id))
+					]),
+				isOutputHighlighted);
+		} else {
+			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
+		}
+	});
+var $author$project$DrawFunc$drawFuncEndings = F3(
+	function (func, blockPositions, mouseState) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCallEnding, call, blockPositions, mouseState),
+				A3($author$project$DrawFunc$drawFuncEndings, calls, blockPositions, mouseState));
+		}
+	});
+var $author$project$Model$OutputHighlight = function (a) {
+	return {$: 'OutputHighlight', a: a};
+};
+var $author$project$Model$BlockNameHighlight = function (a) {
+	return {$: 'BlockNameHighlight', a: a};
+};
+var $author$project$Model$BlockNameUpdate = F2(
+	function (a, b) {
+		return {$: 'BlockNameUpdate', a: a, b: b};
+	});
+var $author$project$Model$BlockNameClick = function (a) {
+	return {$: 'BlockNameClick', a: a};
+};
+var $author$project$SvgDraw$blockNameEvents = F2(
+	function (call, viewStructure) {
+		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
+			[
+				$author$project$SvgDraw$svgLeftClick(
+				$author$project$Model$BlockNameClick(call.id))
+			]);
+	});
+var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
 var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
 var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
 var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
@@ -12308,171 +12453,15 @@ var $author$project$SvgDraw$svgTextInput = function (str) {
 		};
 	};
 };
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $author$project$SvgDraw$svgTranslate = F2(
-	function (xpos, ypos) {
-		return $elm$svg$Svg$Attributes$transform(
-			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
-	});
 var $rtfeldman$elm_css$Css$transparent = {color: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'transparent'};
-var $author$project$SvgDraw$drawBlock = F2(
-	function (call, viewStructure) {
-		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			return A3(
-				$elm$svg$Svg$node,
-				'g',
-				A2(
-					$elm$core$List$cons,
-					A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
-					viewStructure.isToolbar ? _List_fromArray(
-						[
-							$author$project$SvgDraw$svgLeftClick(
-							$author$project$Model$SpawnBlock(call.functionName))
-						]) : _List_fromArray(
-						[
-							$author$project$SvgDraw$svgLeftClick(
-							$author$project$Model$BlockClick(call.id))
-						])),
-				_List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$rect,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$x('0'),
-								$elm$svg$Svg$Attributes$y(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-								$elm$svg$Svg$Attributes$width(
-								$elm$core$String$fromInt(blockPos.width)),
-								$elm$svg$Svg$Attributes$height(
-								$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
-								$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-								$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
-								$elm$svg$Svg$Attributes$rx(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-								$elm$svg$Svg$Attributes$ry(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-							]),
-						_List_Nil),
-						$author$project$SvgDraw$svgTextInput(call.functionName)($author$project$ViewVariables$blockTextXPadding)($author$project$ViewVariables$blockTextInputYpos)(blockPos.width - (2 * $author$project$ViewVariables$blockTextXPadding))($author$project$ViewVariables$blockTextInputHeight)(
-						$author$project$Model$BlockNameHighlight(call.id))(
-						$author$project$Model$BlockNameUpdate(call.id))($rtfeldman$elm_css$Css$transparent)(
-						A2($author$project$SvgDraw$blockNameEvents, call, viewStructure))(
-						$author$project$Update$nodeNameId(call.id))
-					]));
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
-		}
+var $author$project$SvgDraw$drawBlockNameInput = F3(
+	function (call, viewStructure, blockPos) {
+		return $author$project$SvgDraw$svgTextInput(call.functionName)(blockPos.xpos + $author$project$ViewVariables$blockTextXPadding)($author$project$ViewVariables$blockTextInputYpos + blockPos.ypos)(blockPos.width - (2 * $author$project$ViewVariables$blockTextXPadding))($author$project$ViewVariables$blockTextInputHeight)(
+			$author$project$Model$BlockNameHighlight(call.id))(
+			$author$project$Model$BlockNameUpdate(call.id))($rtfeldman$elm_css$Css$transparent)(
+			A2($author$project$SvgDraw$blockNameEvents, call, viewStructure))(
+			$author$project$Update$nodeNameId(call.id));
 	});
-var $author$project$SvgDraw$drawBuiltIn = F3(
-	function (call, index, viewStructure) {
-		return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
-	});
-var $author$project$DrawFunc$drawCall = F3(
-	function (call, counter, viewStructure) {
-		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
-	});
-var $author$project$DrawFunc$drawFunc = F3(
-	function (func, viewStructure, counter) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
-				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
-		}
-	});
-var $author$project$Model$OutputClick = function (a) {
-	return {$: 'OutputClick', a: a};
-};
-var $author$project$Model$OutputRightClick = function (a) {
-	return {$: 'OutputRightClick', a: a};
-};
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$SvgDraw$drawNode = F5(
-	function (xpos, inputPosition, ypos, events, isHighlighted) {
-		return A2(
-			$elm$svg$Svg$circle,
-			_Utils_ap(
-				events,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$r(
-						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
-						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
-						$elm$svg$Svg$Attributes$cy(
-						$elm$core$String$fromInt(ypos)),
-						$elm$svg$Svg$Attributes$fill(
-						isHighlighted ? 'blue' : 'black')
-					])),
-			_List_Nil);
-	});
-var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
-var $author$project$SvgDraw$svgRightClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'contextmenu',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$SvgDraw$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
-var $author$project$DrawFunc$drawCallEnding = F3(
-	function (call, blockPositions, mouseState) {
-		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			var isOutputHighlighted = function () {
-				var _v1 = mouseState.mouseSelection;
-				if (_v1.$ === 'OutputSelected') {
-					var outputId = _v1.a;
-					return _Utils_eq(outputId, call.id);
-				} else {
-					return false;
-				}
-			}();
-			return A5(
-				$author$project$SvgDraw$drawNode,
-				blockPos.xpos,
-				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
-				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
-				_List_fromArray(
-					[
-						$author$project$SvgDraw$svgLeftClick(
-						$author$project$Model$OutputClick(call.id)),
-						$author$project$SvgDraw$svgRightClick(
-						$author$project$Model$OutputRightClick(call.id))
-					]),
-				isOutputHighlighted);
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
-		}
-	});
-var $author$project$DrawFunc$drawFuncEndings = F3(
-	function (func, blockPositions, mouseState) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCallEnding, call, blockPositions, mouseState),
-				A3($author$project$DrawFunc$drawFuncEndings, calls, blockPositions, mouseState));
-		}
-	});
-var $author$project$Model$OutputHighlight = function (a) {
-	return {$: 'OutputHighlight', a: a};
-};
 var $author$project$Model$InputHighlight = F2(
 	function (a, b) {
 		return {$: 'InputHighlight', a: a, b: b};
@@ -12769,6 +12758,7 @@ var $author$project$DrawFunc$drawInputLines = F5(
 		if (!inputs.b) {
 			return _List_fromArray(
 				[
+					A3($author$project$SvgDraw$drawBlockNameInput, call, viewStructure, blockPos),
 					A5(
 					$author$project$SvgDraw$nodeEvent,
 					0,
