@@ -139,8 +139,7 @@ drawCallEnding call blockPositions mouseState =
                      blockPos.xpos
                      (((blockPos.width//2)-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
                      (ViewVariables.outputNodeY + blockPos.ypos)
-                     [(SvgDraw.svgLeftClick (OutputClick call.id))
-                     ,(SvgDraw.svgRightClick (OutputRightClick call.id))]
+                     (SvgDraw.svgClickEvents (OutputClick call.id) (OutputRightClick call.id))
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"

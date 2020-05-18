@@ -59,10 +59,12 @@ drawProgram program mouseState svgWindowWidth svgWindowHeight =
     in
         fromUnstyled
         (Svg.svg
-             [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
-             , Svg.Attributes.height(String.fromInt actualWindowHeight) -- define the height of the svg
-             , Svg.Attributes.viewBox("0 0 " ++ (ViewPositions.createViewboxDimensions viewportWidth actualViewportHeight)) -- define the viewbox
-             , display "inline-block"
-             ]
+             ((SvgDraw.svgClickEvents NoOp NoOp)
+                  ++
+                  [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
+                  , Svg.Attributes.height(String.fromInt actualWindowHeight) -- define the height of the svg
+                  , Svg.Attributes.viewBox("0 0 " ++ (ViewPositions.createViewboxDimensions viewportWidth actualViewportHeight)) -- define the viewbox
+                  , display "inline-block"
+                  ])
              ((Tuple.second drawnToolbar) ::
                   (Tuple.second drawnOnion)))

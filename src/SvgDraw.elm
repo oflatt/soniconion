@@ -1,5 +1,5 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
-                             nodeEvent, drawNodeWithEvent, svgTranslate, svgLeftClick, svgRightClick,
+                             nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput)
 
 import Model exposing (..)
@@ -155,41 +155,43 @@ alwaysPreventDefault : msg -> ( msg, Bool )
 alwaysPreventDefault msg =
   (msg, True)
 
-createLeftDecoder : Msg -> Int -> Json.Decoder Msg
-createLeftDecoder msg button =
-    if button == 0
-    then (Json.succeed msg)
-    else (Json.succeed NoOp)
+createLeftDecoder : Msg -> Msg -> Int -> Json.Decoder Msg
+createLeftDecoder msgLeft msgRight button =
+    case button of
+        0 -> (Json.succeed msgLeft)
+        2 -> (Json.succeed msgRight)
+        _ -> Json.succeed msgLeft
       
-checkLeftDecoder : Msg -> Json.Decoder Msg
-checkLeftDecoder msg =
+checkLeftDecoder : Msg -> Msg -> Json.Decoder Msg
+checkLeftDecoder msgLeft msgRight =
     (Json.field "button" Json.int)
-        |> Json.andThen (createLeftDecoder msg)
+        |> Json.andThen (createLeftDecoder msgLeft msgRight)
       
-svgLeftDecoder : Msg -> Json.Decoder (Msg, Bool)
-svgLeftDecoder msg =
-    (Json.map alwaysPreventDefault (checkLeftDecoder msg))
-      
-svgLeftClick msg =
-    Svg.Events.preventDefaultOn "mousedown" (svgLeftDecoder msg)
-svgRightClick msg =
-    Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
+svgClickPrevent : Msg -> Msg -> Json.Decoder (Msg, Bool)
+svgClickPrevent msgLeft msgRight =
+    (Json.map alwaysPreventDefault (checkLeftDecoder msgLeft msgRight))
+    
+svgClickEvents leftClickEvent rightClickEvent =
+    [Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed NoOp))
+    ,Svg.Events.preventDefaultOn "mousedown" (svgClickPrevent leftClickEvent rightClickEvent)]
 
+svgClickWithDefault leftClickEvent rightClickEvent =
+    [Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed NoOp))
+    ,Svg.Events.on "mousedown" (checkLeftDecoder leftClickEvent rightClickEvent)]
 
 blockNameEvents call viewStructure =
     if viewStructure.isToolbar
     then
-        []
+        svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
     else
-        [(svgLeftClick (BlockNameClick call.id))]
+        svgClickWithDefault (BlockNameClick call.id) (BlockClick call.id)
 
 nodeEvents call viewStructure inputCounter =
     if viewStructure.isToolbar
     then
         []
     else
-        [(svgLeftClick (InputClick call.id inputCounter))
-        ,(svgRightClick (InputRightClick call.id inputCounter))]
+        svgClickEvents (InputClick call.id inputCounter) (InputRightClick call.id inputCounter)
         
 -- shape for functionName objects
 drawBlock: Call -> ViewStructure -> (Svg Msg)
@@ -197,21 +199,22 @@ drawBlock call viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             (rect
-                 [(svgTranslate blockPos.xpos blockPos.ypos)
-                 ,(if viewStructure.isToolbar
+                 ((if viewStructure.isToolbar
                    then
-                       (svgLeftClick (SpawnBlock call.functionName))
+                       svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
                    else
-                       (svgLeftClick (BlockClick call.id)))
-                 ,x "0"
-                 , y (String.fromInt ViewVariables.nodeRadius)
-                 , width (String.fromInt blockPos.width)
-                 , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
-                 , fill ViewVariables.blockColor
-                 , stroke ViewVariables.blockColor
-                 , rx (String.fromInt ViewVariables.nodeRadius)
-                 , ry (String.fromInt ViewVariables.nodeRadius)
-                 ]
+                       svgClickEvents (BlockClick call.id) (BlockClick call.id))
+                      ++
+                      [(svgTranslate blockPos.xpos blockPos.ypos)
+                      ,x "0"
+                      , y (String.fromInt ViewVariables.nodeRadius)
+                      , width (String.fromInt blockPos.width)
+                      , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
+                      , fill ViewVariables.blockColor
+                      , stroke ViewVariables.blockColor
+                      , rx (String.fromInt ViewVariables.nodeRadius)
+                      , ry (String.fromInt ViewVariables.nodeRadius)
+                      ])
                  [])
                 
         Nothing ->
