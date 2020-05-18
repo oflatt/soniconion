@@ -1,11 +1,12 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
-                             nodeEvent, drawNodeWithEvent, svgTranslate, svgLeftClick, svgRightClick)
+                             nodeEvent, drawNodeWithEvent, svgTranslate, svgLeftClick, svgRightClick,
+                             nodeEvents)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
 import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
-
+import Update
 
 import ViewPositions exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition)
 import LineRouting exposing (LineRouting)
@@ -50,13 +51,7 @@ errorSvgNode errorMsg=
 -- function for drawing builtIns
 drawBuiltIn: Call -> Int -> ViewStructure -> (Svg Msg)
 drawBuiltIn call index viewStructure =
-    let get = Dict.get call.functionName builtInFunctions
-    in
-        case get of
-            Just names ->
-                drawBlock call viewStructure
-            Nothing ->
-                errorSvgNode ("not a built in function " ++ call.functionName)
+    drawBlock call viewStructure
 
 
 svgText xpos ypos textIn fontSizeIn fillIn =
@@ -73,36 +68,49 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     ,fill fillIn]
     [Svg.text textIn]
 
-drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String -> (Svg Msg)
-drawTextInput call str events xpos inputPos ypos index domId =
+
+svgTextInput: String -> Int -> Int -> Int -> Int -> Msg -> (String ->  Msg) -> Css.ColorValue compatible -> List (Svg.Attribute Msg) -> String -> (Svg Msg)
+svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events domId =
     Svg.foreignObject
         (events ++
-             [x (String.fromInt ((Tuple.first inputPos)+xpos))
-             ,y (String.fromInt (ypos - (ViewVariables.inputHeight//2)))
-             ,width (String.fromInt (Tuple.second inputPos))
-             ,height (String.fromInt (ViewVariables.inputHeight))])
+             [x (String.fromInt xpos)
+             ,y (String.fromInt ypos)
+             ,width (String.fromInt w)
+             ,height (String.fromInt h)])
         [toUnstyled
              (input
                   [Html.Styled.Attributes.value str
-                  ,Html.Styled.Events.onInput (InputUpdate call.id index)
+                  ,Html.Styled.Events.onInput onInputEvent
                   ,Html.Styled.Attributes.id domId
-                  ,onFocus (InputHighlight call.id index)
+                  ,onFocus onFocusEvent
                   ,css [Css.fontFamily Css.monospace
-                       ,Css.fontSize (Css.pct (100*ViewVariables.inputFontSizePercent))
+                       ,Css.fontSize (Css.px ((toFloat h)*ViewVariables.inputFontSizePercent))
                        ,Css.width
                             (Css.pct 100)
                        ,Css.height
                             (Css.pct 100)
                        ,Css.boxSizing Css.borderBox
-                       ,Css.backgroundColor
-                            (case Dict.get str BuiltIn.builtInVariables of
-                                 Just val -> ViewVariables.textInputColorVariable
-                                 Nothing -> ViewVariables.textInputColor)
+                       ,Css.backgroundColor backgroundColor
                        ,Css.textAlign Css.center
                        ,Css.padding (px 0)
                        ,Css.border (px 2)]]
                   [])]
-
+        
+drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String -> (Svg Msg)
+drawTextInput call str events xpos inputPos ypos index domId =
+    svgTextInput
+        str
+        ((Tuple.first inputPos)+xpos)
+        (ypos - (ViewVariables.inputHeight//2))
+        (Tuple.second inputPos)
+        ViewVariables.inputHeight
+        (InputHighlight call.id index)
+        (InputUpdate call.id index)
+        (case Dict.get str BuiltIn.builtInVariables of
+             Just val -> ViewVariables.textInputColorVariable
+             Nothing -> ViewVariables.textInputColor)
+        events
+        domId
 
 nodeEvent xpos inputPos ypos event domId =
     Svg.foreignObject
@@ -168,6 +176,21 @@ svgRightClick msg =
     Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed msg))
 
 
+blockNameEvents call viewStructure =
+    if viewStructure.isToolbar
+    then
+        []
+    else
+        [(svgLeftClick (BlockNameClick call.id))]
+
+nodeEvents call viewStructure inputCounter =
+    if viewStructure.isToolbar
+    then
+        []
+    else
+        [(svgLeftClick (InputClick call.id inputCounter))
+        ,(svgRightClick (InputRightClick call.id inputCounter))]
+        
 -- shape for functionName objects
 drawBlock: Call -> ViewStructure -> (Svg Msg)
 drawBlock call viewStructure =
@@ -192,12 +215,20 @@ drawBlock call viewStructure =
                      , ry (String.fromInt ViewVariables.nodeRadius)
                      ]
                      []
-                , svgText ViewVariables.blockTextXPadding (ViewVariables.blockHeight // 2) call.functionName ViewVariables.blockTextHeight "white"
+                , (svgTextInput call.functionName ViewVariables.blockTextXPadding (ViewVariables.blockTextInputYpos)
+                       (blockPos.width - 2*ViewVariables.blockTextXPadding)
+                       (ViewVariables.blockTextInputHeight)
+                       (BlockNameHighlight call.id)
+                       (BlockNameUpdate call.id)
+                       Css.transparent
+                       (blockNameEvents call viewStructure)
+                       (Update.nodeNameId call.id))
                 ]
         Nothing ->
             errorSvgNode "function call without block pos"
-                        
 
+        
+                
 drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> ViewStructure -> Svg Msg
 drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routeOffset viewStructure =
     let otherBlockOutputX = otherBlockPos.xpos + (otherBlockPos.width // 2)

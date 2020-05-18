@@ -41,18 +41,18 @@ inputPadding = nodeRadius * 3
 inputSpacing = nodeRadius * 1
 
 
-               
 outputNodeY = blockHeight - nodeRadius
 
-inputHeight = floor ((toFloat nodeRadius) * 2.5)
+inputHeight = nodeRadius * 2
 
-inputFontSizePercent = 0.85
-charOverestimatePercent = 0.5
+inputFontSizePercent = 0.80
+charOverestimatePercent = 0.6
 characterOverestimate = (toFloat inputHeight) * inputFontSizePercent * charOverestimatePercent
 numCharactersToInputWidth numChars = floor (characterOverestimate * (toFloat (numChars+1)))
 
-blockTextHeight = floor ((toFloat blockHeight) * 0.4)
-blockCharacterOverestimate = (toFloat blockTextHeight) * charOverestimatePercent
+blockTextInputHeight = blockHeight - (4 * nodeRadius)
+blockTextInputYpos = nodeRadius*2
+blockCharacterOverestimate = (toFloat blockTextInputHeight) * inputFontSizePercent * charOverestimatePercent
 blockTextXPadding = floor blockCharacterOverestimate
 
 callTextBlockSize text =

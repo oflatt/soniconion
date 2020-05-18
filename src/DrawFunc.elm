@@ -50,13 +50,7 @@ drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlig
 
 drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
 drawInput call input blockPos inputCounter viewStructure =
-    let nodeEvents =
-            if viewStructure.isToolbar
-            then
-                []
-            else
-                [(SvgDraw.svgLeftClick (InputClick call.id inputCounter))
-                ,(SvgDraw.svgRightClick (InputRightClick call.id inputCounter))]
+    let nodeEvents = SvgDraw.nodeEvents call viewStructure inputCounter
         highlightEvent = (InputHighlight call.id inputCounter)
         inputStringId = nodeInputId call.id inputCounter
         isInputHighlighted =

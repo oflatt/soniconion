@@ -48,6 +48,7 @@ type Msg = MouseOver PageName
          | PlaySound
          | MouseMoved MousePos
          | MouseRelease
+
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
@@ -55,9 +56,13 @@ type Msg = MouseOver PageName
          | OutputHighlight Id
          | InputRightClick Id Int
          | OutputRightClick Id
+         | BlockNameHighlight Id
+         | BlockNameClick Id
+         | InputUpdate Id Int String
+         | BlockNameUpdate Id String
+           
          | SpawnBlock String -- when you click a block in the toolbar put it in hand
          | SetError String
-         | InputUpdate Id Int String
          | SilentDomError (Result Dom.Error ())
          | NoOp
 
@@ -106,6 +111,7 @@ type alias Call = {id: Id
 
 type MouseSelection = BlockSelected Id
                     | InputSelected Id Int -- id of block and index of input
+                    | NameSelected Id
                     | OutputSelected Id
                     | NoneSelected
 

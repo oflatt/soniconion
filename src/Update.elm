@@ -1,4 +1,4 @@
-port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange)
+port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId)
 import Debug exposing (log)
 
 import Task
@@ -58,6 +58,8 @@ nodeInputId callid inputindex =
     (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
 nodeOutputId callid =
     "o" ++ (String.fromInt callid)
+nodeNameId callid =
+    "n" ++ (String.fromInt callid)
         
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
@@ -76,9 +78,13 @@ inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
     inputHighlightModel model id index
 
-focusInputCommand id index =
-    (Dom.focus (nodeInputId id index) |> Task.attempt SilentDomError)
+blockNameClickModel : Model -> Id -> (Model, Cmd Msg)
+blockNameClickModel model id =
+    blockNameHighlightModel model id
 
+focusInputCommand domId =
+    (Dom.focus domId |> Task.attempt SilentDomError)
+        
 
 inputHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputHighlightModel model id index =
@@ -90,7 +96,19 @@ inputHighlightModel model id index =
         in
             ({model |
                   mouseState = newMouse}
-            ,focusInputCommand id index)
+            ,focusInputCommand (nodeInputId id index))
+
+blockNameHighlightModel : Model -> Id -> (Model, Cmd Msg)
+blockNameHighlightModel model id =
+    let oldMouse = model.mouseState
+    in
+        let
+            newMouse =
+                {oldMouse | mouseSelection = (NameSelected id)}
+        in
+            ({model |
+                  mouseState = newMouse}
+            ,focusInputCommand (nodeNameId id))
             
 outputRightClickModel : Model -> Id -> (Model, Cmd Msg)
 outputRightClickModel model id =
@@ -121,9 +139,12 @@ outputHighlightModel model id =
             
 inputUpdateModel model id index str =
     case str of
-        "" -> (updateInput model id index (\i -> Hole), focusInputCommand id index)
+        "" -> (updateInput model id index (\i -> Hole), focusInputCommand (nodeInputId id index))
         _  -> (updateInput model id index (\i -> (Text str)), Cmd.none) 
 
+blockNameUpdateModel model id str =
+    ModelHelpers.updateCall model id (\call -> {call | functionName = str}) 
+              
 modelNoneSelected model =
     let oldMouse = model.mouseState
         newMouse =
@@ -200,12 +221,11 @@ modelWithError model errorString =
         
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
-        NoneSelected -> (model, Cmd.none)
         BlockSelected id ->
             modelBlockDropped model id
+        _ -> (model, Cmd.none)
                             
-        InputSelected id index -> (model, Cmd.none)
-        OutputSelected id -> (model, Cmd.none)
+        
 
 playSoundResult : Model -> (Model, Cmd Msg)
 playSoundResult model =
@@ -229,7 +249,7 @@ keyboardUpdateInput model keyevent id index =
             if Char.isAlphaNum char
             then
                 (updateInput model id index (updateWithChar char),
-                focusInputCommand id index)
+                     focusInputCommand (nodeInputId id index))
             else (model, Cmd.none)
         _ -> (model, Cmd.none)
 
@@ -330,6 +350,15 @@ update msg model =
         OutputRightClick id ->
             (outputRightClickModel model id)
 
+        BlockNameClick id ->
+            blockNameClickModel model id
+
+        BlockNameHighlight id ->
+            blockNameHighlightModel model id
+
+        BlockNameUpdate id str ->
+            blockNameUpdateModel model id str
+                
         SpawnBlock name ->
             spawnBlockModel model name
                 
