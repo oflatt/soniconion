@@ -65,7 +65,7 @@ byOutput idToPos element =
         Nothing -> 100 -- todo throw error
     
             
-getOutputOrdering : Function -> IdToPos -> OutputOrdering
+getOutputOrdering : List Call -> IdToPos -> OutputOrdering
 getOutputOrdering func idToPos =
     List.sortBy (byOutput idToPos) (List.concatMap getCallOrderedInputs func)
         
@@ -153,8 +153,8 @@ buildLineRouting fArray ordering outputBurdenLeft outputBurdenRight lineRouting 
 getLineRouting : Function -> LineRouting
 getLineRouting func =
     let idToPos = idToPosition func Dict.empty 0
-        ordering = getOutputOrdering func idToPos
-        funcArray = Array.fromList func
+        ordering = getOutputOrdering func.calls idToPos
+        funcArray = Array.fromList func.calls
     in
         buildLineRouting funcArray ordering Dict.empty Dict.empty Dict.empty idToPos True
     

@@ -16,7 +16,7 @@ import Result exposing (andThen)
 
 type alias IdToIndex = Dict Id Int
 
-makeIdToIndex : Function -> Dict Id Int -> Int -> Dict Id Int
+makeIdToIndex : List Call -> Dict Id Int -> Int -> Dict Id Int
 makeIdToIndex func dict index =
     case func of
         [] -> dict
@@ -92,7 +92,7 @@ callToExpr call idToIndex =
             Err "Not a built in function"
 
 
-functionToMethod : Function -> IdToIndex -> Result Error Method
+functionToMethod : List Call -> IdToIndex -> Result Error Method
 functionToMethod function idToIndex =
     case function of
         [] -> Ok []
@@ -108,7 +108,7 @@ onionToCompModel onion =
     case onion of
         [] -> Ok []
         (f::fs) ->
-            case functionToMethod f (makeIdToIndex f Dict.empty 0) of
+            case functionToMethod f.calls (makeIdToIndex f.calls Dict.empty 0) of
                 Ok method ->
                     case onionToCompModel fs of
                         Ok rest -> Ok (method :: rest)

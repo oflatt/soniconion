@@ -267,12 +267,12 @@ keyboardUpdate model keyevent =
         _ -> (model, Cmd.none)
 
 spawnBlockFunc func call =
-    call :: func
+    {func | calls=(call::func.calls)}
              
 spawnBlockProgram : Onion -> Call -> Onion
 spawnBlockProgram onion call =
     case onion of
-        [] -> [[call]]
+        [] -> [(Function "main" [call])]
         (func::funcs) -> (spawnBlockFunc func call) :: funcs
 
 spawnBlockModel : Model -> String -> (Model, Cmd Msg)

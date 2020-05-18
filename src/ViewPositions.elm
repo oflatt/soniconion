@@ -125,7 +125,7 @@ makeBlockPosition xpos ypos call shouldCenterX =
         (BlockPosition blockXpos ypos blockW inputPositions)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Id -> Maybe MovedBlockInfo -> Function -> Int -> BlockPositions
+getAllBlockPositions: Id -> Maybe MovedBlockInfo -> List Call -> Int -> BlockPositions
 getAllBlockPositions idToSkip maybeMoveInfo func currentY =
     let iterate = (\call calls ->
                        Dict.insert call.id (makeBlockPosition 0 (currentY+(callLinesSpace call)) call False)
@@ -155,12 +155,12 @@ getAllBlockPositions idToSkip maybeMoveInfo func currentY =
                       
 getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
-    let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
+    let moveInfo = getMovedInfo func.calls mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         idToSkip =
             case moveInfo of
                 Just info -> info.movedCall.id
                 Nothing -> -1
-        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func 0
+        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func.calls 0
     in
         case moveInfo of
             Just info -> (Dict.insert
@@ -170,7 +170,7 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset
             Nothing -> positionsWithoutMoved
 
 makeSortedFunc func blockPositions =
-    List.sortBy (blockSorter blockPositions) func
+    List.sortBy (blockSorter blockPositions) func.calls
 
 blockSorter blockPositions call =
     case Dict.get call.id blockPositions of
@@ -193,7 +193,7 @@ getMaxBlockBottom blockPositions =
                     
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
-        sortedFunc = makeSortedFunc func blockPositions
+        sortedFunc = {func | calls=(makeSortedFunc func blockPositions)}
         lineRouting = getLineRouting sortedFunc
         maxWidth = getMaxBlockWidth blockPositions
         funcHeight = getMaxBlockBottom blockPositions

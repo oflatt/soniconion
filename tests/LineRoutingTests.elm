@@ -23,7 +23,7 @@ outputOrderingTest =
         [test "complexRoutingOrdering"
              (\_ ->
                   Expect.equal
-                  (LineRouting.getOutputOrdering TestModel.complexRoutingFunc
+                  (LineRouting.getOutputOrdering TestModel.complexRoutingFunc.calls
                        (ModelHelpers.idToPosition TestModel.complexRoutingFunc Dict.empty 0))
                   [(LineRouting.InputInfo complex4 1 complex3.id)
                   ,(LineRouting.InputInfo complex3 0 complex1.id)
@@ -50,7 +50,7 @@ listToLineRoute nested function =
 testLineRoute : List (List (Maybe Int)) -> Function -> (b -> Expectation)
 testLineRoute route testFunction =
     (myexpect (getLineRouting testFunction)
-         (listToLineRoute route testFunction))
+         (listToLineRoute route testFunction.calls))
 
 getLineRoutingTest : Test
 getLineRoutingTest =

@@ -14,10 +14,11 @@ import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBloc
                 
 
 blockPositionToYpos blockPos = blockPos.ypos
-        
+
+callBlockPositions : Function -> MouseState -> Result String (List Int)
 callBlockPositions testFunc mouse =
     Result.map (List.map blockPositionToYpos)
-        (ViewPositions.blockPositionsToPositionList testFunc
+        (ViewPositions.blockPositionsToPositionList testFunc.calls
              (ViewPositions.getViewStructure testFunc
                   mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 False).blockPositions)
 
@@ -64,7 +65,7 @@ movedInfoTest =
     describe "getMovedInfo"
         [test "test select second to last"
              (myexpect
-                  (ViewPositions.getMovedInfo TestModel.complexRoutingFunc secondToLastMouse
+                  (ViewPositions.getMovedInfo TestModel.complexRoutingFunc.calls secondToLastMouse
                        (ViewPositions.mouseToSvgCoordinates secondToLastMouse
                             (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight 0 0))
                   (Just (ViewPositions.MovedBlockInfo TestModel.secondToLastSine

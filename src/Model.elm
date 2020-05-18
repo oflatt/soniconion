@@ -92,7 +92,8 @@ type Input = Output Id
            | Hole
 
 type alias Onion = List Function
-type alias Function = List Call    
+type alias Function = { name: String
+                      , calls: List Call}
 
 
 
@@ -149,7 +150,7 @@ type alias Flags = {innerWindowWidth : Int,
 
        
 initialProgram : Onion
-initialProgram = [[]]
+initialProgram = [(Function "main" [])]
 
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model

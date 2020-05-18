@@ -81,13 +81,13 @@ callFromSpec spec id =
     constructCall id spec.functionName
 
 -- a function containing calls to all the functions for use in drawing
-makeAllFunction : BuiltInList -> Int -> Function
+makeAllFunction : BuiltInList -> Int -> List Call
 makeAllFunction builtInList counter =
     case builtInList of
         [] -> []
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = makeAllFunction builtInFunctionList -100
+allBuiltInAsFunction = (Function "allBuiltIn" (makeAllFunction builtInFunctionList -100))
 
 callWithHoles id name numHoles =
     Call id (List.repeat numHoles Hole) name ""

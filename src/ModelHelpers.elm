@@ -9,12 +9,15 @@ import BuiltIn exposing (builtInFunctions, ArgList(..))
 type alias IdToPos = Dict Id Int
 
 idToPosition func dict pos =
+    idToPositionCalls func.calls dict pos
+
+idToPositionCalls func dict pos =
     case func of
         [] -> dict
-        (e::es) -> idToPosition es
-                   (Dict.insert e.id pos dict)
-                   (pos + 1)                                
-
+        (e::es) -> (idToPositionCalls es
+                        (Dict.insert e.id pos dict)
+                        (pos + 1))
+ 
 eliminateHoles inputs =
     case inputs of
         [] -> [Hole]
@@ -74,7 +77,7 @@ updateInputOnion : Onion -> Id -> Int -> (Input -> Input) -> Onion
 updateInputOnion onion id index inputFunc =
     case onion of
         [] -> []
-        (func::funcs) -> fixInvalidInputs (updateInputFunc func id index inputFunc) :: updateInputOnion funcs id index inputFunc
+        (func::funcs) -> fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} :: updateInputOnion funcs id index inputFunc
     
                         
 updateInput : Model -> Id -> Int -> (Input -> Input)  -> Model
@@ -95,7 +98,7 @@ updateCallIfMatchesId call callFunc id =
     then (callFunc call)
     else call
         
-updateCallFunc : Function -> Id -> (Call -> Call) -> Function
+updateCallFunc : List Call -> Id -> (Call -> Call) -> List Call
 updateCallFunc func id callFunc =
     case func of
         [] -> []
@@ -105,7 +108,7 @@ updateCallOnion : Onion -> Id -> (Call -> Call) -> Onion
 updateCallOnion onion id callFunc =
     case onion of
         [] -> []
-        (func::funcs) -> (updateCallFunc func id callFunc) :: (updateCallOnion funcs id callFunc)
+        (func::funcs) -> {func | calls=(updateCallFunc func.calls id callFunc)} :: (updateCallOnion funcs id callFunc)
                
 
 updateCall : Model -> Id -> (Call -> Call) -> (Model, Cmd Msg)
@@ -142,8 +145,9 @@ fixInvalidInputsHelper func idToPos currentIndex =
         [] -> []
         (call::calls) ->
             (fixCallInputs call idToPos currentIndex) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1)
- 
+
+fixInvalidInputs : Function -> Function
 fixInvalidInputs func =
     let idToPos = idToPosition func Dict.empty 0
     in
-        fixInvalidInputsHelper func idToPos 0
+        {func | calls = (fixInvalidInputsHelper func.calls idToPos 0)}

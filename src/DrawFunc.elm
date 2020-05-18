@@ -157,18 +157,24 @@ drawFuncEndings func blockPositions mouseState =
         [] -> []
         (call::calls) ->
             (drawCallEnding call blockPositions mouseState) :: (drawFuncEndings calls blockPositions mouseState)
-                        
+
+drawFuncCalls : List Call -> ViewStructure -> Int -> List (Svg Msg)
+drawFuncCalls func viewStructure counter =
+  case func of
+    [] -> []
+    (call::calls) -> (drawCall call counter viewStructure) :: (drawFuncCalls calls viewStructure (counter + 1))  
+                
 -- function for drawing function records
 drawFunc: Function -> ViewStructure -> Int -> List (Svg Msg)
 drawFunc func viewStructure counter =
-  case func of
-    [] -> []
-    (call::calls) -> (drawCall call counter viewStructure) :: (drawFunc calls viewStructure (counter + 1))
+  drawFuncCalls func.calls viewStructure counter
 
+
+                     
 drawFuncWithConnections: ViewStructure -> MouseState -> Svg Msg
 drawFuncWithConnections viewStructure mouseState =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.funcxoffset viewStructure.funcyoffset]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
-        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure mouseState)
-        ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc viewStructure.blockPositions mouseState)]
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc.calls viewStructure mouseState)
+        ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc.calls viewStructure.blockPositions mouseState)]

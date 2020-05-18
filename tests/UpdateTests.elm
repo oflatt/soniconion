@@ -20,7 +20,7 @@ fixInvalidInputs =
                          testFunction))
         ,test "fix play"
             (\_ ->
-                 (Expect.equal (ModelHelpers.fixInvalidInputs testInvalidFunction)
+                 (Expect.equal (ModelHelpers.fixInvalidInputs testInvalidFunction).calls
                       [sine, sine2, plusWithHole, join]))]
                 
 
