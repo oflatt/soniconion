@@ -11664,6 +11664,9 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 };
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
 var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
 	return {$: 'MayPreventDefault', a: a};
 };
@@ -11675,31 +11678,48 @@ var $elm$html$Html$Events$preventDefaultOn = F2(
 			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
 	});
 var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
-var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $author$project$SvgDraw$createLeftDecoder = F2(
-	function (msg, button) {
-		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
+var $author$project$SvgDraw$createLeftDecoder = F3(
+	function (msgLeft, msgRight, button) {
+		switch (button) {
+			case 0:
+				return $elm$json$Json$Decode$succeed(msgLeft);
+			case 2:
+				return $elm$json$Json$Decode$succeed(msgRight);
+			default:
+				return $elm$json$Json$Decode$succeed(msgLeft);
+		}
 	});
-var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		$author$project$SvgDraw$createLeftDecoder(msg),
-		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-};
-var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$author$project$SvgDraw$alwaysPreventDefault,
-		$author$project$SvgDraw$checkLeftDecoder(msg));
-};
-var $author$project$SvgDraw$svgLeftClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'mousedown',
-		$author$project$SvgDraw$svgLeftDecoder(msg));
-};
+var $author$project$SvgDraw$checkLeftDecoder = F2(
+	function (msgLeft, msgRight) {
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			A2($author$project$SvgDraw$createLeftDecoder, msgLeft, msgRight),
+			A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+	});
+var $author$project$SvgDraw$svgClickPrevent = F2(
+	function (msgLeft, msgRight) {
+		return A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			A2($author$project$SvgDraw$checkLeftDecoder, msgLeft, msgRight));
+	});
+var $author$project$SvgDraw$svgClickEvents = F2(
+	function (leftClickEvent, rightClickEvent) {
+		return _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'contextmenu',
+				A2(
+					$elm$json$Json$Decode$map,
+					$author$project$SvgDraw$alwaysPreventDefault,
+					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
+				A2(
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'mousedown',
+				A2($author$project$SvgDraw$svgClickPrevent, leftClickEvent, rightClickEvent))
+			]);
+	});
 var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var $author$project$SvgDraw$svgTranslate = F2(
 	function (xpos, ypos) {
@@ -11713,26 +11733,31 @@ var $author$project$SvgDraw$drawBlock = F2(
 			var blockPos = _v0.a;
 			return A2(
 				$elm$svg$Svg$rect,
-				_List_fromArray(
-					[
-						A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
-						viewStructure.isToolbar ? $author$project$SvgDraw$svgLeftClick(
-						$author$project$Model$SpawnBlock(call.functionName)) : $author$project$SvgDraw$svgLeftClick(
+				_Utils_ap(
+					viewStructure.isToolbar ? A2(
+						$author$project$SvgDraw$svgClickEvents,
+						$author$project$Model$SpawnBlock(call.functionName),
+						$author$project$Model$SpawnBlock(call.functionName)) : A2(
+						$author$project$SvgDraw$svgClickEvents,
+						$author$project$Model$BlockClick(call.id),
 						$author$project$Model$BlockClick(call.id)),
-						$elm$svg$Svg$Attributes$x('0'),
-						$elm$svg$Svg$Attributes$y(
-						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-						$elm$svg$Svg$Attributes$width(
-						$elm$core$String$fromInt(blockPos.width)),
-						$elm$svg$Svg$Attributes$height(
-						$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
-						$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-						$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
-						$elm$svg$Svg$Attributes$rx(
-						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-						$elm$svg$Svg$Attributes$ry(
-						$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-					]),
+					_List_fromArray(
+						[
+							A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
+							$elm$svg$Svg$Attributes$x('0'),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromInt(blockPos.width)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
+							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$rx(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$ry(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
+						])),
 				_List_Nil);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
@@ -11789,15 +11814,6 @@ var $author$project$SvgDraw$drawNode = F5(
 			_List_Nil);
 	});
 var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
-var $author$project$SvgDraw$svgRightClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'contextmenu',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$SvgDraw$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
 var $author$project$DrawFunc$drawCallEnding = F3(
 	function (call, blockPositions, mouseState) {
 		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
@@ -11817,13 +11833,10 @@ var $author$project$DrawFunc$drawCallEnding = F3(
 				blockPos.xpos,
 				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
 				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
-				_List_fromArray(
-					[
-						$author$project$SvgDraw$svgLeftClick(
-						$author$project$Model$OutputClick(call.id)),
-						$author$project$SvgDraw$svgRightClick(
-						$author$project$Model$OutputRightClick(call.id))
-					]),
+				A2(
+					$author$project$SvgDraw$svgClickEvents,
+					$author$project$Model$OutputClick(call.id),
+					$author$project$Model$OutputRightClick(call.id)),
 				isOutputHighlighted);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
@@ -11855,13 +11868,40 @@ var $author$project$Model$BlockNameUpdate = F2(
 var $author$project$Model$BlockNameClick = function (a) {
 	return {$: 'BlockNameClick', a: a};
 };
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$svg$Svg$Events$on = $elm$html$Html$Events$on;
+var $author$project$SvgDraw$svgClickWithDefault = F2(
+	function (leftClickEvent, rightClickEvent) {
+		return _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'contextmenu',
+				A2(
+					$elm$json$Json$Decode$map,
+					$author$project$SvgDraw$alwaysPreventDefault,
+					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
+				A2(
+				$elm$svg$Svg$Events$on,
+				'mousedown',
+				A2($author$project$SvgDraw$checkLeftDecoder, leftClickEvent, rightClickEvent))
+			]);
+	});
 var $author$project$SvgDraw$blockNameEvents = F2(
 	function (call, viewStructure) {
-		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
-			[
-				$author$project$SvgDraw$svgLeftClick(
-				$author$project$Model$BlockNameClick(call.id))
-			]);
+		return viewStructure.isToolbar ? A2(
+			$author$project$SvgDraw$svgClickEvents,
+			$author$project$Model$SpawnBlock(call.functionName),
+			$author$project$Model$SpawnBlock(call.functionName)) : A2(
+			$author$project$SvgDraw$svgClickWithDefault,
+			$author$project$Model$BlockNameClick(call.id),
+			$author$project$Model$BlockClick(call.id));
 	});
 var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
 var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
@@ -12670,20 +12710,10 @@ var $author$project$Model$InputRightClick = F2(
 	});
 var $author$project$SvgDraw$nodeEvents = F3(
 	function (call, viewStructure, inputCounter) {
-		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
-			[
-				$author$project$SvgDraw$svgLeftClick(
-				A2($author$project$Model$InputClick, call.id, inputCounter)),
-				$author$project$SvgDraw$svgRightClick(
-				A2($author$project$Model$InputRightClick, call.id, inputCounter))
-			]);
-	});
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+		return viewStructure.isToolbar ? _List_Nil : A2(
+			$author$project$SvgDraw$svgClickEvents,
+			A2($author$project$Model$InputClick, call.id, inputCounter),
+			A2($author$project$Model$InputRightClick, call.id, inputCounter));
 	});
 var $elm$svg$Svg$Events$onMouseDown = function (msg) {
 	return A2(
@@ -12891,16 +12921,18 @@ var $author$project$DrawProgram$drawProgram = F4(
 		return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
 			A2(
 				$elm$svg$Svg$svg,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$width(
-						$elm$core$String$fromInt(svgWindowWidth)),
-						$elm$svg$Svg$Attributes$height(
-						$elm$core$String$fromInt(actualWindowHeight)),
-						$elm$svg$Svg$Attributes$viewBox(
-						'0 0 ' + A2($author$project$ViewPositions$createViewboxDimensions, viewportWidth, actualViewportHeight)),
-						$elm$svg$Svg$Attributes$display('inline-block')
-					]),
+				_Utils_ap(
+					A2($author$project$SvgDraw$svgClickEvents, $author$project$Model$NoOp, $author$project$Model$NoOp),
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromInt(svgWindowWidth)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt(actualWindowHeight)),
+							$elm$svg$Svg$Attributes$viewBox(
+							'0 0 ' + A2($author$project$ViewPositions$createViewboxDimensions, viewportWidth, actualViewportHeight)),
+							$elm$svg$Svg$Attributes$display('inline-block')
+						])),
 				A2($elm$core$List$cons, drawnToolbar.b, drawnOnion.b)));
 	});
 var $author$project$View$programPage = function (model) {
