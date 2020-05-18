@@ -5203,8 +5203,14 @@ var $author$project$Model$getindexurl = function (url) {
 		$elm$core$String$length(str) - $elm$core$String$length(url.path),
 		str);
 };
+var $author$project$Model$Function = F2(
+	function (name, calls) {
+		return {calls: calls, name: name};
+	});
 var $author$project$Model$initialProgram = _List_fromArray(
-	[_List_Nil]);
+	[
+		A2($author$project$Model$Function, 'main', _List_Nil)
+	]);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$List$any = F2(
@@ -6165,7 +6171,11 @@ var $author$project$ModelHelpers$updateCallOnion = F3(
 			var funcs = onion.b;
 			return A2(
 				$elm$core$List$cons,
-				A3($author$project$ModelHelpers$updateCallFunc, func, id, callFunc),
+				_Utils_update(
+					func,
+					{
+						calls: A3($author$project$ModelHelpers$updateCallFunc, func.calls, id, callFunc)
+					}),
 				A3($author$project$ModelHelpers$updateCallOnion, funcs, id, callFunc));
 		}
 	});
@@ -6364,9 +6374,9 @@ var $author$project$ModelHelpers$fixInvalidInputsHelper = F3(
 				A3($author$project$ModelHelpers$fixInvalidInputsHelper, calls, idToPos, currentIndex + 1));
 		}
 	});
-var $author$project$ModelHelpers$idToPosition = F3(
+var $author$project$ModelHelpers$idToPositionCalls = F3(
 	function (func, dict, pos) {
-		idToPosition:
+		idToPositionCalls:
 		while (true) {
 			if (!func.b) {
 				return dict;
@@ -6379,13 +6389,21 @@ var $author$project$ModelHelpers$idToPosition = F3(
 				func = $temp$func;
 				dict = $temp$dict;
 				pos = $temp$pos;
-				continue idToPosition;
+				continue idToPositionCalls;
 			}
 		}
 	});
+var $author$project$ModelHelpers$idToPosition = F3(
+	function (func, dict, pos) {
+		return A3($author$project$ModelHelpers$idToPositionCalls, func.calls, dict, pos);
+	});
 var $author$project$ModelHelpers$fixInvalidInputs = function (func) {
 	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
-	return A3($author$project$ModelHelpers$fixInvalidInputsHelper, func, idToPos, 0);
+	return _Utils_update(
+		func,
+		{
+			calls: A3($author$project$ModelHelpers$fixInvalidInputsHelper, func.calls, idToPos, 0)
+		});
 };
 var $author$project$BuiltIn$BuiltInSpec = F3(
 	function (functionName, argList, compileExprFunction) {
@@ -6785,7 +6803,11 @@ var $author$project$ModelHelpers$updateInputOnion = F4(
 			return A2(
 				$elm$core$List$cons,
 				$author$project$ModelHelpers$fixInvalidInputs(
-					A4($author$project$ModelHelpers$updateInputFunc, func, id, index, inputFunc)),
+					_Utils_update(
+						func,
+						{
+							calls: A4($author$project$ModelHelpers$updateInputFunc, func.calls, id, index, inputFunc)
+						})),
 				A4($author$project$ModelHelpers$updateInputOnion, funcs, id, index, inputFunc));
 		}
 	});
@@ -7180,7 +7202,7 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
 		var moveInfo = A3(
 			$author$project$ViewPositions$getMovedInfo,
-			func,
+			func.calls,
 			mouseState,
 			A5($author$project$ViewPositions$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset));
 		var idToSkip = function () {
@@ -7191,7 +7213,7 @@ var $author$project$ViewPositions$getBlockPositions = F6(
 				return -1;
 			}
 		}();
-		var positionsWithoutMoved = A4($author$project$ViewPositions$getAllBlockPositions, idToSkip, moveInfo, func, 0);
+		var positionsWithoutMoved = A4($author$project$ViewPositions$getAllBlockPositions, idToSkip, moveInfo, func.calls, 0);
 		if (moveInfo.$ === 'Just') {
 			var info = moveInfo.a;
 			return A3(
@@ -7980,8 +8002,8 @@ var $author$project$LineRouting$getOutputOrdering = F2(
 	});
 var $author$project$LineRouting$getLineRouting = function (func) {
 	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
-	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
-	var funcArray = $elm$core$Array$fromList(func);
+	var ordering = A2($author$project$LineRouting$getOutputOrdering, func.calls, idToPos);
+	var funcArray = $elm$core$Array$fromList(func.calls);
 	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
 };
 var $author$project$ViewPositions$getMaxBlockBottom = function (blockPositions) {
@@ -8019,14 +8041,18 @@ var $author$project$ViewPositions$makeSortedFunc = F2(
 		return A2(
 			$elm$core$List$sortBy,
 			$author$project$ViewPositions$blockSorter(blockPositions),
-			func);
+			func.calls);
 	});
 var $author$project$ViewPositions$getViewStructure = F7(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, isToolbar) {
 		var blockPositions = A6($author$project$ViewPositions$getBlockPositions, func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset);
 		var funcHeight = $author$project$ViewPositions$getMaxBlockBottom(blockPositions);
 		var maxWidth = $author$project$ViewPositions$getMaxBlockWidth(blockPositions);
-		var sortedFunc = A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions);
+		var sortedFunc = _Utils_update(
+			func,
+			{
+				calls: A2($author$project$ViewPositions$makeSortedFunc, func, blockPositions)
+			});
 		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
 		return A9($author$project$ViewPositions$ViewStructure, blockPositions, lineRouting, sortedFunc, xoffset, yoffset, maxWidth, funcHeight, mouseState, isToolbar);
 	});
@@ -9098,8 +9124,8 @@ var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
 		var fs = onion.b;
 		var _v1 = A2(
 			$author$project$Compiler$OnionToExpr$functionToMethod,
-			f,
-			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f, $elm$core$Dict$empty, 0));
+			f.calls,
+			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f.calls, $elm$core$Dict$empty, 0));
 		if (_v1.$ === 'Ok') {
 			var method = _v1.a;
 			var _v2 = $author$project$Compiler$OnionToExpr$onionToCompModel(fs);
@@ -9206,15 +9232,22 @@ var $author$project$BuiltIn$constructCall = F2(
 	});
 var $author$project$Update$spawnBlockFunc = F2(
 	function (func, call) {
-		return A2($elm$core$List$cons, call, func);
+		return _Utils_update(
+			func,
+			{
+				calls: A2($elm$core$List$cons, call, func.calls)
+			});
 	});
 var $author$project$Update$spawnBlockProgram = F2(
 	function (onion, call) {
 		if (!onion.b) {
 			return _List_fromArray(
 				[
+					A2(
+					$author$project$Model$Function,
+					'main',
 					_List_fromArray(
-					[call])
+						[call]))
 				]);
 		} else {
 			var func = onion.a;
@@ -11771,7 +11804,7 @@ var $author$project$DrawFunc$drawCall = F3(
 	function (call, counter, viewStructure) {
 		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
 	});
-var $author$project$DrawFunc$drawFunc = F3(
+var $author$project$DrawFunc$drawFuncCalls = F3(
 	function (func, viewStructure, counter) {
 		if (!func.b) {
 			return _List_Nil;
@@ -11781,8 +11814,12 @@ var $author$project$DrawFunc$drawFunc = F3(
 			return A2(
 				$elm$core$List$cons,
 				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
-				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
+				A3($author$project$DrawFunc$drawFuncCalls, calls, viewStructure, counter + 1));
 		}
+	});
+var $author$project$DrawFunc$drawFunc = F3(
+	function (func, viewStructure, counter) {
+		return A3($author$project$DrawFunc$drawFuncCalls, func.calls, viewStructure, counter);
 	});
 var $author$project$Model$OutputClick = function (a) {
 	return {$: 'OutputClick', a: a};
@@ -12849,11 +12886,11 @@ var $author$project$DrawFunc$drawFuncWithConnections = F2(
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
-					A3($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc, viewStructure, mouseState)),
+					A3($author$project$DrawFunc$drawFuncInputs, viewStructure.sortedFunc.calls, viewStructure, mouseState)),
 					A2(
 					$elm$svg$Svg$g,
 					_List_Nil,
-					A3($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc, viewStructure.blockPositions, mouseState))
+					A3($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc.calls, viewStructure.blockPositions, mouseState))
 				]));
 	});
 var $author$project$DrawProgram$drawOnion = F4(
@@ -12898,7 +12935,10 @@ var $author$project$BuiltIn$makeAllFunction = F2(
 				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
 		}
 	});
-var $author$project$BuiltIn$allBuiltInAsFunction = A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100);
+var $author$project$BuiltIn$allBuiltInAsFunction = A2(
+	$author$project$Model$Function,
+	'allBuiltIn',
+	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100));
 var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
 		var viewStructure = A7($author$project$ViewPositions$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, true);
