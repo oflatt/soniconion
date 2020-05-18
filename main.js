@@ -6080,6 +6080,120 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$Model$BlockSelected = function (a) {
 	return {$: 'BlockSelected', a: a};
 };
+var $author$project$Model$NameSelected = function (a) {
+	return {$: 'NameSelected', a: a};
+};
+var $author$project$Model$SilentDomError = function (a) {
+	return {$: 'SilentDomError', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var $author$project$Update$focusInputCommand = function (domId) {
+	return A2(
+		$elm$core$Task$attempt,
+		$author$project$Model$SilentDomError,
+		$elm$browser$Browser$Dom$focus(domId));
+};
+var $author$project$Update$nodeNameId = function (callid) {
+	return 'n' + $elm$core$String$fromInt(callid);
+};
+var $author$project$Update$blockNameHighlightModel = F2(
+	function (model, id) {
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$NameSelected(id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$nodeNameId(id)));
+	});
+var $author$project$Update$blockNameClickModel = F2(
+	function (model, id) {
+		return A2($author$project$Update$blockNameHighlightModel, model, id);
+	});
+var $author$project$ModelHelpers$updateCallIfMatchesId = F3(
+	function (call, callFunc, id) {
+		return _Utils_eq(call.id, id) ? callFunc(call) : call;
+	});
+var $author$project$ModelHelpers$updateCallFunc = F3(
+	function (func, id, callFunc) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$ModelHelpers$updateCallIfMatchesId, call, callFunc, id),
+				A3($author$project$ModelHelpers$updateCallFunc, calls, id, callFunc));
+		}
+	});
+var $author$project$ModelHelpers$updateCallOnion = F3(
+	function (onion, id, callFunc) {
+		if (!onion.b) {
+			return _List_Nil;
+		} else {
+			var func = onion.a;
+			var funcs = onion.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$ModelHelpers$updateCallFunc, func, id, callFunc),
+				A3($author$project$ModelHelpers$updateCallOnion, funcs, id, callFunc));
+		}
+	});
+var $author$project$ModelHelpers$updateCall = F3(
+	function (model, id, callFunc) {
+		var oldMouse = model.mouseState;
+		var newOnion = A3($author$project$ModelHelpers$updateCallOnion, model.program, id, callFunc);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{mouseSelection: $author$project$Model$NoneSelected});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newOnion}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$blockNameUpdateModel = F3(
+	function (model, id, str) {
+		return A3(
+			$author$project$ModelHelpers$updateCall,
+			model,
+			id,
+			function (call) {
+				return _Utils_update(
+					call,
+					{functionName: str});
+			});
+	});
 var $elm$url$Url$Builder$toQueryPair = function (_v0) {
 	var key = _v0.a;
 	var value = _v0.b;
@@ -6137,45 +6251,9 @@ var $author$project$Model$InputSelected = F2(
 	function (a, b) {
 		return {$: 'InputSelected', a: a, b: b};
 	});
-var $author$project$Model$SilentDomError = function (a) {
-	return {$: 'SilentDomError', a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
-	});
-var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
 var $author$project$Update$nodeInputId = F2(
 	function (callid, inputindex) {
 		return $elm$core$String$fromInt(callid) + ('-' + $elm$core$String$fromInt(inputindex));
-	});
-var $author$project$Update$focusInputCommand = F2(
-	function (id, index) {
-		return A2(
-			$elm$core$Task$attempt,
-			$author$project$Model$SilentDomError,
-			$elm$browser$Browser$Dom$focus(
-				A2($author$project$Update$nodeInputId, id, index)));
 	});
 var $author$project$Update$inputHighlightModel = F3(
 	function (model, id, index) {
@@ -6189,7 +6267,8 @@ var $author$project$Update$inputHighlightModel = F3(
 			_Utils_update(
 				model,
 				{mouseState: newMouse}),
-			A2($author$project$Update$focusInputCommand, id, index));
+			$author$project$Update$focusInputCommand(
+				A2($author$project$Update$nodeInputId, id, index)));
 	});
 var $author$project$Update$inputClickModel = F3(
 	function (model, id, index) {
@@ -6755,7 +6834,8 @@ var $author$project$Update$inputUpdateModel = F4(
 					function (i) {
 						return $author$project$Model$Hole;
 					}),
-				A2($author$project$Update$focusInputCommand, id, index));
+				$author$project$Update$focusInputCommand(
+					A2($author$project$Update$nodeInputId, id, index)));
 		} else {
 			return _Utils_Tuple2(
 				A4(
@@ -6806,7 +6886,8 @@ var $author$project$Update$keyboardUpdateInput = F4(
 					id,
 					index,
 					$author$project$Update$updateWithChar(_char)),
-				A2($author$project$Update$focusInputCommand, id, index)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				$author$project$Update$focusInputCommand(
+					A2($author$project$Update$nodeInputId, id, index))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -6879,9 +6960,11 @@ var $author$project$ViewPositions$BlockPosition = F4(
 	function (xpos, ypos, width, inputPositions) {
 		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
 	});
-var $author$project$ViewVariables$blockTextHeight = $elm$core$Basics$floor($author$project$ViewVariables$blockHeight * 0.4);
-var $author$project$ViewVariables$charOverestimatePercent = 0.5;
-var $author$project$ViewVariables$blockCharacterOverestimate = $author$project$ViewVariables$blockTextHeight * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
+var $author$project$ViewVariables$blockTextInputHeight = $author$project$ViewVariables$blockHeight - (4 * $author$project$ViewVariables$nodeRadius);
+var $author$project$ViewVariables$charOverestimatePercent = 0.6;
+var $author$project$ViewVariables$inputFontSizePercent = 0.80;
+var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
 var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
 var $author$project$ViewVariables$callTextBlockSize = function (text) {
 	return $elm$core$Basics$floor(
@@ -6930,10 +7013,8 @@ var $author$project$ViewPositions$getBlockWidth = F2(
 			$author$project$ViewPositions$inputPositionsMax(inputPositions),
 			$author$project$ViewVariables$callTextBlockSize(call.functionName));
 	});
-var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
 var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
-var $author$project$ViewVariables$inputFontSizePercent = 0.85;
-var $author$project$ViewVariables$inputHeight = $elm$core$Basics$floor($author$project$ViewVariables$nodeRadius * 2.5);
+var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
 var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
 var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
 	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
@@ -8005,19 +8086,11 @@ var $author$project$Update$modelBlockDropped = F2(
 	});
 var $author$project$Update$modelMouseRelease = function (model) {
 	var _v0 = model.mouseState.mouseSelection;
-	switch (_v0.$) {
-		case 'NoneSelected':
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		case 'BlockSelected':
-			var id = _v0.a;
-			return A2($author$project$Update$modelBlockDropped, model, id);
-		case 'InputSelected':
-			var id = _v0.a;
-			var index = _v0.b;
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		default:
-			var id = _v0.a;
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	if (_v0.$ === 'BlockSelected') {
+		var id = _v0.a;
+		return A2($author$project$Update$modelBlockDropped, model, id);
+	} else {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	}
 };
 var $author$project$Model$ErrorBox = function (error) {
@@ -9250,6 +9323,16 @@ var $author$project$Update$update = F2(
 			case 'OutputRightClick':
 				var id = msg.a;
 				return A2($author$project$Update$outputRightClickModel, model, id);
+			case 'BlockNameClick':
+				var id = msg.a;
+				return A2($author$project$Update$blockNameClickModel, model, id);
+			case 'BlockNameHighlight':
+				var id = msg.a;
+				return A2($author$project$Update$blockNameHighlightModel, model, id);
+			case 'BlockNameUpdate':
+				var id = msg.a;
+				var str = msg.b;
+				return A3($author$project$Update$blockNameUpdateModel, model, id, str);
 			case 'SpawnBlock':
 				var name = msg.a;
 				return A2($author$project$Update$spawnBlockModel, model, name);
@@ -11522,10 +11605,65 @@ var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
 var $author$project$Model$BlockClick = function (a) {
 	return {$: 'BlockClick', a: a};
 };
+var $author$project$Model$BlockNameHighlight = function (a) {
+	return {$: 'BlockNameHighlight', a: a};
+};
+var $author$project$Model$BlockNameUpdate = F2(
+	function (a, b) {
+		return {$: 'BlockNameUpdate', a: a, b: b};
+	});
 var $author$project$Model$SpawnBlock = function (a) {
 	return {$: 'SpawnBlock', a: a};
 };
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
+var $author$project$Model$BlockNameClick = function (a) {
+	return {$: 'BlockNameClick', a: a};
+};
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var $author$project$SvgDraw$createLeftDecoder = F2(
+	function (msg, button) {
+		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
+	});
+var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$andThen,
+		$author$project$SvgDraw$createLeftDecoder(msg),
+		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+};
+var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$author$project$SvgDraw$alwaysPreventDefault,
+		$author$project$SvgDraw$checkLeftDecoder(msg));
+};
+var $author$project$SvgDraw$svgLeftClick = function (msg) {
+	return A2(
+		$elm$svg$Svg$Events$preventDefaultOn,
+		'mousedown',
+		$author$project$SvgDraw$svgLeftDecoder(msg));
+};
+var $author$project$SvgDraw$blockNameEvents = F2(
+	function (call, viewStructure) {
+		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
+			[
+				$author$project$SvgDraw$svgLeftClick(
+				$author$project$Model$BlockNameClick(call.id))
+			]);
+	});
+var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -11581,279 +11719,49 @@ var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
 };
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
-var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $author$project$SvgDraw$createLeftDecoder = F2(
-	function (msg, button) {
-		return (!button) ? $elm$json$Json$Decode$succeed(msg) : $elm$json$Json$Decode$succeed($author$project$Model$NoOp);
-	});
-var $author$project$SvgDraw$checkLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$andThen,
-		$author$project$SvgDraw$createLeftDecoder(msg),
-		A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-};
-var $author$project$SvgDraw$svgLeftDecoder = function (msg) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$author$project$SvgDraw$alwaysPreventDefault,
-		$author$project$SvgDraw$checkLeftDecoder(msg));
-};
-var $author$project$SvgDraw$svgLeftClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'mousedown',
-		$author$project$SvgDraw$svgLeftDecoder(msg));
-};
-var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var $elm$svg$Svg$Attributes$fontFamily = _VirtualDom_attribute('font-family');
-var $elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
-var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
-var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
-var $author$project$SvgDraw$svgText = F5(
-	function (xpos, ypos, textIn, fontSizeIn, fillIn) {
-		return A2(
-			$elm$svg$Svg$text_,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$x(
-					$elm$core$String$fromInt(xpos)),
-					$elm$svg$Svg$Attributes$y(
-					$elm$core$String$fromInt(ypos)),
-					$elm$svg$Svg$Attributes$textAnchor('start'),
-					$elm$svg$Svg$Attributes$fontFamily('monospace'),
-					$elm$svg$Svg$Attributes$dominantBaseline('central'),
-					$elm$svg$Svg$Attributes$fontSize(
-					$elm$core$String$fromInt(fontSizeIn)),
-					$elm$svg$Svg$Attributes$pointerEvents('none'),
-					$elm$svg$Svg$Attributes$cursor('default'),
-					$elm$svg$Svg$Attributes$style('user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;'),
-					$elm$svg$Svg$Attributes$fill(fillIn)
-				]),
-			_List_fromArray(
-				[
-					$elm$svg$Svg$text(textIn)
-				]));
-	});
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $author$project$SvgDraw$svgTranslate = F2(
-	function (xpos, ypos) {
-		return $elm$svg$Svg$Attributes$transform(
-			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
-	});
-var $author$project$SvgDraw$drawBlock = F2(
-	function (call, viewStructure) {
-		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			return A3(
-				$elm$svg$Svg$node,
-				'g',
-				A2(
-					$elm$core$List$cons,
-					A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
-					viewStructure.isToolbar ? _List_fromArray(
-						[
-							$author$project$SvgDraw$svgLeftClick(
-							$author$project$Model$SpawnBlock(call.functionName))
-						]) : _List_fromArray(
-						[
-							$author$project$SvgDraw$svgLeftClick(
-							$author$project$Model$BlockClick(call.id))
-						])),
-				_List_fromArray(
-					[
-						A2(
-						$elm$svg$Svg$rect,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$x('0'),
-								$elm$svg$Svg$Attributes$y(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-								$elm$svg$Svg$Attributes$width(
-								$elm$core$String$fromInt(blockPos.width)),
-								$elm$svg$Svg$Attributes$height(
-								$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
-								$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-								$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
-								$elm$svg$Svg$Attributes$rx(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-								$elm$svg$Svg$Attributes$ry(
-								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-							]),
-						_List_Nil),
-						A5($author$project$SvgDraw$svgText, $author$project$ViewVariables$blockTextXPadding, ($author$project$ViewVariables$blockHeight / 2) | 0, call.functionName, $author$project$ViewVariables$blockTextHeight, 'white')
-					]));
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
-		}
-	});
-var $author$project$SvgDraw$drawBuiltIn = F3(
-	function (call, index, viewStructure) {
-		var get = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
-		if (get.$ === 'Just') {
-			var names = get.a;
-			return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('not a built in function ' + call.functionName);
-		}
-	});
-var $author$project$DrawFunc$drawCall = F3(
-	function (call, counter, viewStructure) {
-		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
-	});
-var $author$project$DrawFunc$drawFunc = F3(
-	function (func, viewStructure, counter) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
-				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
-		}
-	});
-var $author$project$Model$OutputClick = function (a) {
-	return {$: 'OutputClick', a: a};
-};
-var $author$project$Model$OutputRightClick = function (a) {
-	return {$: 'OutputRightClick', a: a};
-};
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$SvgDraw$drawNode = F5(
-	function (xpos, inputPosition, ypos, events, isHighlighted) {
-		return A2(
-			$elm$svg$Svg$circle,
-			_Utils_ap(
-				events,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$r(
-						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
-						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
-						$elm$svg$Svg$Attributes$cy(
-						$elm$core$String$fromInt(ypos)),
-						$elm$svg$Svg$Attributes$fill(
-						isHighlighted ? 'blue' : 'black')
-					])),
-			_List_Nil);
-	});
-var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
-var $author$project$SvgDraw$svgRightClick = function (msg) {
-	return A2(
-		$elm$svg$Svg$Events$preventDefaultOn,
-		'contextmenu',
-		A2(
-			$elm$json$Json$Decode$map,
-			$author$project$SvgDraw$alwaysPreventDefault,
-			$elm$json$Json$Decode$succeed(msg)));
-};
-var $author$project$DrawFunc$drawCallEnding = F3(
-	function (call, blockPositions, mouseState) {
-		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			var isOutputHighlighted = function () {
-				var _v1 = mouseState.mouseSelection;
-				if (_v1.$ === 'OutputSelected') {
-					var outputId = _v1.a;
-					return _Utils_eq(outputId, call.id);
-				} else {
-					return false;
-				}
-			}();
-			return A5(
-				$author$project$SvgDraw$drawNode,
-				blockPos.xpos,
-				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
-				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
-				_List_fromArray(
-					[
-						$author$project$SvgDraw$svgLeftClick(
-						$author$project$Model$OutputClick(call.id)),
-						$author$project$SvgDraw$svgRightClick(
-						$author$project$Model$OutputRightClick(call.id))
-					]),
-				isOutputHighlighted);
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
-		}
-	});
-var $author$project$DrawFunc$drawFuncEndings = F3(
-	function (func, blockPositions, mouseState) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCallEnding, call, blockPositions, mouseState),
-				A3($author$project$DrawFunc$drawFuncEndings, calls, blockPositions, mouseState));
-		}
-	});
-var $author$project$Model$OutputHighlight = function (a) {
-	return {$: 'OutputHighlight', a: a};
-};
-var $author$project$Model$InputClick = F2(
-	function (a, b) {
-		return {$: 'InputClick', a: a, b: b};
-	});
-var $author$project$Model$InputHighlight = F2(
-	function (a, b) {
-		return {$: 'InputHighlight', a: a, b: b};
-	});
-var $author$project$Model$InputRightClick = F2(
-	function (a, b) {
-		return {$: 'InputRightClick', a: a, b: b};
-	});
-var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
+var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
+var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
 var $elm$svg$Svg$foreignObject = $elm$svg$Svg$trustedNode('foreignObject');
 var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
+var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
+var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
 var $rtfeldman$elm_css$Html$Styled$Events$onFocus = function (msg) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$Events$on,
 		'focus',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
+var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
+	function (event, decoder) {
 		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
+			$rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
 	});
-var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
-	function (key, value) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
-			_List_Nil,
-			'');
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
+var $rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 	return A2(
-		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
-		'tabIndex',
-		$elm$core$String$fromInt(n));
+		$rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
 var $rtfeldman$elm_css$VirtualDom$Styled$accumulateStyles = F2(
 	function (_v0, styles) {
@@ -12332,6 +12240,265 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 	}
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
+var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
+var $author$project$SvgDraw$svgTextInput = function (str) {
+	return function (xpos) {
+		return function (ypos) {
+			return function (w) {
+				return function (h) {
+					return function (onFocusEvent) {
+						return function (onInputEvent) {
+							return function (backgroundColor) {
+								return function (events) {
+									return function (domId) {
+										return A2(
+											$elm$svg$Svg$foreignObject,
+											_Utils_ap(
+												events,
+												_List_fromArray(
+													[
+														$elm$svg$Svg$Attributes$x(
+														$elm$core$String$fromInt(xpos)),
+														$elm$svg$Svg$Attributes$y(
+														$elm$core$String$fromInt(ypos)),
+														$elm$svg$Svg$Attributes$width(
+														$elm$core$String$fromInt(w)),
+														$elm$svg$Svg$Attributes$height(
+														$elm$core$String$fromInt(h))
+													])),
+											_List_fromArray(
+												[
+													$rtfeldman$elm_css$Html$Styled$toUnstyled(
+													A2(
+														$rtfeldman$elm_css$Html$Styled$input,
+														_List_fromArray(
+															[
+																$rtfeldman$elm_css$Html$Styled$Attributes$value(str),
+																$rtfeldman$elm_css$Html$Styled$Events$onInput(onInputEvent),
+																$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
+																$rtfeldman$elm_css$Html$Styled$Events$onFocus(onFocusEvent),
+																$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																_List_fromArray(
+																	[
+																		$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$monospace),
+																		$rtfeldman$elm_css$Css$fontSize(
+																		$rtfeldman$elm_css$Css$px(h * $author$project$ViewVariables$inputFontSizePercent)),
+																		$rtfeldman$elm_css$Css$width(
+																		$rtfeldman$elm_css$Css$pct(100)),
+																		$rtfeldman$elm_css$Css$height(
+																		$rtfeldman$elm_css$Css$pct(100)),
+																		$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$borderBox),
+																		$rtfeldman$elm_css$Css$backgroundColor(backgroundColor),
+																		$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+																		$rtfeldman$elm_css$Css$padding(
+																		$rtfeldman$elm_css$Css$px(0)),
+																		$rtfeldman$elm_css$Css$border(
+																		$rtfeldman$elm_css$Css$px(2))
+																	]))
+															]),
+														_List_Nil))
+												]));
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$SvgDraw$svgTranslate = F2(
+	function (xpos, ypos) {
+		return $elm$svg$Svg$Attributes$transform(
+			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
+	});
+var $rtfeldman$elm_css$Css$transparent = {color: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'transparent'};
+var $author$project$SvgDraw$drawBlock = F2(
+	function (call, viewStructure) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			return A3(
+				$elm$svg$Svg$node,
+				'g',
+				A2(
+					$elm$core$List$cons,
+					A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
+					viewStructure.isToolbar ? _List_fromArray(
+						[
+							$author$project$SvgDraw$svgLeftClick(
+							$author$project$Model$SpawnBlock(call.functionName))
+						]) : _List_fromArray(
+						[
+							$author$project$SvgDraw$svgLeftClick(
+							$author$project$Model$BlockClick(call.id))
+						])),
+				_List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$rect,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$x('0'),
+								$elm$svg$Svg$Attributes$y(
+								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+								$elm$svg$Svg$Attributes$width(
+								$elm$core$String$fromInt(blockPos.width)),
+								$elm$svg$Svg$Attributes$height(
+								$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
+								$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+								$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
+								$elm$svg$Svg$Attributes$rx(
+								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+								$elm$svg$Svg$Attributes$ry(
+								$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
+							]),
+						_List_Nil),
+						$author$project$SvgDraw$svgTextInput(call.functionName)($author$project$ViewVariables$blockTextXPadding)($author$project$ViewVariables$blockTextInputYpos)(blockPos.width - (2 * $author$project$ViewVariables$blockTextXPadding))($author$project$ViewVariables$blockTextInputHeight)(
+						$author$project$Model$BlockNameHighlight(call.id))(
+						$author$project$Model$BlockNameUpdate(call.id))($rtfeldman$elm_css$Css$transparent)(
+						A2($author$project$SvgDraw$blockNameEvents, call, viewStructure))(
+						$author$project$Update$nodeNameId(call.id))
+					]));
+		} else {
+			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
+		}
+	});
+var $author$project$SvgDraw$drawBuiltIn = F3(
+	function (call, index, viewStructure) {
+		return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
+	});
+var $author$project$DrawFunc$drawCall = F3(
+	function (call, counter, viewStructure) {
+		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
+	});
+var $author$project$DrawFunc$drawFunc = F3(
+	function (func, viewStructure, counter) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
+				A3($author$project$DrawFunc$drawFunc, calls, viewStructure, counter + 1));
+		}
+	});
+var $author$project$Model$OutputClick = function (a) {
+	return {$: 'OutputClick', a: a};
+};
+var $author$project$Model$OutputRightClick = function (a) {
+	return {$: 'OutputRightClick', a: a};
+};
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $author$project$SvgDraw$drawNode = F5(
+	function (xpos, inputPosition, ypos, events, isHighlighted) {
+		return A2(
+			$elm$svg$Svg$circle,
+			_Utils_ap(
+				events,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$r(
+						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
+						$elm$svg$Svg$Attributes$cx(
+						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+						$elm$svg$Svg$Attributes$cy(
+						$elm$core$String$fromInt(ypos)),
+						$elm$svg$Svg$Attributes$fill(
+						isHighlighted ? 'blue' : 'black')
+					])),
+			_List_Nil);
+	});
+var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
+var $author$project$SvgDraw$svgRightClick = function (msg) {
+	return A2(
+		$elm$svg$Svg$Events$preventDefaultOn,
+		'contextmenu',
+		A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			$elm$json$Json$Decode$succeed(msg)));
+};
+var $author$project$DrawFunc$drawCallEnding = F3(
+	function (call, blockPositions, mouseState) {
+		var _v0 = A2($elm$core$Dict$get, call.id, blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			var isOutputHighlighted = function () {
+				var _v1 = mouseState.mouseSelection;
+				if (_v1.$ === 'OutputSelected') {
+					var outputId = _v1.a;
+					return _Utils_eq(outputId, call.id);
+				} else {
+					return false;
+				}
+			}();
+			return A5(
+				$author$project$SvgDraw$drawNode,
+				blockPos.xpos,
+				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
+				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
+				_List_fromArray(
+					[
+						$author$project$SvgDraw$svgLeftClick(
+						$author$project$Model$OutputClick(call.id)),
+						$author$project$SvgDraw$svgRightClick(
+						$author$project$Model$OutputRightClick(call.id))
+					]),
+				isOutputHighlighted);
+		} else {
+			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
+		}
+	});
+var $author$project$DrawFunc$drawFuncEndings = F3(
+	function (func, blockPositions, mouseState) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCallEnding, call, blockPositions, mouseState),
+				A3($author$project$DrawFunc$drawFuncEndings, calls, blockPositions, mouseState));
+		}
+	});
+var $author$project$Model$OutputHighlight = function (a) {
+	return {$: 'OutputHighlight', a: a};
+};
+var $author$project$Model$InputHighlight = F2(
+	function (a, b) {
+		return {$: 'InputHighlight', a: a, b: b};
+	});
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
+	function (key, value) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
+};
 var $author$project$SvgDraw$nodeEvent = F5(
 	function (xpos, inputPos, ypos, event, domId) {
 		return A2(
@@ -12487,105 +12654,40 @@ var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
 		return {$: 'InputUpdate', a: a, b: b, c: c};
 	});
-var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
-var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
-var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
-var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
-var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
-var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$rtfeldman$elm_css$VirtualDom$Styled$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
-};
 var $author$project$ViewVariables$textInputColor = A3($rtfeldman$elm_css$Css$rgb, 186, 232, 188);
 var $author$project$ViewVariables$textInputColorVariable = A3($rtfeldman$elm_css$Css$rgb, 108, 230, 113);
-var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
 var $author$project$SvgDraw$drawTextInput = F8(
 	function (call, str, events, xpos, inputPos, ypos, index, domId) {
-		return A2(
-			$elm$svg$Svg$foreignObject,
-			_Utils_ap(
-				events,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x(
-						$elm$core$String$fromInt(inputPos.a + xpos)),
-						$elm$svg$Svg$Attributes$y(
-						$elm$core$String$fromInt(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))),
-						$elm$svg$Svg$Attributes$width(
-						$elm$core$String$fromInt(inputPos.b)),
-						$elm$svg$Svg$Attributes$height(
-						$elm$core$String$fromInt($author$project$ViewVariables$inputHeight))
-					])),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$toUnstyled(
-					A2(
-						$rtfeldman$elm_css$Html$Styled$input,
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$value(str),
-								$rtfeldman$elm_css$Html$Styled$Events$onInput(
-								A2($author$project$Model$InputUpdate, call.id, index)),
-								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
-								$rtfeldman$elm_css$Html$Styled$Events$onFocus(
-								A2($author$project$Model$InputHighlight, call.id, index)),
-								$rtfeldman$elm_css$Html$Styled$Attributes$css(
-								_List_fromArray(
-									[
-										$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$monospace),
-										$rtfeldman$elm_css$Css$fontSize(
-										$rtfeldman$elm_css$Css$pct(100 * $author$project$ViewVariables$inputFontSizePercent)),
-										$rtfeldman$elm_css$Css$width(
-										$rtfeldman$elm_css$Css$pct(100)),
-										$rtfeldman$elm_css$Css$height(
-										$rtfeldman$elm_css$Css$pct(100)),
-										$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$borderBox),
-										$rtfeldman$elm_css$Css$backgroundColor(
-										function () {
-											var _v0 = A2($elm$core$Dict$get, str, $author$project$BuiltIn$builtInVariables);
-											if (_v0.$ === 'Just') {
-												var val = _v0.a;
-												return $author$project$ViewVariables$textInputColorVariable;
-											} else {
-												return $author$project$ViewVariables$textInputColor;
-											}
-										}()),
-										$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
-										$rtfeldman$elm_css$Css$padding(
-										$rtfeldman$elm_css$Css$px(0)),
-										$rtfeldman$elm_css$Css$border(
-										$rtfeldman$elm_css$Css$px(2))
-									]))
-							]),
-						_List_Nil))
-				]));
+		return $author$project$SvgDraw$svgTextInput(str)(inputPos.a + xpos)(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))(inputPos.b)($author$project$ViewVariables$inputHeight)(
+			A2($author$project$Model$InputHighlight, call.id, index))(
+			A2($author$project$Model$InputUpdate, call.id, index))(
+			function () {
+				var _v0 = A2($elm$core$Dict$get, str, $author$project$BuiltIn$builtInVariables);
+				if (_v0.$ === 'Just') {
+					var val = _v0.a;
+					return $author$project$ViewVariables$textInputColorVariable;
+				} else {
+					return $author$project$ViewVariables$textInputColor;
+				}
+			}())(events)(domId);
+	});
+var $author$project$Model$InputClick = F2(
+	function (a, b) {
+		return {$: 'InputClick', a: a, b: b};
+	});
+var $author$project$Model$InputRightClick = F2(
+	function (a, b) {
+		return {$: 'InputRightClick', a: a, b: b};
+	});
+var $author$project$SvgDraw$nodeEvents = F3(
+	function (call, viewStructure, inputCounter) {
+		return viewStructure.isToolbar ? _List_Nil : _List_fromArray(
+			[
+				$author$project$SvgDraw$svgLeftClick(
+				A2($author$project$Model$InputClick, call.id, inputCounter)),
+				$author$project$SvgDraw$svgRightClick(
+				A2($author$project$Model$InputRightClick, call.id, inputCounter))
+			]);
 	});
 var $elm$html$Html$Events$on = F2(
 	function (event, decoder) {
@@ -12611,13 +12713,7 @@ var $author$project$DrawFunc$drawInput = F5(
 				return _Utils_Tuple2(-100, -100);
 			}
 		}();
-		var nodeEvents = viewStructure.isToolbar ? _List_Nil : _List_fromArray(
-			[
-				$author$project$SvgDraw$svgLeftClick(
-				A2($author$project$Model$InputClick, call.id, inputCounter)),
-				$author$project$SvgDraw$svgRightClick(
-				A2($author$project$Model$InputRightClick, call.id, inputCounter))
-			]);
+		var nodeEvents = A3($author$project$SvgDraw$nodeEvents, call, viewStructure, inputCounter);
 		var isInputHighlighted = function () {
 			var _v3 = viewStructure.mouseState.mouseSelection;
 			if (_v3.$ === 'InputSelected') {
