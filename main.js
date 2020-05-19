@@ -5203,13 +5203,16 @@ var $author$project$Model$getindexurl = function (url) {
 		$elm$core$String$length(str) - $elm$core$String$length(url.path),
 		str);
 };
-var $author$project$Model$Function = F2(
-	function (name, calls) {
-		return {calls: calls, name: name};
+var $author$project$Model$Function = F3(
+	function (name, args, calls) {
+		return {args: args, calls: calls, name: name};
 	});
+var $author$project$Model$makeMain = function (calls) {
+	return A3($author$project$Model$Function, 'main', _List_Nil, calls);
+};
 var $author$project$Model$initialProgram = _List_fromArray(
 	[
-		A2($author$project$Model$Function, 'main', _List_Nil)
+		$author$project$Model$makeMain(_List_Nil)
 	]);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -9243,9 +9246,7 @@ var $author$project$Update$spawnBlockProgram = F2(
 		if (!onion.b) {
 			return _List_fromArray(
 				[
-					A2(
-					$author$project$Model$Function,
-					'main',
+					$author$project$Model$makeMain(
 					_List_fromArray(
 						[call]))
 				]);
@@ -12935,9 +12936,7 @@ var $author$project$BuiltIn$makeAllFunction = F2(
 				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
 		}
 	});
-var $author$project$BuiltIn$allBuiltInAsFunction = A2(
-	$author$project$Model$Function,
-	'allBuiltIn',
+var $author$project$BuiltIn$allBuiltInAsFunction = $author$project$Model$makeMain(
 	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100));
 var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
