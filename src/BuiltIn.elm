@@ -32,7 +32,6 @@ generalList = [(BuiltInSpec
                     "if"
                     (Finite ["condition", "thenValue", "elseValue"])
                     (CompileExprFunction buildIf))]
-               
 
 compareUnary op =
     (BuiltInSpec op (Infinite ["leftComparable", "rightComparable"] "comparables") (CompileExprFunction buildUnary))
@@ -98,6 +97,6 @@ constructCall id functionName =
     case Dict.get functionName builtInFunctions of
         Just builtIn ->
             case builtIn.argList of
-                Infinite firstArgs restArgs -> callWithHoles id functionName ((List.length firstArgs)+1)
+                Infinite firstArgs restArgs -> callWithHoles id functionName (max 1 (List.length firstArgs))
                 Finite args -> callWithHoles id functionName (List.length args)
         Nothing -> callWithHoles id functionName 0

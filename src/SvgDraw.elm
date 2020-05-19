@@ -230,7 +230,7 @@ drawFuncHeader function viewStructure =
          [x "0"
          ,y "0"
          ,width (String.fromInt viewStructure.headerPos.width)
-         ,height (String.fromInt ViewVariables.functionHeaderHeight)
+         ,height (String.fromInt (ViewVariables.functionHeaderHeight-ViewVariables.nodeRadius))
          ,fill ViewVariables.blockColor
          ,stroke ViewVariables.blockColor
          , rx (String.fromInt ViewVariables.nodeRadius)
