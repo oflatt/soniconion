@@ -93,8 +93,11 @@ type Input = Output Id
 
 type alias Onion = List Function
 type alias Function = { name: String
+                      , args: List Input
                       , calls: List Call}
 
+makeMain calls =
+    (Function "main" [] calls)
 
 
 getCallById id func =
@@ -150,7 +153,7 @@ type alias Flags = {innerWindowWidth : Int,
 
        
 initialProgram : Onion
-initialProgram = [(Function "main" [])]
+initialProgram = [makeMain []]
 
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model

@@ -272,7 +272,7 @@ spawnBlockFunc func call =
 spawnBlockProgram : Onion -> Call -> Onion
 spawnBlockProgram onion call =
     case onion of
-        [] -> [(Function "main" [call])]
+        [] -> [(makeMain [call])]
         (func::funcs) -> (spawnBlockFunc func call) :: funcs
 
 spawnBlockModel : Model -> String -> (Model, Cmd Msg)

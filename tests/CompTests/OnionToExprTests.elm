@@ -10,7 +10,7 @@ import Dict exposing (Dict)
 import Compiler.OnionToExpr exposing (onionToCompModel)
 import Compiler.CompModel exposing (Value(..), Expr)
 import Compiler.CompModel as CompModel
-import Model exposing (Call, Input(..), Function)
+import Model exposing (Call, Input(..), Function, makeMain)
 
 numSystemValues = List.length CompModel.systemValues
 
@@ -25,7 +25,7 @@ onionToCompModelTest =
         [test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [(Function "main" [(Call 0 [(Text "2")] "+" "")])])
+                       (onionToCompModel [(makeMain [(Call 0 [(Text "2")] "+" "")])])
                        (Ok [[(makeExpr "+" 0 [(ConstV 2)])]])))
 
         ,test "test function"

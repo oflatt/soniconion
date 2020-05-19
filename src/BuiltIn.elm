@@ -4,7 +4,7 @@ import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
                                              buildUnaryWithSingleLead, buildIf)
 import Dict exposing (Dict)
-import Model exposing (Function, Call, Input(..), Id)
+import Model exposing (Function, Call, Input(..), Id, makeMain)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
 
 -- infinite has a min number of args with the names of the args
@@ -87,7 +87,7 @@ makeAllFunction builtInList counter =
         [] -> []
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = (Function "allBuiltIn" (makeAllFunction builtInFunctionList -100))
+allBuiltInAsFunction = (makeMain (makeAllFunction builtInFunctionList -100))
 
 callWithHoles id name numHoles =
     Call id (List.repeat numHoles Hole) name ""
