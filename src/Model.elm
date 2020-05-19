@@ -49,6 +49,9 @@ type Msg = MouseOver PageName
          | MouseMoved MousePos
          | MouseRelease
 
+
+         | HeaderOutputHighlight Id Int
+         | HeaderOutputUpdate Id Int String
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
@@ -93,13 +96,16 @@ type Input = Output Id
 
 type alias Onion = List Function
 type alias Function = { name: String
+                      , id: Id
                       , args: List Input
                       , calls: List Call}
 
-makeMain calls =
-    (Function "main" [] calls)
+makeMain id calls =
+    (constructFunction id "main" calls)
 
-
+constructFunction id name calls =
+    (Function name id [Hole] calls)
+        
 getCallById id func =
     case func of
         [] -> Nothing
@@ -117,6 +123,7 @@ type MouseSelection = BlockSelected Id
                     | InputSelected Id Int -- id of block and index of input
                     | NameSelected Id
                     | OutputSelected Id
+                    | FunctionOutputSelected Id Int
                     | NoneSelected
 
 type alias MouseState = {mouseX : Int
@@ -153,7 +160,7 @@ type alias Flags = {innerWindowWidth : Int,
 
        
 initialProgram : Onion
-initialProgram = [makeMain []]
+initialProgram = [makeMain 0 []]
 
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model
@@ -171,5 +178,5 @@ initialModel flags url key = ((Model
                                         0
                                         NoneSelected)
                                    Nothing
-                                   0),
+                                   1), -- id for inital main used
                                    Cmd.none)

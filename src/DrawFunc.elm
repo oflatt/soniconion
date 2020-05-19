@@ -47,7 +47,30 @@ drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlig
              (Dict.get outputId viewStructure.blockPositions)
              (getInputRouting call inputCounter viewStructure))    
 
-
+drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
+drawHeaderOutput input viewStructure inputCounter =
+    let blockPos = viewStructure.headerPos
+        nodePos =
+            (case (Dict.get inputCounter blockPos.inputPositions) of
+                 Just nodeP -> nodeP
+                 Nothing -> (-100, -100)) -- something went wrong
+        domId = (Update.headerNodeId viewStructure.id)
+    in
+        case input of
+            Text str -> (SvgDraw.svgTextInput
+                             str (Tuple.first nodePos)
+                             (ViewVariables.functionHeaderHeight-ViewVariables.inputHeight)
+                             (Tuple.second nodePos) ViewVariables.inputHeight
+                             (HeaderOutputHighlight viewStructure.id inputCounter)
+                             (HeaderOutputUpdate viewStructure.id inputCounter)
+                             ViewVariables.textInputColorVariable
+                             []
+                             domId)
+            _ -> (SvgDraw.drawNodeWithEvent
+                      0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
+                      [] (HeaderOutputHighlight viewStructure.id inputCounter) domId False)
+                         
+            
 drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
 drawInput call input blockPos inputCounter viewStructure =
     let nodeEvents = SvgDraw.nodeEvents call viewStructure inputCounter
@@ -99,7 +122,7 @@ drawInput call input blockPos inputCounter viewStructure =
                      inputCounter
                      inputStringId)
             Hole -> (nodeWithEvent ())
-                    
+ 
                         
 drawInputLines call inputs blockPos inputCounter viewStructure =
     case inputs of
@@ -109,9 +132,16 @@ drawInputLines call inputs blockPos inputCounter viewStructure =
             (drawInput call input blockPos inputCounter viewStructure) ::
                 (drawInputLines call rest blockPos (inputCounter + 1) viewStructure)
 
+drawHeaderOutputs funcArgs viewStructure inputCounter =
+    case funcArgs of
+        [] -> []
+        (input::rest) ->
+            (drawHeaderOutput input viewStructure inputCounter) ::
+                (drawHeaderOutputs rest viewStructure (inputCounter+1))
+                    
 
-drawCallInputs: Call -> ViewStructure -> MouseState -> (Svg Msg)
-drawCallInputs call viewStructure mouseState =
+drawCallInputs: Call -> ViewStructure -> (Svg Msg)
+drawCallInputs call viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             Svg.g
@@ -148,15 +178,20 @@ drawCallEnding call viewStructure =
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"
-                
--- there should be one line routing list per frame
-drawFuncInputs func viewStructure mouseState=
+
+drawAllInputs func viewStructure =
     case func of
         [] -> []
         (call::calls) ->
-            (drawCallInputs call viewStructure mouseState)
-            :: (drawFuncInputs calls viewStructure mouseState)
-
+            (drawCallInputs call viewStructure)
+            :: (drawAllInputs calls viewStructure)
+    
+                
+-- there should be one line routing list per frame
+drawFuncInputs : Function -> ViewStructure -> (List (Svg Msg))
+drawFuncInputs func viewStructure =
+    (drawHeaderOutputs func.args viewStructure 0) ++ (drawAllInputs func.calls viewStructure)
+        
 drawFuncEndings func viewStructure =
     case func of
         [] -> []
@@ -184,5 +219,5 @@ drawFuncWithConnections viewStructure mouseState =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.headerPos.xpos viewStructure.headerPos.ypos]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
-        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc.calls viewStructure mouseState)
+        ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc viewStructure)
         ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc.calls viewStructure)]

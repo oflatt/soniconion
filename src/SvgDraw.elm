@@ -1,6 +1,6 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
-                             nodeEvents, drawBlockNameInput, drawFuncHeader)
+                             nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)

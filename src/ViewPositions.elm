@@ -50,6 +50,7 @@ type alias BlockPositions = Dict Id BlockPosition
 type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
                            ,sortedFunc : Function
+                           ,id : Id
                            ,headerPos : BlockPosition
                            ,funcBlockMaxWidth : Int
                            ,funcHeight : Int
@@ -207,6 +208,7 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
              blockPositions
              lineRouting
              sortedFunc
+             sortedFunc.id
              topBlockPosition
              maxWidth
              funcHeight

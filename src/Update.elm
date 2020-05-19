@@ -1,4 +1,4 @@
-port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId)
+port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId)
 import Debug exposing (log)
 
 import Task
@@ -60,6 +60,9 @@ nodeOutputId callid =
     "o" ++ (String.fromInt callid)
 nodeNameId callid =
     "n" ++ (String.fromInt callid)
+
+headerNodeId functionid =
+    "h" ++ (String.fromInt functionid)
         
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
@@ -272,7 +275,7 @@ spawnBlockFunc func call =
 spawnBlockProgram : Onion -> Call -> Onion
 spawnBlockProgram onion call =
     case onion of
-        [] -> [(makeMain [call])]
+        [] -> [(makeMain 0 [call])]
         (func::funcs) -> (spawnBlockFunc func call) :: funcs
 
 spawnBlockModel : Model -> String -> (Model, Cmd Msg)
@@ -328,6 +331,12 @@ update msg model =
                  ({model |
                        mouseState = newMouse}
                  ,Cmd.none))
+
+        HeaderOutputHighlight id index ->
+            (model, Cmd.none)
+
+        HeaderOutputUpdate id index str ->
+            (model, Cmd.none)
                 
         InputHighlight id index ->
             (inputHighlightModel model id index)

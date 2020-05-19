@@ -86,7 +86,7 @@ makeAllFunction builtInList counter =
         [] -> []
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = (makeMain (makeAllFunction builtInFunctionList -100))
+allBuiltInAsFunction = (makeMain -1 (makeAllFunction builtInFunctionList -100))
 
 callWithHoles id name numHoles =
     Call id (List.repeat numHoles Hole) name ""
