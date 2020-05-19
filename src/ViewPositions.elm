@@ -50,8 +50,7 @@ type alias BlockPositions = Dict Id BlockPosition
 type alias ViewStructure = {blockPositions : BlockPositions
                            ,lineRouting : LineRouting
                            ,sortedFunc : Function
-                           ,funcxoffset : Int
-                           ,funcyoffset : Int
+                           ,headerPos : BlockPosition
                            ,funcBlockMaxWidth : Int
                            ,funcHeight : Int
                            ,mouseState : MouseState
@@ -123,6 +122,9 @@ makeBlockPosition xpos ypos call shouldCenterX =
                 xpos
     in
         (BlockPosition blockXpos ypos blockW inputPositions)
+
+getHeaderBlockPos func xoffset yoffset =
+    makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Id -> Maybe MovedBlockInfo -> List Call -> Int -> BlockPositions
@@ -151,7 +153,9 @@ getAllBlockPositions idToSkip maybeMoveInfo func currentY =
                         Nothing -> (iterate call calls)
 
 
-
+getFuncHeaderHeight func =
+    ViewVariables.functionHeaderHeight + (countOutputs func.args) + ViewVariables.blockSpacing
+                                   
                       
 getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
@@ -160,7 +164,7 @@ getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset
             case moveInfo of
                 Just info -> info.movedCall.id
                 Nothing -> -1
-        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func.calls 0
+        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func.calls (getFuncHeaderHeight func)
     in
         case moveInfo of
             Just info -> (Dict.insert
@@ -177,11 +181,11 @@ blockSorter blockPositions call =
         Nothing -> -100 -- todo some sort of error handeling
         Just pos -> pos.ypos
                    
-getMaxBlockWidth blockPositions =
+getMaxBlockWidth blockPositions topBlock =
     Dict.foldr
         (\key blockpos acc ->
              max blockpos.width acc)
-        0
+        topBlock.width
         blockPositions
 
 getMaxBlockBottom blockPositions =
@@ -195,15 +199,15 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         sortedFunc = {func | calls=(makeSortedFunc func blockPositions)}
         lineRouting = getLineRouting sortedFunc
-        maxWidth = getMaxBlockWidth blockPositions
+        topBlockPosition = getHeaderBlockPos func xoffset yoffset
+        maxWidth = getMaxBlockWidth blockPositions topBlockPosition
         funcHeight = getMaxBlockBottom blockPositions
     in
         (ViewStructure
              blockPositions
              lineRouting
              sortedFunc
-             xoffset
-             yoffset
+             topBlockPosition
              maxWidth
              funcHeight
              mouseState

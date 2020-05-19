@@ -127,19 +127,24 @@ drawCallInputs call viewStructure mouseState =
 
 
                 
-drawCallEnding call blockPositions mouseState =
-    case Dict.get call.id blockPositions of
+drawCallEnding call viewStructure =
+    case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             let isOutputHighlighted =
-                    case mouseState.mouseSelection of
+                    case viewStructure.mouseState.mouseSelection of
                         OutputSelected outputId -> (outputId == call.id)
                         _ -> False
+                events =
+                    if viewStructure.isToolbar
+                    then (SvgDraw.svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName))
+                    else (SvgDraw.svgClickEvents (OutputClick call.id) (OutputRightClick call.id))
+                        
             in
                 (SvgDraw.drawNode
                      blockPos.xpos
                      (((blockPos.width//2)-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
                      (ViewVariables.outputNodeY + blockPos.ypos)
-                     (SvgDraw.svgClickEvents (OutputClick call.id) (OutputRightClick call.id))
+                     events
                      isOutputHighlighted)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"
@@ -152,29 +157,32 @@ drawFuncInputs func viewStructure mouseState=
             (drawCallInputs call viewStructure mouseState)
             :: (drawFuncInputs calls viewStructure mouseState)
 
-drawFuncEndings func blockPositions mouseState =
+drawFuncEndings func viewStructure =
     case func of
         [] -> []
         (call::calls) ->
-            (drawCallEnding call blockPositions mouseState) :: (drawFuncEndings calls blockPositions mouseState)
+            (drawCallEnding call viewStructure) :: (drawFuncEndings calls viewStructure)
 
 drawFuncCalls : List Call -> ViewStructure -> Int -> List (Svg Msg)
 drawFuncCalls func viewStructure counter =
   case func of
     [] -> []
     (call::calls) -> (drawCall call counter viewStructure) :: (drawFuncCalls calls viewStructure (counter + 1))  
-                
+
+drawFuncHeader func viewStructure =
+    SvgDraw.drawFuncHeader func viewStructure
+                     
 -- function for drawing function records
 drawFunc: Function -> ViewStructure -> Int -> List (Svg Msg)
 drawFunc func viewStructure counter =
-  drawFuncCalls func.calls viewStructure counter
+  (drawFuncHeader func viewStructure) :: (drawFuncCalls func.calls viewStructure counter)
 
 
                      
 drawFuncWithConnections: ViewStructure -> MouseState -> Svg Msg
 drawFuncWithConnections viewStructure mouseState =
     Svg.g
-        [SvgDraw.svgTranslate viewStructure.funcxoffset viewStructure.funcyoffset]
+        [SvgDraw.svgTranslate viewStructure.headerPos.xpos viewStructure.headerPos.ypos]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)
         ,Svg.g [] (drawFuncInputs viewStructure.sortedFunc.calls viewStructure mouseState)
-        ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc.calls viewStructure.blockPositions mouseState)]
+        ,Svg.g [] (drawFuncEndings viewStructure.sortedFunc.calls viewStructure)]

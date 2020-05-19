@@ -27,6 +27,7 @@ toolbarWidth windowWidth windowHeight = 100
 functionXSpacing = 50
 
 blockHeight = 50
+functionHeaderHeight = blockHeight
 blockSpacing = blockHeight // 6
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing

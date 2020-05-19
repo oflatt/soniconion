@@ -1,6 +1,6 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
-                             nodeEvents, drawBlockNameInput)
+                             nodeEvents, drawBlockNameInput, drawFuncHeader)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -48,7 +48,10 @@ errorSvgNode errorMsg=
              [Svg.text errorMsg]
         ]
         
--- function for drawing builtIns
+
+
+    
+        
 drawBuiltIn: Call -> Int -> ViewStructure -> (Svg Msg)
 drawBuiltIn call index viewStructure =
     drawBlock call viewStructure
@@ -220,6 +223,20 @@ drawBlock call viewStructure =
         Nothing ->
             errorSvgNode "function call without block pos"
 
+
+drawFuncHeader : Function -> ViewStructure -> (Svg Msg)
+drawFuncHeader function viewStructure =
+    (rect
+         [x "0"
+         ,y "0"
+         ,width (String.fromInt viewStructure.headerPos.width)
+         ,height (String.fromInt ViewVariables.functionHeaderHeight)
+         ,fill ViewVariables.blockColor
+         ,stroke ViewVariables.blockColor
+         , rx (String.fromInt ViewVariables.nodeRadius)
+         , ry (String.fromInt ViewVariables.nodeRadius)]
+         [])
+                
 drawBlockNameInput call viewStructure blockPos =
     (svgTextInput call.functionName
          (blockPos.xpos + ViewVariables.blockTextXPadding)
