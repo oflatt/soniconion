@@ -15,13 +15,13 @@ plus = (Call 1092392 [Output 85] "+" "")
 plusWithHole = (Call 1092392 [Hole] "+" "")
 
 testFunction : Function
-testFunction = (makeMain [sine, sine2, join, plus])
+testFunction = (makeMain 0 [sine, sine2, join, plus])
       
 testInvalidFunction : Function
-testInvalidFunction = (makeMain [sine, sine2, plus, join])
+testInvalidFunction = (makeMain 0 [sine, sine2, plus, join])
 
 testFunctionHoles : Function
-testFunctionHoles = (makeMain
+testFunctionHoles = (makeMain 0
                          [(Call 80 [Text "1", Hole] "sine" "")
                          ,(Call 89 [Text "2", Text "640"] "sine" "")
                          ,(Call 85 [Hole, Hole] "+" "")
@@ -36,7 +36,7 @@ complex3 = secondToLastSine
 complex4 = (Call 12 [Output 80, Output 23] "sine" "")
 complexRoutingFunc : Function    
 complexRoutingFunc =
-    (makeMain
+    (makeMain 0
          [complex0
          ,complex1
          ,complex2
@@ -50,7 +50,7 @@ plusCall id routes =
     
 threeLeftRoutingFunc : Function
 threeLeftRoutingFunc =
-    (makeMain
+    (makeMain 0
          [(plusCall 0 [])
          ,(plusCall 1 [])
          ,(plusCall 2 [])

@@ -1,4 +1,5 @@
-module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos)
+module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
+                             ,updateInputAtIndex, updateFunc)
 
 import Dict exposing (Dict)
 
@@ -8,8 +9,11 @@ import BuiltIn exposing (builtInFunctions, ArgList(..))
 
 type alias IdToPos = Dict Id Int
 
+addFuncPos func idToPos =
+    Dict.insert func.id -1 idToPos
+    
 idToPosition func dict pos =
-    idToPositionCalls func.calls dict pos
+    (addFuncPos func (idToPositionCalls func.calls dict pos))
 
 idToPositionCalls func dict pos =
     case func of
@@ -73,23 +77,35 @@ updateInputFunc func id index inputFunc =
         [] -> []
         (call::calls) -> updateInputCall call id index inputFunc :: updateInputFunc calls id index inputFunc
 
-updateInputOnion : Onion -> Id -> Int -> (Input -> Input) -> Onion
-updateInputOnion onion id index inputFunc =
+updateInputOnion : Onion -> Id -> Int -> Maybe Id -> (Input -> Input) -> Onion
+updateInputOnion onion id index funcIdMaybe inputFunc =
     case onion of
         [] -> []
-        (func::funcs) -> fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} :: updateInputOnion funcs id index inputFunc
+        (func::funcs) ->
+            case funcIdMaybe of
+                Just fId ->
+                    if fId == func.id
+                    then
+                        (fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} :: funcs)
+                    else
+                        func :: (updateInputOnion funcs id index funcIdMaybe inputFunc)
+                Nothing -> (fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} ::
+                                updateInputOnion funcs id index funcIdMaybe inputFunc)
     
                         
-updateInput : Model -> Id -> Int -> (Input -> Input)  -> Model
-updateInput model id index inputFunc =
+updateInputOn : Model -> Id -> Int -> Maybe Id -> (Input -> Input)  -> Model
+updateInputOn model id index funcIdMaybe inputFunc =
     let oldMouse = model.mouseState
         newMouse =
             {oldMouse | mouseSelection = NoneSelected}
-        newOnion = updateInputOnion model.program id index inputFunc
+        newOnion = updateInputOnion model.program id index funcIdMaybe inputFunc
     in
         {model |
              mouseState = newMouse
         ,program = newOnion}
+
+updateInput model id index inputFunc =
+    updateInputOn model id index Nothing inputFunc
         
         
 updateCallIfMatchesId : Call -> (Call -> Call) -> Id -> Call
@@ -123,6 +139,19 @@ updateCall model id callFunc =
               ,program = newOnion}
         ,Cmd.none)
 
+updateFuncOnion onion funcId update =
+    case onion of
+        [] -> []
+        (func::funcs) ->
+            if func.id == funcId
+            then
+                (update func) :: funcs
+            else
+                func :: (updateFuncOnion funcs funcId update)
+        
+updateFunc model funcId update =
+    {model | program = (updateFuncOnion model.program funcId update)}
+        
 fixInputs inputs idToPos currentIndex =
     case inputs of
         [] -> []

@@ -80,6 +80,7 @@ countOutputsBefore inputs threshhold =
              (input::rest) ->
                  (case input of
                       Output id -> 1 + (countOutputsBefore rest (threshhold-1))
+                      FunctionArg index -> 1 + (countOutputsBefore rest (threshhold-1))
                       _ -> countOutputsBefore rest (threshhold-1)))
 
 countOutputs inputs =

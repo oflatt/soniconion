@@ -25,7 +25,7 @@ onionToCompModelTest =
         [test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [(makeMain [(Call 0 [(Text "2")] "+" "")])])
+                       (onionToCompModel [(makeMain 0 [(Call 0 [(Text "2")] "+" "")])])
                        (Ok [[(makeExpr "+" 0 [(ConstV 2)])]])))
 
         ,test "test function"

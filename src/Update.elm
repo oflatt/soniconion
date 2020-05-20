@@ -20,7 +20,8 @@ import Json.Decode as Decode
 import Model exposing (..)
 import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
-import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition)
+import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateInputOn
+                             ,updateInputAtIndex, updateFunc)
 
 
 
@@ -55,14 +56,14 @@ changeByName model pageName =
     in changeUrl model newurl pageName
 
 nodeInputId callid inputindex =
-    (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
+    "i" ++ (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
 nodeOutputId callid =
     "o" ++ (String.fromInt callid)
 nodeNameId callid =
     "n" ++ (String.fromInt callid)
 
-headerNodeId functionid =
-    "h" ++ (String.fromInt functionid)
+headerNodeId functionid index =
+    "h" ++ (String.fromInt functionid) ++ "-" ++ (String.fromInt index)
         
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
@@ -71,16 +72,31 @@ mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 mouse_scale_y : Int -> Int
 mouse_scale_y mouse_y = (round ((toFloat mouse_y) * 1.65))
 
+connectFuncArg model id index funcId argIndex =
+    ((updateFunc
+          (updateInputOn model id index (Just funcId)
+               (\input -> (FunctionArg argIndex)))
+          funcId
+          (\func ->
+               let newArgs = (updateInputAtIndex func.args argIndex (\input -> Output id))
+               in
+                   {func | args = newArgs}))
+    ,Cmd.none)
+                        
 inputRightClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputRightClickModel model id index =
     case model.mouseState.mouseSelection of
-        OutputSelected outputId -> (updateInput model id index (\input -> (Output outputId)), Cmd.none)
+        OutputSelected outputId -> ((updateInput model id index (\input -> (Output outputId))), Cmd.none)
+        FunctionOutputSelected funcId argIndex -> connectFuncArg model id index funcId argIndex
         _ -> (model, Cmd.none)
                         
 inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
     inputHighlightModel model id index
 
+headerOutputClickModel model id index =
+    headerHighlightModel model id index
+        
 blockNameClickModel : Model -> Id -> (Model, Cmd Msg)
 blockNameClickModel model id =
     blockNameHighlightModel model id
@@ -89,6 +105,15 @@ focusInputCommand domId =
     (Dom.focus domId |> Task.attempt SilentDomError)
         
 
+headerHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
+headerHighlightModel model id index =
+    let oldMouse = model.mouseState
+    in
+        let newMouse = {oldMouse | mouseSelection = FunctionOutputSelected id index}
+        in
+            ({model | mouseState = newMouse}
+            ,focusInputCommand (headerNodeId id index))
+        
 inputHighlightModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputHighlightModel model id index =
     let oldMouse = model.mouseState
@@ -333,9 +358,15 @@ update msg model =
                  ,Cmd.none))
 
         HeaderOutputHighlight id index ->
-            (model, Cmd.none)
+            headerHighlightModel model id index
 
         HeaderOutputUpdate id index str ->
+            (model, Cmd.none)
+
+        HeaderOutputClick id index ->
+            headerOutputClickModel model id index
+                
+        HeaderOutputRightClick id index ->
             (model, Cmd.none)
                 
         InputHighlight id index ->

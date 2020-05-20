@@ -39,7 +39,7 @@ inputToValue input idToIndex =
                 Just (Number value) -> Ok (ConstV value)
                 Just (StackReference index) -> Ok (StackIndex index)
                 Just (JavaScript varName) -> Ok (ScriptVariable varName)
-        Hole -> Err "No argument supplied to a function call"
+        _ -> Err "No argument supplied to a function call" -- TODO This should be just the hole case
 
                 
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)

@@ -52,6 +52,8 @@ type Msg = MouseOver PageName
 
          | HeaderOutputHighlight Id Int
          | HeaderOutputUpdate Id Int String
+         | HeaderOutputClick Id Int
+         | HeaderOutputRightClick Id Int
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
@@ -92,6 +94,7 @@ type alias Id = Int
 -- id of function output or a constant
 type Input = Output Id
            | Text String
+           | FunctionArg Int
            | Hole
 
 type alias Onion = List Function

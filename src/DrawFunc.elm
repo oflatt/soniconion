@@ -37,14 +37,31 @@ getInputRouting call inputCounter viewStructure =
     Maybe.withDefault Nothing
         ((Dict.get call.id viewStructure.lineRouting)
         |> andThen (Array.get inputCounter))
+
+getOutputPos : Id -> ViewStructure -> Int -> Maybe (Int, Int)
+getOutputPos outputId viewStructure outputIndex =
+    if outputId == viewStructure.id
+    then
+        Maybe.map
+            (\inputPos ->
+                 ((Tuple.first inputPos)+((Tuple.second inputPos)//2)
+                 ,(ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)))
+            (Dict.get outputIndex viewStructure.headerPos.inputPositions)
+    else
+        Maybe.map
+            (\otherPos ->
+                 ((otherPos.xpos + (otherPos.width//2))
+                 ,otherPos.ypos + ViewVariables.outputNodeY))
+            (Dict.get outputId viewStructure.blockPositions)
         
-drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> Svg.Attribute Msg -> Bool -> Id -> (Svg Msg)
-drawOutputLine call blockPos inputCounter viewStructure inputEvent isLineHighlighted outputId =
+-- outputIndex is used for the function header
+drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> List (Svg.Attribute Msg) -> Bool -> Id -> Int -> (Svg Msg)
+drawOutputLine call blockPos inputCounter viewStructure events isLineHighlighted outputId outputIndex =
     Maybe.withDefault (SvgDraw.errorSvgNode "Can't find line output")
         (Maybe.map2
              (\otherBlockPos routing ->
-                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routing viewStructure)
-             (Dict.get outputId viewStructure.blockPositions)
+                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routing viewStructure)
+             (getOutputPos outputId viewStructure outputIndex)
              (getInputRouting call inputCounter viewStructure))    
 
 drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
@@ -54,7 +71,12 @@ drawHeaderOutput input viewStructure inputCounter =
             (case (Dict.get inputCounter blockPos.inputPositions) of
                  Just nodeP -> nodeP
                  Nothing -> (-100, -100)) -- something went wrong
-        domId = (Update.headerNodeId viewStructure.id)
+        domId = (Update.headerNodeId viewStructure.id inputCounter)
+        events = SvgDraw.headerEvents inputCounter viewStructure
+        isInputHighlighted =
+            case viewStructure.mouseState.mouseSelection of
+                FunctionOutputSelected sid sindex -> sid == viewStructure.id && sindex == inputCounter
+                _ -> False
     in
         case input of
             Text str -> (SvgDraw.svgTextInput
@@ -64,11 +86,11 @@ drawHeaderOutput input viewStructure inputCounter =
                              (HeaderOutputHighlight viewStructure.id inputCounter)
                              (HeaderOutputUpdate viewStructure.id inputCounter)
                              ViewVariables.textInputColorVariable
-                             []
+                             events
                              domId)
             _ -> (SvgDraw.drawNodeWithEvent
                       0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
-                      [] (HeaderOutputHighlight viewStructure.id inputCounter) domId False)
+                      events (HeaderOutputHighlight viewStructure.id inputCounter) domId isInputHighlighted)
                          
             
 drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
@@ -105,11 +127,24 @@ drawInput call input blockPos inputCounter viewStructure =
                                 (inputId == call.id) && (inputCounter == inputIndex)
                             OutputSelected outputId -> (outputId == id)
                             _ -> False
-                    outputEvent =
-                        (Svg.Events.onMouseDown (OutputClick id))
+                    outputEvents =
+                        (SvgDraw.svgClickEvents (OutputClick id) NoOp)
                 in
                     Svg.node "g" []
-                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvent isLineHighlighted id)
+                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvents isLineHighlighted id 0)
+                        ,(nodeWithEvent ())]
+            FunctionArg index ->
+                let isLineHighlighted =
+                        (case viewStructure.mouseState.mouseSelection of
+                             InputSelected inputId inputIndex ->
+                                 (inputId == call.id) && (inputCounter == inputIndex)
+                             FunctionOutputSelected sid sindex ->
+                                 (sid == viewStructure.id && sindex == index)
+                             _ -> False)
+                    outputEvents = SvgDraw.svgClickEvents (HeaderOutputClick viewStructure.id index) NoOp
+                in
+                    Svg.node "g" []
+                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvents isLineHighlighted viewStructure.id index)
                         ,(nodeWithEvent ())]
             Text str ->
                 (SvgDraw.drawTextInput
@@ -121,7 +156,7 @@ drawInput call input blockPos inputCounter viewStructure =
                      (blockPos.ypos + ViewVariables.nodeRadius)
                      inputCounter
                      inputStringId)
-            Hole -> (nodeWithEvent ())
+            Hole -> (nodeWithEvent ()) -- TODO this should be hole case
  
                         
 drawInputLines call inputs blockPos inputCounter viewStructure =

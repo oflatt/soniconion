@@ -1,6 +1,7 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
-                             nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput)
+                             nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
+                             headerEvents)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -195,6 +196,14 @@ nodeEvents call viewStructure inputCounter =
         []
     else
         svgClickEvents (InputClick call.id inputCounter) (InputRightClick call.id inputCounter)
+
+headerEvents inputCounter viewStructure =
+    if viewStructure.isToolbar
+    then
+        []
+    else
+        svgClickEvents (HeaderOutputClick viewStructure.id inputCounter) (HeaderOutputRightClick viewStructure.id inputCounter)
+            
         
 -- shape for functionName objects
 drawBlock: Call -> ViewStructure -> (Svg Msg)
@@ -251,15 +260,15 @@ drawBlockNameInput call viewStructure blockPos =
                 
         
                 
-drawConnector : Call -> BlockPosition -> Int -> BlockPosition -> Svg.Attribute Msg -> Bool -> Int -> ViewStructure -> Svg Msg
-drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighlighted routeOffset viewStructure =
-    let otherBlockOutputX = otherBlockPos.xpos + (otherBlockPos.width // 2)
+drawConnector : Call -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Svg Msg
+drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routeOffset viewStructure =
+    let otherBlockOutputX = (Tuple.first otherBlockPos)
         lineX =
             (if routeOffset < 0
-             then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset
+             then ViewVariables.lineXSpace * routeOffset
              else
                  if routeOffset > 0
-                 then otherBlockPos.xpos + ViewVariables.lineXSpace * routeOffset + viewStructure.funcBlockMaxWidth
+                 then ViewVariables.lineXSpace * routeOffset + viewStructure.funcBlockMaxWidth
                  else otherBlockOutputX)
         lastY =
             (blockPos.ypos + ViewVariables.nodeRadius)
@@ -271,13 +280,13 @@ drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighligh
         linepoints =
             [
              otherBlockOutputX
-            ,(otherBlockPos.ypos + ViewVariables.outputNodeY)
+            ,(Tuple.second otherBlockPos)
             -- just below
             ,otherBlockOutputX
-            ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+            ,(Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock
             -- to right or left
             ,lineX
-            ,(otherBlockPos.ypos + ViewVariables.outputNodeY) + ViewVariables.lineSpaceBeforeBlock
+            ,(Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock
             -- down to other block
             ,lineX
             ,lastY
@@ -290,23 +299,23 @@ drawConnector call blockPos inputCounter otherBlockPos inputEvent isLineHighligh
             ,(blockPos.ypos + ViewVariables.nodeRadius)
             ]
     in
-        taxiLine linepoints inputEvent isLineHighlighted
+        taxiLine linepoints events isLineHighlighted
                         
                         
-taxiLine: List Int -> Svg.Attribute msg -> Bool -> Svg msg
-taxiLine posList inputEvent isLineHighlighted =
+taxiLine: List Int -> List (Svg.Attribute Msg) -> Bool -> Svg Msg
+taxiLine posList events isLineHighlighted =
     let color =
             if isLineHighlighted
             then "blue"
             else "black"
     in
         polyline
-        [points (Utils.listToStringList posList)
-        ,strokeLinejoin "round"
-        ,stroke color
-        ,fill "none"
-        ,strokeWidth ViewVariables.lineWidth
-        ,strokeLinecap "round"
-        ,inputEvent]
-        []
+            (events ++
+                 [points (Utils.listToStringList posList)
+                 ,strokeLinejoin "round"
+                 ,stroke color
+                 ,fill "none"
+                 ,strokeWidth ViewVariables.lineWidth
+                 ,strokeLinecap "round"])
+            []
     

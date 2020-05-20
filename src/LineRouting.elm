@@ -50,34 +50,25 @@ getOutputBurden outputBurden id =
         Nothing -> 0
         Just burden -> burden
                        
-getCallOrderedInputs : Call -> OutputOrdering
-getCallOrderedInputs call =
+getCallOrderedInputs : Id -> Call -> OutputOrdering
+getCallOrderedInputs funcId call =
     List.filterMap
         (\inputPair ->
              case (Tuple.first inputPair) of
                  Output outputId -> Just (InputInfo call (Tuple.second inputPair) outputId)
+                 FunctionArg index -> Just (InputInfo call (Tuple.second inputPair) (-index-1)) -- use negative id to store burden
                  _ -> Nothing)
         (List.map2 Tuple.pair call.inputs (List.range 0 ((List.length call.inputs)-1)))
 
 byOutput idToPos element =
     case Dict.get element.outputId idToPos of
         Just pos -> -pos
-        Nothing -> 100 -- todo throw error
-    
+        Nothing -> 1 -- this must be a function argument
             
-getOutputOrdering : List Call -> IdToPos -> OutputOrdering
+getOutputOrdering : Function -> IdToPos -> OutputOrdering
 getOutputOrdering func idToPos =
-    List.sortBy (byOutput idToPos) (List.concatMap getCallOrderedInputs func)
+    List.sortBy (byOutput idToPos) (List.concatMap (getCallOrderedInputs func.id) func.calls)
         
-countOutputsBetween subOutputConnectedDict startIndex endIndex =
-    if endIndex <= (startIndex + 1)
-    then
-        0
-    else
-        case Array.get (startIndex+1) subOutputConnectedDict of
-            Nothing -> 0 -- TODO throw error
-            Just connectedness ->
-                connectedness + (countOutputsBetween subOutputConnectedDict (startIndex+1) endIndex)    
 
 findMaxBurden : Array Call -> OutputBurden -> Int -> Int -> Int
 findMaxBurden fArray outputBurden currentIndex maxIndex =
@@ -118,14 +109,18 @@ existingBurdenOne inputInfo burden lineRouting isLeft =
         value -> Just (setLineRouting lineRouting inputInfo value isLeft)
 
 isDirectlyAbove inputInfo idToPos =
-    case Dict.get inputInfo.outputId idToPos of
-        Just outputPos ->
-            (case Dict.get inputInfo.call.id idToPos of
-                 Just inputPos -> inputPos == (outputPos+1)
-                 _ -> False)
+    case Dict.get inputInfo.call.id idToPos of
+        Just inputPos ->
+            if inputInfo.outputId < 0 -- in the case that it is connected to func argument
+            then
+                (inputPos == 0)
+            else
+                (case Dict.get inputInfo.outputId idToPos of
+                     Just outputPos -> (inputPos == (outputPos+1))
+                     _ -> False)
         _ -> False
                  
-existingBurden inputInfo burdenLeft burdenRight lineRouting idToPos=
+existingBurden inputInfo burdenLeft burdenRight lineRouting idToPos =
     if isDirectlyAbove inputInfo idToPos
     then
         Just (setLineRouting lineRouting inputInfo 0 True)
@@ -153,7 +148,7 @@ buildLineRouting fArray ordering outputBurdenLeft outputBurdenRight lineRouting 
 getLineRouting : Function -> LineRouting
 getLineRouting func =
     let idToPos = idToPosition func Dict.empty 0
-        ordering = getOutputOrdering func.calls idToPos
+        ordering = getOutputOrdering func idToPos
         funcArray = Array.fromList func.calls
     in
         buildLineRouting funcArray ordering Dict.empty Dict.empty Dict.empty idToPos True
