@@ -42,6 +42,7 @@ inputPadding = nodeRadius * 3
 inputSpacing = nodeRadius * 1
 
 
+
 outputNodeY = blockHeight - nodeRadius
 
 inputHeight = nodeRadius * 2
@@ -66,3 +67,6 @@ blockColor = "rgb(50, 214, 232)"
 textInputColor = (rgb 186 232 188)
 textInputColorVariable = (rgb 108 230 113)
 errorColor = (rgb 255 150 150)
+
+
+functionHeaderSquareY = functionHeaderHeight-blockHeight+nodeRadius

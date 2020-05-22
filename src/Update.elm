@@ -89,6 +89,11 @@ inputRightClickModel model id index =
         OutputSelected outputId -> ((updateInput model id index (\input -> (Output outputId))), Cmd.none)
         FunctionOutputSelected funcId argIndex -> connectFuncArg model id index funcId argIndex
         _ -> (model, Cmd.none)
+
+headerOutputRightClickModel model id index =
+    case model.mouseState.mouseSelection of
+        InputSelected inputId inputIndex -> connectFuncArg model inputId inputIndex id index
+        _ -> (model, Cmd.none)
                         
 inputClickModel : Model -> Id -> Int -> (Model, Cmd Msg)
 inputClickModel model id index =
@@ -367,7 +372,7 @@ update msg model =
             headerOutputClickModel model id index
                 
         HeaderOutputRightClick id index ->
-            (model, Cmd.none)
+            headerOutputRightClickModel model id index
                 
         InputHighlight id index ->
             (inputHighlightModel model id index)

@@ -235,16 +235,25 @@ drawBlock call viewStructure =
 
 drawFuncHeader : Function -> ViewStructure -> (Svg Msg)
 drawFuncHeader function viewStructure =
-    (rect
-         [x "0"
-         ,y "0"
-         ,width (String.fromInt viewStructure.headerPos.width)
-         ,height (String.fromInt (ViewVariables.functionHeaderHeight-ViewVariables.nodeRadius))
-         ,fill ViewVariables.blockColor
-         ,stroke ViewVariables.blockColor
-         , rx (String.fromInt ViewVariables.nodeRadius)
-         , ry (String.fromInt ViewVariables.nodeRadius)]
-         [])
+    Svg.g
+        []
+        [
+         (ellipse
+              [rx (String.fromInt (viewStructure.headerPos.width//2))
+              ,ry (String.fromInt ViewVariables.functionHeaderSquareY)
+              , cx (String.fromInt (viewStructure.headerPos.width//2))
+              , cy (String.fromInt ViewVariables.functionHeaderSquareY)
+              , fill ViewVariables.blockColor
+              , stroke ViewVariables.blockColor]
+             [])
+         ,(rect
+               [x "0"
+               ,y (String.fromInt ViewVariables.functionHeaderSquareY)
+               ,width (String.fromInt viewStructure.headerPos.width)
+               ,height (String.fromInt (ViewVariables.functionHeaderHeight-ViewVariables.functionHeaderSquareY-ViewVariables.nodeRadius))
+               ,fill ViewVariables.blockColor
+               ,stroke ViewVariables.blockColor]
+               [])]
                 
 drawBlockNameInput call viewStructure blockPos =
     (svgTextInput call.functionName
