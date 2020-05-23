@@ -1,4 +1,4 @@
-port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId)
+port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId, headerNameId)
 import Debug exposing (log)
 
 import Task
@@ -64,6 +64,8 @@ nodeNameId callid =
 
 headerNodeId functionid index =
     "h" ++ (String.fromInt functionid) ++ "-" ++ (String.fromInt index)
+headerNameId functionid =
+    "hn" ++ (String.fromInt functionid)
         
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
@@ -373,6 +375,16 @@ update msg model =
                 
         HeaderOutputRightClick id index ->
             headerOutputRightClickModel model id index
+
+        HeaderNameClick id -> (model, Cmd.none)
+
+        HeaderClick id -> (model, Cmd.none)
+
+        HeaderNameHighlight id -> (model, Cmd.none)
+
+        HeaderNameUpdate id str -> (model, Cmd.none)
+
+
                 
         InputHighlight id index ->
             (inputHighlightModel model id index)
@@ -406,6 +418,9 @@ update msg model =
                 
         SpawnBlock name ->
             spawnBlockModel model name
+
+        SpawnFunction name ->
+            (model, Cmd.none)
                 
         PlaySound ->
             playSoundResult model

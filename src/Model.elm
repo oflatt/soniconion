@@ -54,6 +54,12 @@ type Msg = MouseOver PageName
          | HeaderOutputUpdate Id Int String
          | HeaderOutputClick Id Int
          | HeaderOutputRightClick Id Int
+         | HeaderNameClick Id
+         | HeaderClick Id
+         | HeaderNameHighlight Id
+         | HeaderNameUpdate Id String
+         
+           
          | BlockClick Id
          | InputClick Id Int
          | OutputClick Id
@@ -67,6 +73,7 @@ type Msg = MouseOver PageName
          | BlockNameUpdate Id String
            
          | SpawnBlock String -- when you click a block in the toolbar put it in hand
+         | SpawnFunction String
          | SetError String
          | SilentDomError (Result Dom.Error ())
          | NoOp

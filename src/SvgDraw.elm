@@ -1,7 +1,7 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
-                             headerEvents)
+                             headerEvents, drawHeaderNameInput)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -190,6 +190,12 @@ blockNameEvents call viewStructure =
     else
         svgClickWithDefault (BlockNameClick call.id) (BlockClick call.id)
 
+headerNameEvents function viewStructure =
+    if viewStructure.isToolbar
+    then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
+    else
+        svgClickWithDefault (HeaderNameClick viewStructure.id) (HeaderClick viewStructure.id)
+            
 nodeEvents call viewStructure inputCounter =
     if viewStructure.isToolbar
     then
@@ -266,7 +272,19 @@ drawBlockNameInput call viewStructure blockPos =
          Css.transparent
          (blockNameEvents call viewStructure)
          (Update.nodeNameId call.id))
-                
+
+drawHeaderNameInput function viewStructure =
+    (svgTextInput function.name
+         ViewVariables.blockTextXPadding
+         ((ViewVariables.blockTextInputYpos) + ViewVariables.functionHeaderSquareY)
+         (viewStructure.headerPos.width - 2*ViewVariables.blockTextXPadding)
+         (ViewVariables.blockTextInputHeight)
+         (HeaderNameHighlight viewStructure.id)
+         (HeaderNameUpdate viewStructure.id)
+         Css.transparent
+         (headerNameEvents function viewStructure)
+         (Update.headerNameId viewStructure.id))
+
         
                 
 drawConnector : Call -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Svg Msg

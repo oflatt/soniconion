@@ -64,6 +64,7 @@ drawOutputLine call blockPos inputCounter viewStructure events isLineHighlighted
              (getOutputPos outputId viewStructure outputIndex)
              (getInputRouting call inputCounter viewStructure))    
 
+            
 drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
 drawHeaderOutput input viewStructure inputCounter =
     let blockPos = viewStructure.headerPos
@@ -225,7 +226,8 @@ drawAllInputs func viewStructure =
 -- there should be one line routing list per frame
 drawFuncInputs : Function -> ViewStructure -> (List (Svg Msg))
 drawFuncInputs func viewStructure =
-    (drawHeaderOutputs func.args viewStructure 0) ++ (drawAllInputs func.calls viewStructure)
+    (SvgDraw.drawHeaderNameInput func viewStructure) ::
+        ((drawHeaderOutputs func.args viewStructure 0) ++ (drawAllInputs func.calls viewStructure))
         
 drawFuncEndings func viewStructure =
     case func of
