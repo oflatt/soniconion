@@ -47,7 +47,7 @@ maxYOfStructures positioned =
     (Maybe.withDefault 0 (List.maximum (List.map (\structure -> structure.headerPos.ypos + structure.funcHeight) positioned)))
                         
 positionStructures viewStructures =
-    recursivePosition viewStructures (ViewVariables.toolbarWidth+ViewVariables.functionXSpacing) ViewVariables.functionYSpacing
+    recursivePosition viewStructures ViewVariables.funcInitialX ViewVariables.funcInitialY
 
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> (Int, List (Svg Msg)) -- funcs and max height

@@ -188,7 +188,7 @@ blockNameEvents call viewStructure =
     then
         svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
     else
-        svgClickWithDefault (BlockNameClick call.id) (BlockClick call.id)
+        svgClickWithDefault (BlockNameClick call.id) (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos)
 
 headerNameEvents function viewStructure =
     if viewStructure.isToolbar
@@ -221,7 +221,8 @@ drawBlock call viewStructure =
                    then
                        svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
                    else
-                       svgClickEvents (BlockClick call.id) (BlockClick call.id))
+                       svgClickEvents (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos)
+                       (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos))
                       ++
                       [(svgTranslate blockPos.xpos blockPos.ypos)
                       ,x "0"

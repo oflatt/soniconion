@@ -216,7 +216,7 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                         else
                             currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
                                 
-funcBlockDropped func blockId oldMouse windowWidth windowHeight =
+funcBlockDropped func blockId oldMouse funcx funcy windowWidth windowHeight =
     let viewStructure =
             (ViewPositions.getViewStructure func oldMouse
                  (ViewVariables.toSvgWindowWidth windowWidth)
@@ -228,14 +228,14 @@ funcBlockDropped func blockId oldMouse windowWidth windowHeight =
 
     
 -- todo handle multiple functions
-programBlockDropped : Onion -> Id -> MouseState -> Int -> Int -> Onion
-programBlockDropped program blockId oldMouse windowWidth windowHeight=
+programBlockDropped : Onion -> Id -> MouseState -> Int -> Int -> Int -> Int -> Onion
+programBlockDropped program blockId oldMouse funcx funcy windowWidth windowHeight=
     case program of
-        [f] -> [funcBlockDropped f blockId oldMouse windowWidth windowHeight]
+        [f] -> [funcBlockDropped f blockId oldMouse funcx funcy windowWidth windowHeight]
         _ -> program
         
         
-modelBlockDropped model id =
+modelBlockDropped model id funcx funcy=
     let oldMouse = model.mouseState
         newMouse =
             {oldMouse | mouseSelection = NoneSelected}
@@ -243,7 +243,7 @@ modelBlockDropped model id =
         ({model |
               mouseState = newMouse
               ,program =
-                  (programBlockDropped model.program id oldMouse
+                  (programBlockDropped model.program id oldMouse funcx funcy
                        model.windowWidth model.windowHeight)}
         ,Cmd.none)
 
@@ -254,8 +254,8 @@ modelWithError model errorString =
         
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
-        BlockSelected id ->
-            modelBlockDropped model id
+        BlockSelected id funcx funcy->
+            modelBlockDropped model id funcx funcy
         _ -> (model, Cmd.none)
                             
         
@@ -312,7 +312,7 @@ spawnBlockModel : Model -> String -> (Model, Cmd Msg)
 spawnBlockModel model name =
     let oldMouse = model.mouseState
         newCall = constructCall model.idCounter name
-        newMouse = {oldMouse | mouseSelection = (BlockSelected newCall.id)}
+        newMouse = {oldMouse | mouseSelection = (BlockSelected newCall.id ViewVariables.funcInitialX ViewVariables.funcInitialY)}
     in
         ({model |
               idCounter = newCall.id+1
@@ -353,10 +353,10 @@ update msg model =
             
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
-        BlockClick id ->
+        BlockClick id funcX funcY->
             (let oldMouse = model.mouseState
                  newMouse = {oldMouse |
-                                 mouseSelection = (BlockSelected id)}
+                                 mouseSelection = (BlockSelected id funcX funcY)}
              in
                  ({model |
                        mouseState = newMouse}

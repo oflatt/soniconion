@@ -28,13 +28,13 @@ getMovedInfo func mouseState mouseSvgCoordinates =
         [] -> Nothing
         (call::calls) ->
             case mouseState.mouseSelection of
-                BlockSelected id ->
+                BlockSelected id funcx funcy->
                     if id == call.id
                     then
                         Just (MovedBlockInfo
                                   call
-                                  ((Tuple.first mouseSvgCoordinates)
-                                  ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
+                                  ((Tuple.first (mouseSvgCoordinates funcx funcy))
+                                  ,(Tuple.second (mouseSvgCoordinates funcx funcy)) - (ViewVariables.blockHeight // 2))) -- center block on mouse
                     else getMovedInfo calls mouseState mouseSvgCoordinates
                 _ -> getMovedInfo calls mouseState mouseSvgCoordinates
 
@@ -162,7 +162,7 @@ getFuncHeaderHeight func =
                       
 getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
 getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
-    let moveInfo = getMovedInfo func.calls mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
+    let moveInfo = getMovedInfo func.calls mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
         idToSkip =
             case moveInfo of
                 Just info -> info.movedCall.id

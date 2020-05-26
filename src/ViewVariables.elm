@@ -26,6 +26,8 @@ toolbarWidth = 100
                                            
 functionXSpacing = 25
 functionYSpacing = functionXSpacing
+funcInitialX = toolbarWidth+functionXSpacing
+funcInitialY = functionYSpacing
 
 blockHeight = 50
 functionHeaderHeight = blockHeight

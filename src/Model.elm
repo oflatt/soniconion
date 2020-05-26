@@ -60,7 +60,7 @@ type Msg = MouseOver PageName
          | HeaderNameUpdate Id String
          
            
-         | BlockClick Id
+         | BlockClick Id Int Int -- position of the function in svg coordinates also passed in
          | InputClick Id Int
          | OutputClick Id
          | InputHighlight Id Int
@@ -129,7 +129,7 @@ type alias Call = {id: Id
                   ,functionName: String
                   ,outputText: String}
 
-type MouseSelection = BlockSelected Id
+type MouseSelection = BlockSelected Id Int Int
                     | InputSelected Id Int -- id of block and index of input
                     | NameSelected Id
                     | OutputSelected Id
