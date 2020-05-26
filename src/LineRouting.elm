@@ -1,10 +1,12 @@
-module LineRouting exposing (CallLineRoute, LineRouting, getLineRouting, getOutputOrdering, OutputOrdering, InputInfo)
+module LineRouting exposing (CallLineRoute, LineRouting, getLineRouting, getOutputOrdering, OutputOrdering,
+                                 InputInfo, getMaxLine, getMinLine)
 
 import ModelHelpers exposing (IdToPos, idToPosition)
 import Model exposing (Function, Call, Input(..), Id)
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Debug exposing (log)
+import Maybe exposing (withDefault)
 
 type alias CallLineRoute = Array (Maybe Int) -- the relative positions of the outside of the line to the middle in increments
 type alias LineRouting = Dict Id CallLineRoute
@@ -61,9 +63,12 @@ getCallOrderedInputs funcId call =
         (List.map2 Tuple.pair call.inputs (List.range 0 ((List.length call.inputs)-1)))
 
 byOutput idToPos element =
-    case Dict.get element.outputId idToPos of
-        Just pos -> -pos
-        Nothing -> 1 -- this must be a function argument
+    case Dict.get element.call.id idToPos of
+        Just callPos ->
+            (case Dict.get element.outputId idToPos of
+                Just pos -> (-pos, -callPos)
+                Nothing -> (1, -callPos))-- this must be a function argument
+        Nothing -> (1, 1) -- should not happen
             
 getOutputOrdering : Function -> IdToPos -> OutputOrdering
 getOutputOrdering func idToPos =
@@ -153,3 +158,24 @@ getLineRouting func =
     in
         buildLineRouting funcArray ordering Dict.empty Dict.empty Dict.empty idToPos True
     
+
+
+maybeMax subroute =
+    (withDefault 0 (List.maximum (List.map (withDefault 0) (Array.toList subroute))))
+
+maybeMin subroute =
+    (withDefault 0 (List.minimum (List.map (withDefault 0) (Array.toList subroute))))
+        
+getMaxLine routing =
+    max 0
+        (withDefault 0
+             (List.maximum
+                  (List.map maybeMax
+                       (Dict.values routing))))
+
+getMinLine routing =
+    min 0
+        (withDefault 0
+             (List.minimum
+                  (List.map maybeMin
+                       (Dict.values routing))))

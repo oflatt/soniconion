@@ -276,7 +276,7 @@ drawBlockNameInput call viewStructure blockPos =
 drawHeaderNameInput function viewStructure =
     (svgTextInput function.name
          ViewVariables.blockTextXPadding
-         ((ViewVariables.blockTextInputYpos) + ViewVariables.functionHeaderSquareY)
+         (ViewVariables.functionHeaderSquareY + ViewVariables.nodeRadius)
          (viewStructure.headerPos.width - 2*ViewVariables.blockTextXPadding)
          (ViewVariables.blockTextInputHeight)
          (HeaderNameHighlight viewStructure.id)

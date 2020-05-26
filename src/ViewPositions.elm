@@ -1,7 +1,7 @@
 module ViewPositions exposing (..)
 
 
-import LineRouting exposing (LineRouting, getLineRouting)
+import LineRouting exposing (LineRouting, getLineRouting, getMaxLine, getMinLine)
 import Model exposing (..)
 import ModelHelpers exposing (idToPosition, IdToPos)
 import ViewVariables
@@ -53,6 +53,7 @@ type alias ViewStructure = {blockPositions : BlockPositions
                            ,id : Id
                            ,headerPos : BlockPosition
                            ,funcBlockMaxWidth : Int
+                           ,funcWidth : Int
                            ,funcHeight : Int
                            ,mouseState : MouseState
                            ,isToolbar : Bool}
@@ -201,8 +202,11 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
     let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
         sortedFunc = {func | calls=(makeSortedFunc func blockPositions)}
         lineRouting = getLineRouting sortedFunc
-        topBlockPosition = getHeaderBlockPos func xoffset yoffset
         maxWidth = getMaxBlockWidth blockPositions topBlockPosition
+        leftWidth = -(getMinLine lineRouting)* ViewVariables.lineXSpace
+        rightWidth = (getMaxLine lineRouting) * ViewVariables.lineXSpace
+        totalWidth = leftWidth + rightWidth + maxWidth
+        topBlockPosition = getHeaderBlockPos func (xoffset + leftWidth) yoffset
         funcHeight = getMaxBlockBottom blockPositions
     in
         (ViewStructure
@@ -212,6 +216,7 @@ getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
              sortedFunc.id
              topBlockPosition
              maxWidth
+             totalWidth
              funcHeight
              mouseState
              isToolbar)
