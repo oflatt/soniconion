@@ -28,9 +28,9 @@ outputOrderingTest =
                   [(LineRouting.InputInfo complex4 1 complex3.id)
                   ,(LineRouting.InputInfo complex3 0 complex1.id)
                   ,(LineRouting.InputInfo complex3 1 complex1.id)
-                  ,(LineRouting.InputInfo complex1 0 complex0.id)
-                  ,(LineRouting.InputInfo complex2 0 complex0.id)
                   ,(LineRouting.InputInfo complex4 0 complex0.id)
+                  ,(LineRouting.InputInfo complex2 0 complex0.id)
+                  ,(LineRouting.InputInfo complex1 0 complex0.id)
                   ])]
              
 

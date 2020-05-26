@@ -32,7 +32,7 @@ secondToLastMouse = (MouseState 1
                               +(ViewVariables.blockHeight//2))
                          0
                          0
-                         (BlockSelected 23))
+                         (BlockSelected 23 0 0))
                     
 blockPositionsTest : Test
 blockPositionsTest =
@@ -70,7 +70,7 @@ movedInfoTest =
              (myexpect
                   (ViewPositions.getMovedInfo TestModel.complexRoutingFunc.calls secondToLastMouse
                        (ViewPositions.mouseToSvgCoordinates secondToLastMouse
-                            (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight 0 0))
+                            (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight))
                   (Just (ViewPositions.MovedBlockInfo TestModel.secondToLastSine
                              (1, blockSpace + 2*lineSpaceBeforeBlock + functionHeaderHeight + blockSpacing))))
                                        
