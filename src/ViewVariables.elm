@@ -22,9 +22,10 @@ viewportWidth svgWindowWidth svgWindowHeight = floor (((toFloat svgWindowWidth) 
                                                           * (toFloat viewportHeight))
 
 
-toolbarWidth windowWidth windowHeight = 100
+toolbarWidth = 100
                                            
-functionXSpacing = 50
+functionXSpacing = 25
+functionYSpacing = functionXSpacing
 
 blockHeight = 50
 functionHeaderHeight = blockHeight

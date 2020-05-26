@@ -26,5 +26,4 @@ drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
     in
         (viewStructure.funcHeight,
              (DrawFunc.drawFuncWithConnections
-                  viewStructure
-                  mouseState))
+                  viewStructure))

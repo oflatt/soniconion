@@ -28,22 +28,37 @@ import Html.Events exposing (onInput)
 import Debug exposing (log)
 
 
+getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight func =
+    (ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
+         0 0 False)
+
+
+recursivePosition viewStructures xpos ypos =
+    case viewStructures of
+        [] -> []
+        (structure::rest) ->
+            let oldPos = structure.headerPos
+                newPos = {oldPos | xpos = xpos, ypos = ypos}
+            in
+                {structure | headerPos = newPos} ::
+                    (recursivePosition rest (xpos+structure.funcWidth+ViewVariables.functionXSpacing) ypos)
+
+maxYOfStructures positioned =
+    (Maybe.withDefault 0 (List.maximum (List.map (\structure -> structure.headerPos.ypos + structure.funcHeight) positioned)))
+                        
+positionStructures viewStructures =
+    recursivePosition viewStructures (ViewVariables.toolbarWidth+ViewVariables.functionXSpacing) ViewVariables.functionYSpacing
+
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> (Int, List (Svg Msg)) -- funcs and max height
-drawOnion onion mouseState svgWindowWidth svgWindowHeight = 
-  case onion of
-    [] -> (0, [])
-    (func::funcs) ->
-        let viewStructure =
-                (ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
-                     (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth svgWindowWidth svgWindowHeight))
-                     0 False)
-            restOnion = (drawOnion funcs mouseState svgWindowWidth svgWindowHeight)
-        in
-            ((Basics.max viewStructure.funcHeight (Tuple.first restOnion))
-            ,(drawFuncWithConnections
-                 viewStructure
-                 mouseState) :: (Tuple.second restOnion))
+drawOnion onion mouseState svgWindowWidth svgWindowHeight =
+    let viewStructures =
+            List.map (getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight) onion
+        positioned =
+            positionStructures viewStructures
+    in
+        ((maxYOfStructures positioned)
+        ,(List.map drawFuncWithConnections positioned))
             
 
 

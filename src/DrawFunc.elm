@@ -251,8 +251,8 @@ drawFunc func viewStructure counter =
 
 
                      
-drawFuncWithConnections: ViewStructure -> MouseState -> Svg Msg
-drawFuncWithConnections viewStructure mouseState =
+drawFuncWithConnections: ViewStructure -> Svg Msg
+drawFuncWithConnections viewStructure =
     Svg.g
         [SvgDraw.svgTranslate viewStructure.headerPos.xpos viewStructure.headerPos.ypos]
         [Svg.g [] (drawFunc viewStructure.sortedFunc viewStructure 0)

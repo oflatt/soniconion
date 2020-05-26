@@ -221,9 +221,7 @@ funcBlockDropped func blockId oldMouse windowWidth windowHeight =
             (ViewPositions.getViewStructure func oldMouse
                  (ViewVariables.toSvgWindowWidth windowWidth)
                  (ViewVariables.toSvgWindowHeight windowHeight)
-                 (ViewVariables.functionXSpacing + (ViewVariables.toolbarWidth
-                                                        (ViewVariables.toSvgWindowWidth windowWidth)
-                                                        (ViewVariables.toSvgWindowHeight windowHeight)))
+                 (ViewVariables.functionXSpacing + ViewVariables.toolbarWidth)
                  0 False)
     in
         fixInvalidInputs viewStructure.sortedFunc
