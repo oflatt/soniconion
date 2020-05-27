@@ -1,6 +1,6 @@
 module DrawFunc exposing (drawFuncWithConnections)
 import Model exposing (..)
-import ViewPositions exposing (BlockPositions, BlockPosition, ViewStructure)
+import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, InputPosition)
 import LineRouting exposing (CallLineRoute)
 import ViewVariables
 import SvgDraw
@@ -104,7 +104,7 @@ drawInput call input blockPos inputCounter viewStructure =
                 InputSelected inputId inputIndex ->
                     (inputId == call.id) && (inputCounter == inputIndex)
                 _ -> False
-        nodePosition: ViewPositions.InputPosition
+        nodePosition: InputPosition
         nodePosition =
             case (Dict.get inputCounter blockPos.inputPositions) of
                 Just nodePos -> nodePos

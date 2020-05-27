@@ -3,7 +3,7 @@ module DrawToolbar exposing (drawToolbar)
 import BuiltIn exposing (allBuiltInAsFunction)
 import Model exposing (..)
 import DrawFunc
-import ViewPositions
+import ViewStructure exposing (getViewStructure)
 import ViewVariables
 
 import Dict exposing (Dict)
@@ -21,7 +21,7 @@ import Svg.Attributes
         
 drawToolbar : Onion -> MouseState -> Int -> Int -> (Int, Svg Msg)
 drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
-    let viewStructure = (ViewPositions.getViewStructure allBuiltInAsFunction mouseState
+    let viewStructure = (getViewStructure allBuiltInAsFunction mouseState
                              svgWindowWidth svgWindowHeight 0 0 True)
     in
         (viewStructure.funcHeight,

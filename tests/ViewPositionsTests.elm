@@ -9,7 +9,7 @@ import Dict exposing (Dict)
 
 import TestModel exposing (myexpect)
 import ModelHelpers
-import ViewPositions
+import ViewStructure
 import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock, blockSpacing
                               ,functionHeaderHeight)
                 
@@ -19,8 +19,8 @@ blockPositionToNormalYpos blockPos = blockPos.ypos - (functionHeaderHeight + blo
 formatBlockPositions : Function -> MouseState -> Result String (List Int)
 formatBlockPositions testFunc mouse =
     Result.map (List.map blockPositionToNormalYpos)
-        (ViewPositions.blockPositionsToPositionList testFunc.calls
-             (ViewPositions.getViewStructure testFunc
+        (ViewStructure.blockPositionsToPositionList testFunc.calls
+             (ViewStructure.getViewStructure testFunc
                   mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 False).blockPositions)
 
             
@@ -68,10 +68,10 @@ movedInfoTest =
     describe "getMovedInfo"
         [test "test select second to last"
              (myexpect
-                  (ViewPositions.getMovedInfo TestModel.complexRoutingFunc.calls secondToLastMouse
-                       (ViewPositions.mouseToSvgCoordinates secondToLastMouse
+                  (ViewStructure.getMovedInfo TestModel.complexRoutingFunc.calls secondToLastMouse
+                       (ViewStructure.mouseToSvgCoordinates secondToLastMouse
                             (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight))
-                  (Just (ViewPositions.MovedBlockInfo TestModel.secondToLastSine
+                  (Just (ViewStructure.MovedBlockInfo TestModel.secondToLastSine
                              (1, blockSpace + 2*lineSpaceBeforeBlock + functionHeaderHeight + blockSpacing))))
                                        
                ]

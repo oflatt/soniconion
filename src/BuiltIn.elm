@@ -100,3 +100,5 @@ constructCall id functionName =
                 Infinite firstArgs restArgs -> callWithHoles id functionName (max 1 (List.length firstArgs))
                 Finite args -> callWithHoles id functionName (List.length args)
         Nothing -> callWithHoles id functionName 0
+                   
+                    

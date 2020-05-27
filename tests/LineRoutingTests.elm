@@ -8,14 +8,14 @@ import ModelHelpers
 import Array exposing (Array)
 import Dict exposing (Dict)
 
-import ViewPositions
+import ViewStructure
 
 import TestModel exposing (..)
 import LineRouting
 
 
 getLineRouting testModel =
-    (ViewPositions.getViewStructure testModel (MouseState 0 0 0 0 NoneSelected) 0 0 0 0 False).lineRouting
+    (ViewStructure.getViewStructure testModel (MouseState 0 0 0 0 NoneSelected) 0 0 0 0 False).lineRouting
         
 outputOrderingTest : Test
 outputOrderingTest =

@@ -130,6 +130,7 @@ type alias Call = {id: Id
                   ,outputText: String}
 
 type MouseSelection = BlockSelected Id Int Int
+                    | FunctionSelected Id
                     | InputSelected Id Int -- id of block and index of input
                     | NameSelected Id
                     | OutputSelected Id

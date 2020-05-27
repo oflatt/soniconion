@@ -15,6 +15,7 @@ import Keyboard.Event exposing (KeyboardEvent, decodeKeyboardEvent)
 import Browser.Dom as Dom
 import ViewVariables
 import ViewPositions
+import ViewStructure
 
 import Json.Decode as Decode
 import Model exposing (..)
@@ -108,6 +109,15 @@ blockNameClickModel : Model -> Id -> (Model, Cmd Msg)
 blockNameClickModel model id =
     blockNameHighlightModel model id
 
+headerClickModel model id =
+    (let oldMouse = model.mouseState
+         newMouse = {oldMouse |
+                         mouseSelection = (FunctionSelected id)}
+     in
+         ({model |
+               mouseState = newMouse}
+         ,Cmd.none))
+        
 focusInputCommand domId =
     (Dom.focus domId |> Task.attempt SilentDomError)
         
@@ -218,7 +228,7 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                                 
 funcBlockDropped func blockId oldMouse funcx funcy windowWidth windowHeight =
     let viewStructure =
-            (ViewPositions.getViewStructure func oldMouse
+            (ViewStructure.getViewStructure func oldMouse
                  (ViewVariables.toSvgWindowWidth windowWidth)
                  (ViewVariables.toSvgWindowHeight windowHeight)
                  (ViewVariables.functionXSpacing + ViewVariables.toolbarWidth)
@@ -242,9 +252,27 @@ modelBlockDropped model id funcx funcy=
     in
         ({model |
               mouseState = newMouse
-              ,program =
-                  (programBlockDropped model.program id oldMouse funcx funcy
-                       model.windowWidth model.windowHeight)}
+         ,program =
+              (programBlockDropped model.program id oldMouse funcx funcy
+                   model.windowWidth model.windowHeight)}
+        ,Cmd.none)
+
+
+programFuncDropped program id oldMouse windowW windowH =
+    let svgW = ViewVariables.toSvgWindowWidth windowW
+        svgH = ViewVariables.toSvgWindowHeight windowH
+        viewStructures = ViewPositions.getViewStructures program oldMouse svgW svgH
+    in
+        List.map .sortedFunc viewStructures
+        
+        
+modelFunctionDropped model id =
+    let oldMouse = model.mouseState
+        newMouse = {oldMouse | mouseSelection = NoneSelected}
+    in
+        ({model |
+              mouseState = newMouse
+         ,program = (programFuncDropped model.program id oldMouse model.windowWidth model.windowHeight)}
         ,Cmd.none)
 
 modelWithError : Model -> String -> Model
@@ -256,6 +284,8 @@ modelMouseRelease model =
     case model.mouseState.mouseSelection of
         BlockSelected id funcx funcy->
             modelBlockDropped model id funcx funcy
+        FunctionSelected id ->
+            modelFunctionDropped model id
         _ -> (model, Cmd.none)
                             
         
@@ -308,6 +338,11 @@ spawnBlockProgram onion call =
         [] -> [(makeMain 0 [call])]
         (func::funcs) -> (spawnBlockFunc func call) :: funcs
 
+spawnFuncProgram : Onion -> Function -> Onion
+spawnFuncProgram onion func =
+    func :: onion
+                         
+                         
 spawnBlockModel : Model -> String -> (Model, Cmd Msg)
 spawnBlockModel model name =
     let oldMouse = model.mouseState
@@ -319,7 +354,20 @@ spawnBlockModel model name =
               ,mouseState = newMouse
               ,program = spawnBlockProgram model.program newCall}
         ,Cmd.none)
-                
+
+spawnFuncModel : Model -> String -> (Model, Cmd Msg)
+spawnFuncModel model name =
+    let oldMouse = model.mouseState
+        newFunc = constructFunction model.idCounter name []
+        newMouse = {oldMouse | mouseSelection = (FunctionSelected newFunc.id)}
+    in
+        ({model |
+              idCounter = newFunc.id+1
+              ,mouseState = newMouse
+              ,program = spawnFuncProgram model.program newFunc}
+        ,Cmd.none)
+                    
+        
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
@@ -376,7 +424,8 @@ update msg model =
 
         HeaderNameClick id -> (model, Cmd.none)
 
-        HeaderClick id -> (model, Cmd.none)
+        HeaderClick id ->
+            headerClickModel model id
 
         HeaderNameHighlight id -> (model, Cmd.none)
 
@@ -418,7 +467,7 @@ update msg model =
             spawnBlockModel model name
 
         SpawnFunction name ->
-            (model, Cmd.none)
+            spawnFuncModel model name
                 
         PlaySound ->
             playSoundResult model

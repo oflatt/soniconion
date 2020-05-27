@@ -9,7 +9,7 @@ import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 import Update
 
-import ViewPositions exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition)
+import ViewStructure exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, countOutputsBefore)
 import LineRouting exposing (LineRouting)
 
 import Json.Decode as Json
@@ -195,6 +195,12 @@ headerNameEvents function viewStructure =
     then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
     else
         svgClickWithDefault (HeaderNameClick viewStructure.id) (HeaderClick viewStructure.id)
+
+headerBlockEvents function viewStructure =
+    if viewStructure.isToolbar
+    then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
+    else
+        svgClickEvents (HeaderClick viewStructure.id) (HeaderClick viewStructure.id)
             
 nodeEvents call viewStructure inputCounter =
     if viewStructure.isToolbar
@@ -243,7 +249,7 @@ drawBlock call viewStructure =
 drawFuncHeader : Function -> ViewStructure -> (Svg Msg)
 drawFuncHeader function viewStructure =
     Svg.g
-        []
+        (headerBlockEvents function viewStructure)
         [
          (ellipse
               [rx (String.fromInt (viewStructure.headerPos.width//2))
@@ -300,7 +306,7 @@ drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted 
                  else otherBlockOutputX)
         lastY =
             (blockPos.ypos + ViewVariables.nodeRadius)
-            - (ViewVariables.lineSpaceBeforeBlock * (1 + (ViewPositions.countOutputsBefore call.inputs inputCounter)))
+            - (ViewVariables.lineSpaceBeforeBlock * (1 + (countOutputsBefore call.inputs inputCounter)))
         nodeX =
             (case (Dict.get inputCounter blockPos.inputPositions ) of
                  Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius + blockPos.xpos

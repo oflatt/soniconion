@@ -2,7 +2,9 @@ module DrawProgram exposing (drawProgram)
 import DrawFunc exposing (drawFuncWithConnections)
 import DrawToolbar
 import Model exposing (..)
-import ViewPositions
+import ModelHelpers
+import ViewStructure exposing (mouseToSvgCoordinates, ViewStructure)
+import ViewPositions exposing (getViewStructures)
 import ViewVariables
 import SvgDraw
 import Update exposing (nodeInputId, nodeOutputId)
@@ -28,37 +30,17 @@ import Html.Events exposing (onInput)
 import Debug exposing (log)
 
 
-getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight func =
-    (ViewPositions.getViewStructure func mouseState svgWindowWidth svgWindowHeight
-         0 0 False)
-
-
-recursivePosition viewStructures xpos ypos =
-    case viewStructures of
-        [] -> []
-        (structure::rest) ->
-            let oldPos = structure.headerPos
-                newPos = {oldPos | xpos = xpos, ypos = ypos}
-            in
-                {structure | headerPos = newPos} ::
-                    (recursivePosition rest (xpos+structure.funcWidth+ViewVariables.functionXSpacing) ypos)
-
 maxYOfStructures positioned =
     (Maybe.withDefault 0 (List.maximum (List.map (\structure -> structure.headerPos.ypos + structure.funcHeight) positioned)))
-                        
-positionStructures viewStructures =
-    recursivePosition viewStructures ViewVariables.funcInitialX ViewVariables.funcInitialY
 
+                               
 -- function for drawing the onion
 drawOnion: Onion -> MouseState -> Int -> Int -> (Int, List (Svg Msg)) -- funcs and max height
 drawOnion onion mouseState svgWindowWidth svgWindowHeight =
-    let viewStructures =
-            List.map (getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight) onion
-        positioned =
-            positionStructures viewStructures
+    let viewStructures = getViewStructures onion mouseState svgWindowWidth svgWindowHeight
     in
-        ((maxYOfStructures positioned)
-        ,(List.map drawFuncWithConnections positioned))
+        ((maxYOfStructures viewStructures)
+        ,(List.map drawFuncWithConnections viewStructures))
             
 
 
@@ -78,7 +60,8 @@ drawProgram program mouseState svgWindowWidth svgWindowHeight =
                   ++
                   [ Svg.Attributes.width(String.fromInt svgWindowWidth) -- define the width of the svg
                   , Svg.Attributes.height(String.fromInt actualWindowHeight) -- define the height of the svg
-                  , Svg.Attributes.viewBox("0 0 " ++ (ViewPositions.createViewboxDimensions viewportWidth actualViewportHeight)) -- define the viewbox
+                  , Svg.Attributes.viewBox("0 0 " ++ (String.fromInt viewportWidth)
+                                               ++ " " ++ (String.fromInt actualViewportHeight))
                   , display "inline-block"
                   ])
              ((Tuple.second drawnToolbar) ::
