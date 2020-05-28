@@ -31,13 +31,14 @@ getMovedInfo func mouseState mouseSvgCoordinates =
         [] -> Nothing
         (call::calls) ->
             case mouseState.mouseSelection of
-                BlockSelected id funcx funcy->
-                    if id == call.id
+                BlockSelected funcId selectedCall ->
+                    if selectedCall.id == call.id
                     then
-                        Just (MovedBlockInfo
-                                  call
-                                  ((Tuple.first (mouseSvgCoordinates funcx funcy))
-                                  ,(Tuple.second (mouseSvgCoordinates funcx funcy)) - (ViewVariables.blockHeight // 2))) -- center block on mouse
+                        Nothing
+                        --Just (MovedBlockInfo
+                         --         call
+                          --        ((Tuple.first (mouseSvgCoordinates funcx funcy))
+                           --       ,(Tuple.second (mouseSvgCoordinates funcx funcy)) - (ViewVariables.blockHeight // 2))) -- center block on mouse
                     else getMovedInfo calls mouseState mouseSvgCoordinates
                 _ -> getMovedInfo calls mouseState mouseSvgCoordinates
 

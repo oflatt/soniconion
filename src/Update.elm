@@ -22,7 +22,7 @@ import Model exposing (..)
 import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateInputOn
-                             ,updateInputAtIndex, updateFunc)
+                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc)
 
 
 
@@ -109,12 +109,24 @@ blockNameClickModel : Model -> Id -> (Model, Cmd Msg)
 blockNameClickModel model id =
     blockNameHighlightModel model id
 
-headerClickModel model id =
+headerClickModel model func =
     (let oldMouse = model.mouseState
          newMouse = {oldMouse |
-                         mouseSelection = (FunctionSelected id)}
+                         mouseSelection = (FunctionSelected func)}
+         newProgram = removeFunc model.program func.id
      in
          ({model |
+               mouseState = newMouse
+          ,program = newProgram}
+         ,Cmd.none))
+
+blockClickModel model call funcId =
+    (let removed = updateFunc model funcId (\func -> removeCall func call.id)
+         oldMouse = model.mouseState
+         newMouse = {oldMouse |
+                         mouseSelection = (BlockSelected funcId call)}
+     in
+         ({removed |
                mouseState = newMouse}
          ,Cmd.none))
         
@@ -225,54 +237,34 @@ placeBlockAtPos func blockId blockPos blockPositions call =
                             call :: (finishBlockAtPos func blockId)
                         else
                             currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
-                                
-funcBlockDropped func blockId oldMouse funcx funcy windowWidth windowHeight =
-    let viewStructure =
-            (ViewStructure.getViewStructure func oldMouse
-                 (ViewVariables.toSvgWindowWidth windowWidth)
-                 (ViewVariables.toSvgWindowHeight windowHeight)
-                 (ViewVariables.functionXSpacing + ViewVariables.toolbarWidth)
-                 0 False)
-    in
-        fixInvalidInputs viewStructure.sortedFunc
-
-    
--- todo handle multiple functions
-programBlockDropped : Onion -> Id -> MouseState -> Int -> Int -> Int -> Int -> Onion
-programBlockDropped program blockId oldMouse funcx funcy windowWidth windowHeight=
-    case program of
-        [f] -> [funcBlockDropped f blockId oldMouse funcx funcy windowWidth windowHeight]
-        _ -> program
-        
-        
-modelBlockDropped model id funcx funcy=
-    let oldMouse = model.mouseState
-        newMouse =
-            {oldMouse | mouseSelection = NoneSelected}
-    in
-        ({model |
-              mouseState = newMouse
-         ,program =
-              (programBlockDropped model.program id oldMouse funcx funcy
-                   model.windowWidth model.windowHeight)}
-        ,Cmd.none)
 
 
-programFuncDropped program id oldMouse windowW windowH =
-    let svgW = ViewVariables.toSvgWindowWidth windowW
-        svgH = ViewVariables.toSvgWindowHeight windowH
-        viewStructures = ViewPositions.getViewStructures program oldMouse svgW svgH
+programDropped model =
+    let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
+        svgH = ViewVariables.toSvgWindowHeight model.windowHeight
+        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH
     in
         List.map .sortedFunc viewStructures
         
+modelBlockDropped model =
+    let oldMouse = model.mouseState
+        newMouse =
+            {oldMouse | mouseSelection = NoneSelected}
+        newProgram = (programDropped model)
+    in
+        ({model |
+              mouseState = newMouse
+         ,program = newProgram}
+        ,Cmd.none)        
         
 modelFunctionDropped model id =
     let oldMouse = model.mouseState
         newMouse = {oldMouse | mouseSelection = NoneSelected}
+        newProgram = programDropped model
     in
         ({model |
               mouseState = newMouse
-         ,program = (programFuncDropped model.program id oldMouse model.windowWidth model.windowHeight)}
+         ,program = newProgram}
         ,Cmd.none)
 
 modelWithError : Model -> String -> Model
@@ -282,8 +274,8 @@ modelWithError model errorString =
         
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
-        BlockSelected id funcx funcy->
-            modelBlockDropped model id funcx funcy
+        BlockSelected call funcId ->
+            modelBlockDropped model
         FunctionSelected id ->
             modelFunctionDropped model id
         _ -> (model, Cmd.none)
@@ -329,42 +321,36 @@ keyboardUpdate model keyevent =
         OutputSelected id -> keyboardUpdateOutput model keyevent id
         _ -> (model, Cmd.none)
 
-spawnBlockFunc func call =
-    {func | calls=(call::func.calls)}
-             
-spawnBlockProgram : Onion -> Call -> Onion
-spawnBlockProgram onion call =
-    case onion of
-        [] -> [(makeMain 0 [call])]
-        (func::funcs) -> (spawnBlockFunc func call) :: funcs
 
-spawnFuncProgram : Onion -> Function -> Onion
-spawnFuncProgram onion func =
-    func :: onion
-                         
+firstOrSpawn onion =
+    case onion of
+        [] -> (0, [(makeMain 0 [])])
+        (func::rest) -> (func.id, onion)                         
                          
 spawnBlockModel : Model -> String -> (Model, Cmd Msg)
 spawnBlockModel model name =
     let oldMouse = model.mouseState
         newCall = constructCall model.idCounter name
-        newMouse = {oldMouse | mouseSelection = (BlockSelected newCall.id ViewVariables.funcInitialX ViewVariables.funcInitialY)}
+        funcTuple = firstOrSpawn model.program
+        funcId = (Tuple.first funcTuple)
+        newProgram = (Tuple.second funcTuple)
+        newMouse = {oldMouse | mouseSelection = (BlockSelected funcId newCall)}
     in
         ({model |
               idCounter = newCall.id+1
               ,mouseState = newMouse
-              ,program = spawnBlockProgram model.program newCall}
+              ,program = newProgram}
         ,Cmd.none)
 
 spawnFuncModel : Model -> String -> (Model, Cmd Msg)
 spawnFuncModel model name =
     let oldMouse = model.mouseState
         newFunc = constructFunction model.idCounter name []
-        newMouse = {oldMouse | mouseSelection = (FunctionSelected newFunc.id)}
+        newMouse = {oldMouse | mouseSelection = (FunctionSelected newFunc)}
     in
         ({model |
               idCounter = newFunc.id+1
-              ,mouseState = newMouse
-              ,program = spawnFuncProgram model.program newFunc}
+              ,mouseState = newMouse}
         ,Cmd.none)
                     
         
@@ -401,14 +387,8 @@ update msg model =
             
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
-        BlockClick id funcX funcY->
-            (let oldMouse = model.mouseState
-                 newMouse = {oldMouse |
-                                 mouseSelection = (BlockSelected id funcX funcY)}
-             in
-                 ({model |
-                       mouseState = newMouse}
-                 ,Cmd.none))
+        BlockClick call funcId ->
+            blockClickModel model call funcId
 
         HeaderOutputHighlight id index ->
             headerHighlightModel model id index
@@ -424,8 +404,8 @@ update msg model =
 
         HeaderNameClick id -> (model, Cmd.none)
 
-        HeaderClick id ->
-            headerClickModel model id
+        HeaderClick func ->
+            headerClickModel model func
 
         HeaderNameHighlight id -> (model, Cmd.none)
 

@@ -1,5 +1,5 @@
 module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
-                             ,updateInputAtIndex, updateFunc)
+                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc)
 
 import Dict exposing (Dict)
 
@@ -139,6 +139,19 @@ updateCall model id callFunc =
               ,program = newOnion}
         ,Cmd.none)
 
+removeCallsR calls id =
+    case calls of
+        [] -> []
+        (call ::rest) ->
+            if call.id == id
+            then
+                rest
+            else
+                call :: removeCallsR rest id
+        
+removeCall func id =
+    fixInvalidInputs {func | calls = removeCallsR func.calls id}
+        
 updateFuncOnion onion funcId update =
     case onion of
         [] -> []
@@ -151,6 +164,13 @@ updateFuncOnion onion funcId update =
         
 updateFunc model funcId update =
     {model | program = (updateFuncOnion model.program funcId update)}
+
+removeFunc onion funcId =
+    case onion of
+        [] -> []
+        (func :: funcs) ->
+            if func.id == funcId then funcs else func :: (removeFunc funcs funcId)
+    
         
 fixInputs inputs idToPos currentIndex =
     case inputs of

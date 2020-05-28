@@ -188,19 +188,19 @@ blockNameEvents call viewStructure =
     then
         svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
     else
-        svgClickWithDefault (BlockNameClick call.id) (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos)
+        svgClickWithDefault (BlockNameClick call.id) (BlockClick call viewStructure.id)
 
 headerNameEvents function viewStructure =
     if viewStructure.isToolbar
     then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
     else
-        svgClickWithDefault (HeaderNameClick viewStructure.id) (HeaderClick viewStructure.id)
+        svgClickWithDefault (HeaderNameClick viewStructure.id) (HeaderClick function)
 
 headerBlockEvents function viewStructure =
     if viewStructure.isToolbar
     then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
     else
-        svgClickEvents (HeaderClick viewStructure.id) (HeaderClick viewStructure.id)
+        svgClickEvents (HeaderClick function) (HeaderClick function)
             
 nodeEvents call viewStructure inputCounter =
     if viewStructure.isToolbar
@@ -227,8 +227,8 @@ drawBlock call viewStructure =
                    then
                        svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
                    else
-                       svgClickEvents (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos)
-                       (BlockClick call.id viewStructure.headerPos.xpos viewStructure.headerPos.ypos))
+                       svgClickEvents (BlockClick call viewStructure.id)
+                       (BlockClick call viewStructure.id))
                       ++
                       [(svgTranslate blockPos.xpos blockPos.ypos)
                       ,x "0"

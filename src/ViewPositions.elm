@@ -11,7 +11,7 @@ import Dict exposing (Dict)
 import Debug exposing (log)
 
 
-selectedFunc mouseState svgWindowWidth svgWindowHeight func =
+selectedFunc mouseState func svgWindowWidth svgWindowHeight=
     let view = (getViewStructure func mouseState svgWindowWidth svgWindowHeight
                     0 0 False)
         mouseCoordinates = (mouseToSvgCoordinates mouseState svgWindowWidth
@@ -35,51 +35,50 @@ getById onion id =
             else getById rest id
 
             
-getSelected functions mouseState svgWindowWidth svgWindowHeight =    
+getSelected mouseState svgWindowWidth svgWindowHeight =    
     case mouseState.mouseSelection of
-        FunctionSelected funcId ->
-            Maybe.map
-                (selectedFunc mouseState svgWindowWidth svgWindowHeight)
-                (getById functions funcId)
+        FunctionSelected func ->
+            Just (selectedFunc mouseState func svgWindowWidth svgWindowHeight)
         _ -> Nothing
 
 
-recursivePosition : Int -> Int -> Maybe ViewStructure -> Id -> MouseState -> Int -> Int -> Onion -> List ViewStructure
-recursivePosition xpos ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight onion =
+recursivePosition : Int -> Int -> Maybe ViewStructure -> MouseState -> Int -> Int -> Onion -> List ViewStructure
+recursivePosition xpos ypos maybeSelected mouseState svgWindowWidth svgWindowHeight onion =
     case onion of
         [] ->
             case maybeSelected of
                 Nothing -> []
                 Just selected -> [selected]
         (func::rest) ->
-            if func.id == skipId
-            then (recursivePosition xpos ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight rest)
-            else
-                let newStructure = (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos False)
-                    recur =
-                        (\_ ->
-                             newStructure ::
-                             (recursivePosition (xpos+newStructure.funcWidth+ViewVariables.functionXSpacing)
-                                  ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight rest))
-                    
-                in
-                    (case maybeSelected of
-                         Nothing -> (recur ())
-                         Just selected ->
-                             (if selected.headerPos.xpos <= xpos + newStructure.funcWidth
-                              then
-                                  selected ::
-                                  (recursivePosition (xpos+selected.funcWidth+ViewVariables.functionXSpacing) ypos
-                                       Nothing skipId mouseState svgWindowWidth svgWindowHeight onion)
-                              else (recur ())))
-
-                    
+            let newStructure = (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos False)
+                isSelected = case maybeSelected of
+                                 Nothing -> False
+                                 Just selected -> selected.headerPos.xpos <= xpos + newStructure.funcWidth
+                newW = if isSelected then
+                           (case maybeSelected of
+                                Just selected -> selected.funcWidth
+                                Nothing -> 0) -- should not happen
+                       else newStructure.funcWidth
+                newx = xpos + newW + ViewVariables.functionXSpacing
+                newy = ypos
+                newMaybeSelected = if isSelected then Nothing else maybeSelected
+                recurList = if isSelected then onion else rest
+                recurrance =
+                    (recursivePosition newx newy newMaybeSelected mouseState
+                         svgWindowWidth svgWindowHeight recurList)
+            in
+                if isSelected
+                then
+                    case maybeSelected of
+                        Just selected -> selected :: recurrance
+                        Nothing -> recurrance -- should not happen!
+                else newStructure :: recurrance
+                                   
 
             
 
 getViewStructures onion mouseState svgWindowWidth svgWindowHeight =
-    let selected = (getSelected onion mouseState svgWindowWidth svgWindowHeight)
-        skipId = Maybe.withDefault -1 (Maybe.map .id selected)
+    let selected = (getSelected mouseState svgWindowWidth svgWindowHeight)
     in
         recursivePosition ViewVariables.funcInitialX ViewVariables.funcInitialY
-             selected skipId  mouseState svgWindowWidth svgWindowHeight onion
+             selected mouseState svgWindowWidth svgWindowHeight onion
