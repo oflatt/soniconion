@@ -11,16 +11,20 @@ import Dict exposing (Dict)
 import Debug exposing (log)
 
 
-selectedFunc viewStructure =
-    let oldPos = viewStructure.headerPos
-        mouseCoordinates = (mouseToSvgCoordinates viewStructure.mouseState viewStructure.svgWidth
-                                viewStructure.svgHeight 0 0)
-        newPos = {oldPos | xpos = (Tuple.first mouseCoordinates)-(viewStructure.funcWidth//2),
-                      ypos = (Tuple.second mouseCoordinates)-ViewVariables.functionHeaderHeight//2}
+selectedFunc mouseState svgWindowWidth svgWindowHeight func =
+    let view = (getViewStructure func mouseState svgWindowWidth svgWindowHeight
+                    0 0 False)
+        mouseCoordinates = (mouseToSvgCoordinates mouseState svgWindowWidth
+                                svgWindowHeight 0 0)
+        xpos = (Tuple.first mouseCoordinates)-(view.funcWidth//2)
+        ypos = (Tuple.second mouseCoordinates)-ViewVariables.functionHeaderHeight//2
+        oldPos = view.headerPos
+        newPos = {oldPos | xpos = xpos, ypos = ypos}
     in
-        {viewStructure | headerPos = newPos}
+        {view | headerPos = newPos}
 
-getById : List ViewStructure -> Id -> Maybe ViewStructure
+            
+getById : List Function -> Id -> Maybe Function
 getById onion id =
     case onion of
         [] -> Nothing
@@ -31,60 +35,51 @@ getById onion id =
             else getById rest id
 
             
-getSelected viewStructures =
-    case viewStructures of
-        (viewStructure::rest) ->
-            case viewStructure.mouseState.mouseSelection of
-                FunctionSelected funcId ->
-                    Maybe.map
-                        selectedFunc
-                        (getById viewStructures funcId)
-                _ -> Nothing
-        [] -> Nothing
+getSelected functions mouseState svgWindowWidth svgWindowHeight =    
+    case mouseState.mouseSelection of
+        FunctionSelected funcId ->
+            Maybe.map
+                (selectedFunc mouseState svgWindowWidth svgWindowHeight)
+                (getById functions funcId)
+        _ -> Nothing
 
-setHeaderPos structure xpos ypos =
-    let oldPos = structure.headerPos
-        newPos = {oldPos | xpos = xpos, ypos = ypos}
-    in
-        {structure | headerPos = newPos}
-            
-recursivePosition viewStructures xpos ypos maybeSelected skipId =
-    case viewStructures of
+
+recursivePosition : Int -> Int -> Maybe ViewStructure -> Id -> MouseState -> Int -> Int -> Onion -> List ViewStructure
+recursivePosition xpos ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight onion =
+    case onion of
         [] ->
             case maybeSelected of
                 Nothing -> []
                 Just selected -> [selected]
-        (structure::rest) ->
-            if structure.id == skipId
-            then (recursivePosition rest xpos ypos maybeSelected skipId)
+        (func::rest) ->
+            if func.id == skipId
+            then (recursivePosition xpos ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight rest)
             else
-                let recur =
-                        (\arg -> (recursivePosition arg
-                                      (xpos+structure.funcWidth+ViewVariables.functionXSpacing) ypos maybeSelected skipId))
+                let newStructure = (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos False)
+                    recur =
+                        (\_ ->
+                             newStructure ::
+                             (recursivePosition (xpos+newStructure.funcWidth+ViewVariables.functionXSpacing)
+                                  ypos maybeSelected skipId mouseState svgWindowWidth svgWindowHeight rest))
+                    
                 in
-                (case maybeSelected of
-                    Nothing -> (setHeaderPos structure xpos ypos) :: (recur rest)
-                    Just selected ->
-                        if selected.headerPos.xpos <= xpos + structure.funcWidth
-                        then
-                            selected ::
-                                (recursivePosition viewStructures
-                                     (xpos+structure.funcWidth+ViewVariables.functionXSpacing) ypos Nothing skipId)
-                        else (setHeaderPos structure xpos ypos) :: (recur rest))
+                    (case maybeSelected of
+                         Nothing -> (recur ())
+                         Just selected ->
+                             (if selected.headerPos.xpos <= xpos + newStructure.funcWidth
+                              then
+                                  selected ::
+                                  (recursivePosition (xpos+selected.funcWidth+ViewVariables.functionXSpacing) ypos
+                                       Nothing skipId mouseState svgWindowWidth svgWindowHeight onion)
+                              else (recur ())))
 
                     
 
             
-getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight func =
-    (getViewStructure func mouseState svgWindowWidth svgWindowHeight
-         0 0 False)
-            
-positionStructures viewStructures =
-    let selected = (getSelected viewStructures)
-        skipId = Maybe.withDefault -1 (Maybe.map .id selected)
-    in
-        (recursivePosition viewStructures ViewVariables.funcInitialX ViewVariables.funcInitialY
-             selected skipId)
 
 getViewStructures onion mouseState svgWindowWidth svgWindowHeight =
-    positionStructures (List.map (getFunctionViewStructure mouseState svgWindowWidth svgWindowHeight) onion)
+    let selected = (getSelected onion mouseState svgWindowWidth svgWindowHeight)
+        skipId = Maybe.withDefault -1 (Maybe.map .id selected)
+    in
+        recursivePosition ViewVariables.funcInitialX ViewVariables.funcInitialY
+             selected skipId  mouseState svgWindowWidth svgWindowHeight onion
