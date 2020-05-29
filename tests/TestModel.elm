@@ -31,8 +31,7 @@ testFunctionHoles = (makeMain 0
 complex0 = (Call 80 [Text "1", Text "2"] "sine" "")
 complex1 = (Call 98 [Output 80, Text "2"] "sine" "")
 complex2 = (Call 83 [Output 80, Text "2"] "sine" "")
-secondToLastSine = (Call 23 [Output 98, Output 98] "sine" "")
-complex3 = secondToLastSine
+complex3 = (Call 23 [Output 98, Output 98] "sine" "")
 complex4 = (Call 12 [Output 80, Output 23] "sine" "")
 complexRoutingFunc : Function    
 complexRoutingFunc =
@@ -43,7 +42,6 @@ complexRoutingFunc =
          ,complex3
          ,complex4
          ])
-
 
 plusCall id routes =
     (Call id (List.map Output routes) "+" "")

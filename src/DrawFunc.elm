@@ -219,8 +219,18 @@ drawAllInputs func viewStructure =
     case func of
         [] -> []
         (call::calls) ->
-            (drawCallInputs call viewStructure)
-            :: (drawAllInputs calls viewStructure)
+            let callToDraw =
+                    (case viewStructure.mouseState.mouseSelection of
+                         BlockSelected funcId movedCall ->
+                             (if funcId /= viewStructure.id && movedCall.id == call.id then
+                                  let newInputs = List.map (\_ -> Hole) call.inputs
+                                  in
+                                      {call | inputs=newInputs}
+                              else
+                                  call)
+                         _ -> call)
+            in
+                (drawCallInputs callToDraw viewStructure) :: (drawAllInputs calls viewStructure)
     
                 
 -- there should be one line routing list per frame

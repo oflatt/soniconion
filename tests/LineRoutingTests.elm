@@ -15,7 +15,7 @@ import LineRouting
 
 
 getLineRouting testModel =
-    (ViewStructure.getViewStructure testModel (MouseState 0 0 0 0 NoneSelected) 0 0 0 0 False).lineRouting
+    (ViewStructure.getViewStructure testModel (MouseState 0 0 0 0 NoneSelected) 0 0 0 0 Nothing False).lineRouting
         
 outputOrderingTest : Test
 outputOrderingTest =

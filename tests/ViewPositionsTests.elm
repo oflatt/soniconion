@@ -9,44 +9,55 @@ import Dict exposing (Dict)
 
 import TestModel exposing (myexpect)
 import ModelHelpers
-import ViewStructure
+import ViewStructure exposing (MovedBlockInfo)
 import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock, blockSpacing
                               ,functionHeaderHeight)
                 
 
 blockPositionToNormalYpos blockPos = blockPos.ypos - (functionHeaderHeight + blockSpacing)
 
-formatBlockPositions : Function -> MouseState -> Result String (List Int)
-formatBlockPositions testFunc mouse =
+formatBlockPositions : Function -> MouseState -> Maybe MovedBlockInfo -> Result String (List Int)
+formatBlockPositions testFunc mouse blockInfo =
     Result.map (List.map blockPositionToNormalYpos)
-        (ViewStructure.blockPositionsToPositionList testFunc.calls
-             (ViewStructure.getViewStructure testFunc
-                  mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 False).blockPositions)
+        (ViewStructure.blockPositionsToPositionList
+             testFunc.calls
+             (ViewStructure.getViewStructure
+                  (case blockInfo of
+                       Nothing -> testFunc
+                       Just info -> (ModelHelpers.removeCall testFunc info.movedCall.id))
+                  mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 blockInfo False).blockPositions)
 
             
 emptyMouse = (MouseState 0 0 0 0 NoneSelected)
 
-secondToLastMouse = (MouseState 1
+
+             
+secondToLastMouse = (MouseState (ViewVariables.funcInitialX + 20)
                          (ViewVariables.svgYpos + functionHeaderHeight + blockSpacing
                               +blockSpace+2*lineSpaceBeforeBlock
                               +(ViewVariables.blockHeight//2))
                          0
                          0
-                         (BlockSelected 23 0 0))
+                         (BlockSelected 0 TestModel.complex3))
+
+maybeSecond = (ViewStructure.maybeMovedInfo secondToLastMouse ViewVariables.viewportHeight
+                   (ViewVariables.viewportWidth ViewVariables.viewportHeight ViewVariables.viewportHeight))
+
+              
                     
 blockPositionsTest : Test
 blockPositionsTest =
     describe "getBlockPositions"
         [test "test func"
              (myexpect
-                  (formatBlockPositions TestModel.testFunction emptyMouse)
+                  (formatBlockPositions TestModel.testFunction emptyMouse Nothing)
                   (Ok [0
                       ,blockSpace
                       ,blockSpace*2 + 2*lineSpaceBeforeBlock
                       ,blockSpace*3 + (1+2)*lineSpaceBeforeBlock]))
         ,test "complex connections"
              (myexpect
-                  (formatBlockPositions TestModel.complexRoutingFunc emptyMouse)
+                  (formatBlockPositions TestModel.complexRoutingFunc emptyMouse Nothing)
                   (Ok [0
                       ,blockSpace + lineSpaceBeforeBlock
                       ,blockSpace*2 + (1+1)*lineSpaceBeforeBlock
@@ -55,11 +66,11 @@ blockPositionsTest =
         ,test "move block two up"
              (myexpect
                   (formatBlockPositions TestModel.complexRoutingFunc
-                       secondToLastMouse)
+                       secondToLastMouse maybeSecond)
                   (Ok [0
                       ,blockSpace*2 + (1+2)*lineSpaceBeforeBlock
                       ,blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock
-                      ,blockSpace + 2*lineSpaceBeforeBlock
+                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing
                       ,blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock]))]
 
 
@@ -68,10 +79,7 @@ movedInfoTest =
     describe "getMovedInfo"
         [test "test select second to last"
              (myexpect
-                  (ViewStructure.getMovedInfo TestModel.complexRoutingFunc.calls secondToLastMouse
-                       (ViewStructure.mouseToSvgCoordinates secondToLastMouse
-                            (ViewVariables.viewportWidth 100 100) ViewVariables.viewportHeight))
-                  (Just (ViewStructure.MovedBlockInfo TestModel.secondToLastSine
-                             (1, blockSpace + 2*lineSpaceBeforeBlock + functionHeaderHeight + blockSpacing))))
-                                       
+                  maybeSecond
+                  (Just (ViewStructure.MovedBlockInfo TestModel.complex3
+                             (secondToLastMouse.mouseX, secondToLastMouse.mouseY-ViewVariables.svgYpos))))
                ]

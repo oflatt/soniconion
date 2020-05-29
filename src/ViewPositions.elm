@@ -43,6 +43,15 @@ getSelected mouseState svgWindowWidth svgWindowHeight =
         _ -> Nothing
 
 
+getCurrentMoveInfo maybeMoved rest xpos testStructure =
+    (case maybeMoved of
+         Nothing -> Nothing
+         Just moveI ->
+             (case rest of
+                  [] -> Just moveI
+                  _ -> (if (Tuple.first moveI.movedPos) <= xpos + testStructure.funcWidth
+                        then Just moveI else Nothing)))
+             
 recursivePosition : Int -> Int -> Maybe ViewStructure -> Maybe MovedBlockInfo ->
                     MouseState -> Int -> Int -> Onion -> List ViewStructure
 recursivePosition xpos ypos maybeSelected maybeMoved mouseState svgWindowWidth svgWindowHeight onion =
@@ -55,12 +64,8 @@ recursivePosition xpos ypos maybeSelected maybeMoved mouseState svgWindowWidth s
             let -- first compute structure without move info to see how wide it is
                 testStructure =
                     (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos Nothing False)
-                currentMoveInfo =
-                    (case maybeMoved of
-                         Nothing -> Nothing
-                         Just moveI ->
-                             if (Tuple.first moveI.movedPos) <= xpos + testStructure.funcWidth
-                             then Just moveI else Nothing)
+                currentMoveInfo = getCurrentMoveInfo maybeMoved rest xpos testStructure
+                    
                 -- re-compute structure with moveinfo when needed
                 newStructure =
                     (case currentMoveInfo of

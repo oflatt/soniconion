@@ -109,16 +109,20 @@ inputPositionsMax inputPositions =
 getBlockWidth call inputPositions =
     max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
         
-makeBlockPosition xpos ypos call shouldCenterX =
+makeBlockPosition xpos ypos call shouldCenter =
     let inputPositions = (makeInputPositions call)
         blockW = getBlockWidth call inputPositions
         blockXpos =
-            if shouldCenterX then
+            if shouldCenter then
                 xpos - (blockW//2)
             else
                 xpos
+        blockYpos =
+            if shouldCenter then
+                ypos - ViewVariables.blockHeight//2
+            else ypos
     in
-        (BlockPosition blockXpos ypos blockW inputPositions)
+        (BlockPosition blockXpos blockYpos blockW inputPositions)
 
 getHeaderBlockPos func xoffset yoffset =
     makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False
@@ -181,15 +185,8 @@ getBlockPositions func mouseState xoffset yoffset maybeMove =
         allPositions = getAllBlockPositions fixedMoveInfo func.calls (getFuncHeaderHeight func)
     in
         ({func | calls=(Tuple.first allPositions)}, (Tuple.second allPositions))
-            
-makeSortedFunc func blockPositions =
-    List.sortBy (blockSorter blockPositions) func.calls
 
-blockSorter blockPositions call =
-    case Dict.get call.id blockPositions of
-        Nothing -> -100 -- todo some sort of error handeling
-        Just pos -> pos.ypos
-                   
+            
 getMaxBlockWidth blockPositions topBlock =
     Dict.foldr
         (\key blockpos acc ->
@@ -203,16 +200,31 @@ getMaxBlockBottom blockPositions =
              max (blockpos.ypos+ViewVariables.blockHeight) acc)
         0
         blockPositions
+
+fixLeftForMoveInfo withoutLeft maybeMove leftW =
+    case maybeMove of
+        Nothing -> withoutLeft
+        Just moveInfo ->
+            case Dict.get moveInfo.movedCall.id withoutLeft of
+                Just blockPos ->
+                    let newx = blockPos.xpos-leftW
+                    in
+                        Dict.insert moveInfo.movedCall.id {blockPos | xpos = newx} withoutLeft
+                Nothing -> withoutLeft
+    
                     
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =
     let blockTuple = (getBlockPositions func mouseState xoffset yoffset maybeMoveInfo)
         sortedFunc = Tuple.first blockTuple
-        blockPositions = Tuple.second blockTuple
+        blockPositionsWithoutLeftWidth = Tuple.second blockTuple
+        
+                         
         
         lineRouting = getLineRouting sortedFunc
         maxWidth = getMaxBlockWidth blockPositions topBlockPosition
         leftWidth = -(getMinLine lineRouting)* ViewVariables.lineXSpace
         rightWidth = (getMaxLine lineRouting) * ViewVariables.lineXSpace
+        blockPositions = fixLeftForMoveInfo blockPositionsWithoutLeftWidth maybeMoveInfo leftWidth
         totalWidth = leftWidth + rightWidth + maxWidth
         topBlockPosition = getHeaderBlockPos func (xoffset + leftWidth) yoffset
         funcHeight = getMaxBlockBottom blockPositions
