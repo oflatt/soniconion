@@ -1,7 +1,7 @@
 module ViewStructure exposing (ViewStructure, getViewStructure, mouseToSvgCoordinates
                               ,BlockPosition, BlockPositions, InputPosition
                               ,countOutputsBefore, blockPositionsToPositionList
-                              ,MovedBlockInfo, getMovedInfo)
+                              ,MovedBlockInfo, maybeMovedInfo)
 import LineRouting exposing (LineRouting, getLineRouting, getMaxLine, getMinLine)
 import Model exposing (..)
 import ModelHelpers exposing (idToPosition, IdToPos)
@@ -22,26 +22,14 @@ mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
     (((mouseState.mouseX+mouseState.scrollX) * (ViewVariables.viewportWidth svgScreenWidth svgScreenHeight)) // svgScreenWidth - xoffset
     ,(((mouseState.mouseY+mouseState.scrollY) - ViewVariables.svgYpos) * ViewVariables.viewportHeight) // svgScreenHeight - yoffset)
 
-svgYposToIndex: Int -> Int
-svgYposToIndex yPos =
-    yPos // (ViewVariables.blockSpace)
-    
-getMovedInfo func mouseState mouseSvgCoordinates =
-    case func of
-        [] -> Nothing
-        (call::calls) ->
-            case mouseState.mouseSelection of
-                BlockSelected funcId selectedCall ->
-                    if selectedCall.id == call.id
-                    then
-                        Nothing
-                        --Just (MovedBlockInfo
-                         --         call
-                          --        ((Tuple.first (mouseSvgCoordinates funcx funcy))
-                           --       ,(Tuple.second (mouseSvgCoordinates funcx funcy)) - (ViewVariables.blockHeight // 2))) -- center block on mouse
-                    else getMovedInfo calls mouseState mouseSvgCoordinates
-                _ -> getMovedInfo calls mouseState mouseSvgCoordinates
-
+maybeMovedInfo mouseState svgScreenWidth svgScreenHeight =
+    case mouseState.mouseSelection of
+        BlockSelected funcId call ->
+            Just (MovedBlockInfo
+                      call
+                      (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight 0 0))
+        _ -> Nothing
+        
 -- xpos and width, with xpos relative to the block
 type alias InputPosition = (Int, Int)
                      
@@ -134,54 +122,66 @@ makeBlockPosition xpos ypos call shouldCenterX =
 
 getHeaderBlockPos func xoffset yoffset =
     makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False
+
+movedInfoBlockPos moveInfo =
+    (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos) moveInfo.movedCall True)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Id -> Maybe MovedBlockInfo -> List Call -> Int -> BlockPositions
-getAllBlockPositions idToSkip maybeMoveInfo func currentY =
-    let iterate = (\call calls ->
-                       Dict.insert call.id (makeBlockPosition 0 (currentY+(callLinesSpace call)) call False)
-                           (getAllBlockPositions idToSkip maybeMoveInfo calls
-                                (currentY+ViewVariables.blockSpace+(callLinesSpace call))))
-    in
-        case func of
-            [] -> Dict.empty
-            (call::calls) ->
-                if call.id == idToSkip
-                then (getAllBlockPositions idToSkip maybeMoveInfo calls currentY)
-                else
-                    case maybeMoveInfo of
-                        Just moveInfo ->
-                            if currentY+ViewVariables.blockHeight > (Tuple.second moveInfo.movedPos)
-                            then
-                                (getAllBlockPositions idToSkip Nothing func -- continue with whole func
-                                     (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
-                            else
-                                -- iterate normally
-                                (iterate call calls)
-                                    
-                        Nothing -> (iterate call calls)
+getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> (List Call, BlockPositions)
+getAllBlockPositions maybeMoveInfo func currentY =
+    case func of
+        [] -> case maybeMoveInfo of
+                  Nothing -> ([], Dict.empty)
+                  Just moveInfo -> ([moveInfo.movedCall],
+                                        (Dict.insert moveInfo.movedCall.id
+                                             (movedInfoBlockPos moveInfo)
+                                             Dict.empty))
+        (call::rest) ->
+            let isMoved =
+                    (case maybeMoveInfo of
+                         Nothing -> False
+                         Just moveInfo -> (Tuple.second moveInfo.movedPos) < currentY + ViewVariables.blockHeight)
+                newMoveInfo =
+                    if isMoved then Nothing
+                    else maybeMoveInfo
+                topCall = if isMoved then Maybe.withDefault call (Maybe.map .movedCall maybeMoveInfo) else call -- default should not happen
+                restCall = if isMoved then func else rest
+                newY = if isMoved then
+                           (case maybeMoveInfo of
+                                Just moveInfo -> (currentY + ViewVariables.blockSpace + (callLinesSpace moveInfo.movedCall))
+                                Nothing -> 0 )
+                       else currentY + ViewVariables.blockSpace + (callLinesSpace call)-- should not happen!
+                iteration = getAllBlockPositions newMoveInfo restCall newY
 
+                blockPos = if isMoved then
+                               (case maybeMoveInfo of
+                                    Just moveInfo -> (movedInfoBlockPos moveInfo)
+                                    Nothing -> (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False)) -- should not happen
+                           else (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False)
+            in
+                (topCall :: (Tuple.first iteration)
+                ,(Dict.insert topCall.id blockPos (Tuple.second iteration)))
 
 getFuncHeaderHeight func =
     ViewVariables.functionHeaderHeight + (countOutputs func.args) + ViewVariables.blockSpacing
                                    
-                      
-getBlockPositions: Function -> MouseState -> Int -> Int -> Int -> Int -> BlockPositions
-getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
-    let moveInfo = getMovedInfo func.calls mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
-        idToSkip =
-            case moveInfo of
-                Just info -> info.movedCall.id
-                Nothing -> -1
-        positionsWithoutMoved = getAllBlockPositions idToSkip moveInfo func.calls (getFuncHeaderHeight func)
-    in
-        case moveInfo of
-            Just info -> (Dict.insert
-                              info.movedCall.id
-                              (makeBlockPosition (Tuple.first info.movedPos) (Tuple.second info.movedPos) info.movedCall True)
-                              positionsWithoutMoved)
-            Nothing -> positionsWithoutMoved
 
+fixMoveInfo xoffset yoffset maybeMove =
+    case maybeMove of
+        Nothing -> Nothing
+        Just moveInfo ->
+            let newx = (Tuple.first moveInfo.movedPos) - xoffset
+                newy = (Tuple.second moveInfo.movedPos) - yoffset
+            in
+                Just {moveInfo | movedPos = (newx, newy)}
+        
+getBlockPositions: Function -> MouseState -> Int -> Int -> Maybe MovedBlockInfo -> (Function, BlockPositions)
+getBlockPositions func mouseState xoffset yoffset maybeMove =
+    let fixedMoveInfo = fixMoveInfo xoffset yoffset maybeMove
+        allPositions = getAllBlockPositions fixedMoveInfo func.calls (getFuncHeaderHeight func)
+    in
+        ({func | calls=(Tuple.first allPositions)}, (Tuple.second allPositions))
+            
 makeSortedFunc func blockPositions =
     List.sortBy (blockSorter blockPositions) func.calls
 
@@ -204,9 +204,11 @@ getMaxBlockBottom blockPositions =
         0
         blockPositions
                     
-getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset isToolbar =
-    let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight xoffset yoffset)
-        sortedFunc = {func | calls=(makeSortedFunc func blockPositions)}
+getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =
+    let blockTuple = (getBlockPositions func mouseState xoffset yoffset maybeMoveInfo)
+        sortedFunc = Tuple.first blockTuple
+        blockPositions = Tuple.second blockTuple
+        
         lineRouting = getLineRouting sortedFunc
         maxWidth = getMaxBlockWidth blockPositions topBlockPosition
         leftWidth = -(getMinLine lineRouting)* ViewVariables.lineXSpace

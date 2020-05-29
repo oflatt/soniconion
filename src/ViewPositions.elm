@@ -5,7 +5,8 @@ import Model exposing (..)
 import ModelHelpers exposing (idToPosition, IdToPos)
 import ViewVariables
 import Utils
-import ViewStructure exposing (mouseToSvgCoordinates, ViewStructure, getViewStructure)
+import ViewStructure exposing (mouseToSvgCoordinates, ViewStructure, getViewStructure, maybeMovedInfo
+                              ,MovedBlockInfo)
 
 import Dict exposing (Dict)
 import Debug exposing (log)
@@ -13,7 +14,7 @@ import Debug exposing (log)
 
 selectedFunc mouseState func svgWindowWidth svgWindowHeight=
     let view = (getViewStructure func mouseState svgWindowWidth svgWindowHeight
-                    0 0 False)
+                    0 0 Nothing False)
         mouseCoordinates = (mouseToSvgCoordinates mouseState svgWindowWidth
                                 svgWindowHeight 0 0)
         xpos = (Tuple.first mouseCoordinates)-(view.funcWidth//2)
@@ -42,18 +43,37 @@ getSelected mouseState svgWindowWidth svgWindowHeight =
         _ -> Nothing
 
 
-recursivePosition : Int -> Int -> Maybe ViewStructure -> MouseState -> Int -> Int -> Onion -> List ViewStructure
-recursivePosition xpos ypos maybeSelected mouseState svgWindowWidth svgWindowHeight onion =
+recursivePosition : Int -> Int -> Maybe ViewStructure -> Maybe MovedBlockInfo ->
+                    MouseState -> Int -> Int -> Onion -> List ViewStructure
+recursivePosition xpos ypos maybeSelected maybeMoved mouseState svgWindowWidth svgWindowHeight onion =
     case onion of
         [] ->
             case maybeSelected of
                 Nothing -> []
                 Just selected -> [selected]
         (func::rest) ->
-            let newStructure = (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos False)
+            let -- first compute structure without move info to see how wide it is
+                testStructure =
+                    (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos Nothing False)
+                currentMoveInfo =
+                    (case maybeMoved of
+                         Nothing -> Nothing
+                         Just moveI ->
+                             if (Tuple.first moveI.movedPos) <= xpos + testStructure.funcWidth
+                             then Just moveI else Nothing)
+                -- re-compute structure with moveinfo when needed
+                newStructure =
+                    (case currentMoveInfo of
+                         Nothing -> testStructure
+                         Just moveInfo ->
+                             (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos currentMoveInfo False))
                 isSelected = case maybeSelected of
                                  Nothing -> False
                                  Just selected -> selected.headerPos.xpos <= xpos + newStructure.funcWidth
+                newMoveInfo =
+                    (case currentMoveInfo of
+                         Nothing -> maybeMoved
+                         Just moveInfo -> Nothing)
                 newW = if isSelected then
                            (case maybeSelected of
                                 Just selected -> selected.funcWidth
@@ -64,7 +84,7 @@ recursivePosition xpos ypos maybeSelected mouseState svgWindowWidth svgWindowHei
                 newMaybeSelected = if isSelected then Nothing else maybeSelected
                 recurList = if isSelected then onion else rest
                 recurrance =
-                    (recursivePosition newx newy newMaybeSelected mouseState
+                    (recursivePosition newx newy newMaybeSelected newMoveInfo mouseState
                          svgWindowWidth svgWindowHeight recurList)
             in
                 if isSelected
@@ -73,12 +93,11 @@ recursivePosition xpos ypos maybeSelected mouseState svgWindowWidth svgWindowHei
                         Just selected -> selected :: recurrance
                         Nothing -> recurrance -- should not happen!
                 else newStructure :: recurrance
-                                   
 
-            
 
 getViewStructures onion mouseState svgWindowWidth svgWindowHeight =
     let selected = (getSelected mouseState svgWindowWidth svgWindowHeight)
+        moved = maybeMovedInfo mouseState svgWindowWidth svgWindowHeight
     in
         recursivePosition ViewVariables.funcInitialX ViewVariables.funcInitialY
-             selected mouseState svgWindowWidth svgWindowHeight onion
+             selected moved mouseState svgWindowWidth svgWindowHeight onion

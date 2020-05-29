@@ -34,7 +34,6 @@ functionHeaderHeight = blockHeight
 blockSpacing = blockHeight // 6
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing
-             
 
 lineXSpace = blockHeight // 2
 lineWidth = "4"

@@ -22,7 +22,7 @@ import Svg.Attributes
 drawToolbar : Onion -> MouseState -> Int -> Int -> (Int, Svg Msg)
 drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
     let viewStructure = (getViewStructure allBuiltInAsFunction mouseState
-                             svgWindowWidth svgWindowHeight 0 0 True)
+                             svgWindowWidth svgWindowHeight 0 0 Nothing True)
     in
         (viewStructure.funcHeight,
              (DrawFunc.drawFuncWithConnections
