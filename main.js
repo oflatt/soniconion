@@ -6332,36 +6332,22 @@ var $author$project$Update$changeByName = F2(
 		}();
 		return A3($author$project$Update$changeUrl, model, newurl, pageName);
 	});
-var $author$project$Model$FunctionSelected = function (a) {
-	return {$: 'FunctionSelected', a: a};
-};
-var $author$project$ModelHelpers$removeFunc = F2(
-	function (onion, funcId) {
-		if (!onion.b) {
-			return _List_Nil;
-		} else {
-			var func = onion.a;
-			var funcs = onion.b;
-			return _Utils_eq(func.id, funcId) ? funcs : A2(
-				$elm$core$List$cons,
-				func,
-				A2($author$project$ModelHelpers$removeFunc, funcs, funcId));
-		}
-	});
-var $author$project$Update$headerClickModel = F2(
-	function (model, func) {
-		var oldMouse = model.mouseState;
-		var newProgram = A2($author$project$ModelHelpers$removeFunc, model.program, func.id);
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$FunctionSelected(func)
+var $author$project$Model$Hole = {$: 'Hole'};
+var $author$project$Update$addFuncOutput = F2(
+	function (model, id) {
+		return A3(
+			$author$project$ModelHelpers$updateFunc,
+			model,
+			id,
+			function (func) {
+				var newInputs = _Utils_ap(
+					func.args,
+					_List_fromArray(
+						[$author$project$Model$Hole]));
+				return _Utils_update(
+					func,
+					{args: newInputs});
 			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newProgram}),
-			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$Model$FunctionOutputSelected = F2(
 	function (a, b) {
@@ -6386,9 +6372,10 @@ var $author$project$Update$headerHighlightModel = F3(
 			$author$project$Update$focusInputCommand(
 				A2($author$project$Update$headerNodeId, id, index)));
 	});
-var $author$project$Update$headerOutputClickModel = F3(
+var $author$project$Update$headerAddOutputModel = F3(
 	function (model, id, index) {
-		return A3($author$project$Update$headerHighlightModel, model, id, index);
+		var added = A2($author$project$Update$addFuncOutput, model, id);
+		return A3($author$project$Update$headerHighlightModel, added, id, index);
 	});
 var $author$project$Model$FunctionArg = function (a) {
 	return {$: 'FunctionArg', a: a};
@@ -6412,7 +6399,6 @@ var $author$project$ModelHelpers$updateInputAtIndex = F3(
 				A3($author$project$ModelHelpers$updateInputAtIndex, rest, index - 1, inputFunc));
 		}
 	});
-var $author$project$Model$Hole = {$: 'Hole'};
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -7033,6 +7019,81 @@ var $author$project$Update$headerOutputRightClickModel = F3(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Update$headerAddOutputRightClickModel = F3(
+	function (model, id, index) {
+		var added = A2($author$project$Update$addFuncOutput, model, id);
+		return A3($author$project$Update$headerOutputRightClickModel, added, id, index);
+	});
+var $author$project$Model$FunctionSelected = function (a) {
+	return {$: 'FunctionSelected', a: a};
+};
+var $author$project$ModelHelpers$removeFunc = F2(
+	function (onion, funcId) {
+		if (!onion.b) {
+			return _List_Nil;
+		} else {
+			var func = onion.a;
+			var funcs = onion.b;
+			return _Utils_eq(func.id, funcId) ? funcs : A2(
+				$elm$core$List$cons,
+				func,
+				A2($author$project$ModelHelpers$removeFunc, funcs, funcId));
+		}
+	});
+var $author$project$Update$headerClickModel = F2(
+	function (model, func) {
+		var oldMouse = model.mouseState;
+		var newProgram = A2($author$project$ModelHelpers$removeFunc, model.program, func.id);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$FunctionSelected(func)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Model$FunctionNameSelected = function (a) {
+	return {$: 'FunctionNameSelected', a: a};
+};
+var $author$project$Update$headerNameId = function (functionid) {
+	return 'hn' + $elm$core$String$fromInt(functionid);
+};
+var $author$project$Update$headerNameHighlightModel = F2(
+	function (model, id) {
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$FunctionNameSelected(id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$headerNameId(id)));
+	});
+var $author$project$Update$headerNameUpdateModel = F3(
+	function (model, id, str) {
+		return _Utils_Tuple2(
+			A3(
+				$author$project$ModelHelpers$updateFunc,
+				model,
+				id,
+				function (func) {
+					return _Utils_update(
+						func,
+						{name: str});
+				}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$headerOutputClickModel = F3(
+	function (model, id, index) {
+		return A3($author$project$Update$headerHighlightModel, model, id, index);
+	});
 var $author$project$Model$InputSelected = F2(
 	function (a, b) {
 		return {$: 'InputSelected', a: a, b: b};
@@ -7369,10 +7430,17 @@ var $author$project$ViewStructure$getInputWidth = function (input) {
 	}
 };
 var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
-var $author$project$ViewStructure$inputPositionList = F3(
-	function (inputs, counter, currentX) {
+var $author$project$ViewStructure$inputPositionList = F4(
+	function (inputs, counter, currentX, shouldAddTail) {
 		if (!inputs.b) {
-			return _List_Nil;
+			return shouldAddTail ? _List_fromArray(
+				[
+					_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(
+						currentX,
+						$author$project$ViewStructure$getInputWidth($author$project$Model$Hole)))
+				]) : _List_Nil;
 		} else {
 			var input = inputs.a;
 			var rest = inputs.b;
@@ -7382,16 +7450,17 @@ var $author$project$ViewStructure$inputPositionList = F3(
 				_Utils_Tuple2(
 					counter,
 					_Utils_Tuple2(currentX, width)),
-				A3($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing));
+				A4($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing, shouldAddTail));
 		}
 	});
-var $author$project$ViewStructure$makeInputPositions = function (call) {
-	return $elm$core$Dict$fromList(
-		A3($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding));
-};
-var $author$project$ViewStructure$makeBlockPosition = F4(
-	function (xpos, ypos, call, shouldCenter) {
-		var inputPositions = $author$project$ViewStructure$makeInputPositions(call);
+var $author$project$ViewStructure$makeInputPositions = F2(
+	function (call, shouldAddTail) {
+		return $elm$core$Dict$fromList(
+			A4($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding, shouldAddTail));
+	});
+var $author$project$ViewStructure$makeBlockPosition = F5(
+	function (xpos, ypos, call, shouldCenter, shouldAddTail) {
+		var inputPositions = A2($author$project$ViewStructure$makeInputPositions, call, shouldAddTail);
 		var blockYpos = shouldCenter ? (ypos - (($author$project$ViewVariables$blockHeight / 2) | 0)) : ypos;
 		var blockW = A2($author$project$ViewStructure$getBlockWidth, call, inputPositions);
 		var blockXpos = shouldCenter ? (xpos - ((blockW / 2) | 0)) : xpos;
@@ -7408,7 +7477,7 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
-	return A4($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, true);
+	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, true, false);
 };
 var $author$project$ViewStructure$getAllBlockPositions = F3(
 	function (maybeMoveInfo, func, currentY) {
@@ -7467,14 +7536,15 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 						var moveInfo = maybeMoveInfo.a;
 						return $author$project$ViewStructure$movedInfoBlockPos(moveInfo);
 					} else {
-						return A4($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false);
+						return A5($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false, false);
 					}
 				} else {
-					return A4(
+					return A5(
 						$author$project$ViewStructure$makeBlockPosition,
 						0,
 						currentY + $author$project$ViewStructure$callLinesSpace(call),
 						call,
+						false,
 						false);
 				}
 			}();
@@ -7506,12 +7576,13 @@ var $author$project$Model$Call = F4(
 	});
 var $author$project$ViewStructure$getHeaderBlockPos = F3(
 	function (func, xoffset, yoffset) {
-		return A4(
+		return A5(
 			$author$project$ViewStructure$makeBlockPosition,
 			xoffset,
 			yoffset,
 			A4($author$project$Model$Call, 0, func.args, func.name, ''),
-			false);
+			false,
+			true);
 	});
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
@@ -9843,17 +9914,25 @@ var $author$project$Update$update = F2(
 				return A3($author$project$Update$headerOutputRightClickModel, model, id, index);
 			case 'HeaderNameClick':
 				var id = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($author$project$Update$headerNameHighlightModel, model, id);
 			case 'HeaderClick':
 				var func = msg.a;
 				return A2($author$project$Update$headerClickModel, model, func);
 			case 'HeaderNameHighlight':
 				var id = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($author$project$Update$headerNameHighlightModel, model, id);
 			case 'HeaderNameUpdate':
 				var id = msg.a;
 				var str = msg.b;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A3($author$project$Update$headerNameUpdateModel, model, id, str);
+			case 'HeaderAddOutput':
+				var id = msg.a;
+				var inputCounter = msg.b;
+				return A3($author$project$Update$headerAddOutputModel, model, id, inputCounter);
+			case 'HeaderAddOutputRightClick':
+				var id = msg.a;
+				var inputCounter = msg.b;
+				return A3($author$project$Update$headerAddOutputRightClickModel, model, id, inputCounter);
 			case 'InputHighlight':
 				var id = msg.a;
 				var index = msg.b;
@@ -12418,25 +12497,52 @@ var $author$project$Model$OutputRightClick = function (a) {
 	return {$: 'OutputRightClick', a: a};
 };
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $author$project$ViewVariables$hollowNodeOutlineProportion = 0.25;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$SvgDraw$drawNode = F5(
-	function (xpos, inputPosition, ypos, events, isHighlighted) {
-		return A2(
+var $author$project$SvgDraw$drawNode = F6(
+	function (xpos, inputPosition, ypos, events, isHighlighted, isHollow) {
+		var outerCircle = A2(
 			$elm$svg$Svg$circle,
-			_Utils_ap(
-				events,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$r(
-						$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
-						$elm$svg$Svg$Attributes$cx(
-						$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
-						$elm$svg$Svg$Attributes$cy(
-						$elm$core$String$fromInt(ypos)),
-						$elm$svg$Svg$Attributes$fill(
-						isHighlighted ? 'blue' : 'black')
-					])),
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$r(
+					$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
+					$elm$svg$Svg$Attributes$cx(
+					$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+					$elm$svg$Svg$Attributes$cy(
+					$elm$core$String$fromInt(ypos)),
+					$elm$svg$Svg$Attributes$fill(
+					isHighlighted ? 'blue' : 'black')
+				]),
 			_List_Nil);
+		return A2(
+			$elm$svg$Svg$g,
+			events,
+			function () {
+				if (isHollow) {
+					var innerR = $elm$core$Basics$floor((inputPosition.b * 0.5) * (1 - $author$project$ViewVariables$hollowNodeOutlineProportion));
+					return _List_fromArray(
+						[
+							outerCircle,
+							A2(
+							$elm$svg$Svg$circle,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$r(
+									$elm$core$String$fromInt(innerR)),
+									$elm$svg$Svg$Attributes$cx(
+									$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+									$elm$svg$Svg$Attributes$cy(
+									$elm$core$String$fromInt(ypos)),
+									$elm$svg$Svg$Attributes$fill('white')
+								]),
+							_List_Nil)
+						]);
+				} else {
+					return _List_fromArray(
+						[outerCircle]);
+				}
+			}());
 	});
 var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
 var $author$project$DrawFunc$drawCallEnding = F2(
@@ -12460,13 +12566,14 @@ var $author$project$DrawFunc$drawCallEnding = F2(
 				$author$project$SvgDraw$svgClickEvents,
 				$author$project$Model$OutputClick(call.id),
 				$author$project$Model$OutputRightClick(call.id));
-			return A5(
+			return A6(
 				$author$project$SvgDraw$drawNode,
 				blockPos.xpos,
 				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
 				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
 				events,
-				isOutputHighlighted);
+				isOutputHighlighted,
+				false);
 		} else {
 			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
 		}
@@ -12576,6 +12683,27 @@ var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 			$elm$json$Json$Decode$map,
 			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
+};
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
+	function (key, value) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
 };
 var $rtfeldman$elm_css$VirtualDom$Styled$accumulateStyles = F2(
 	function (_v0, styles) {
@@ -13065,53 +13193,56 @@ var $author$project$SvgDraw$svgTextInput = function (str) {
 							return function (backgroundColor) {
 								return function (events) {
 									return function (domId) {
-										return A2(
-											$elm$svg$Svg$foreignObject,
-											_Utils_ap(
-												events,
+										return function (viewStructure) {
+											return A2(
+												$elm$svg$Svg$foreignObject,
+												_Utils_ap(
+													events,
+													_List_fromArray(
+														[
+															$elm$svg$Svg$Attributes$x(
+															$elm$core$String$fromInt(xpos)),
+															$elm$svg$Svg$Attributes$y(
+															$elm$core$String$fromInt(ypos)),
+															$elm$svg$Svg$Attributes$width(
+															$elm$core$String$fromInt(w)),
+															$elm$svg$Svg$Attributes$height(
+															$elm$core$String$fromInt(h))
+														])),
 												_List_fromArray(
 													[
-														$elm$svg$Svg$Attributes$x(
-														$elm$core$String$fromInt(xpos)),
-														$elm$svg$Svg$Attributes$y(
-														$elm$core$String$fromInt(ypos)),
-														$elm$svg$Svg$Attributes$width(
-														$elm$core$String$fromInt(w)),
-														$elm$svg$Svg$Attributes$height(
-														$elm$core$String$fromInt(h))
-													])),
-											_List_fromArray(
-												[
-													$rtfeldman$elm_css$Html$Styled$toUnstyled(
-													A2(
-														$rtfeldman$elm_css$Html$Styled$input,
-														_List_fromArray(
-															[
-																$rtfeldman$elm_css$Html$Styled$Attributes$value(str),
-																$rtfeldman$elm_css$Html$Styled$Events$onInput(onInputEvent),
-																$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
-																$rtfeldman$elm_css$Html$Styled$Events$onFocus(onFocusEvent),
-																$rtfeldman$elm_css$Html$Styled$Attributes$css(
-																_List_fromArray(
-																	[
-																		$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$monospace),
-																		$rtfeldman$elm_css$Css$fontSize(
-																		$rtfeldman$elm_css$Css$px(h * $author$project$ViewVariables$inputFontSizePercent)),
-																		$rtfeldman$elm_css$Css$width(
-																		$rtfeldman$elm_css$Css$pct(100)),
-																		$rtfeldman$elm_css$Css$height(
-																		$rtfeldman$elm_css$Css$pct(100)),
-																		$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$borderBox),
-																		$rtfeldman$elm_css$Css$backgroundColor(backgroundColor),
-																		$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
-																		$rtfeldman$elm_css$Css$padding(
-																		$rtfeldman$elm_css$Css$px(0)),
-																		$rtfeldman$elm_css$Css$border(
-																		$rtfeldman$elm_css$Css$px(2))
-																	]))
-															]),
-														_List_Nil))
-												]));
+														$rtfeldman$elm_css$Html$Styled$toUnstyled(
+														A2(
+															$rtfeldman$elm_css$Html$Styled$input,
+															_List_fromArray(
+																[
+																	$rtfeldman$elm_css$Html$Styled$Attributes$value(str),
+																	$rtfeldman$elm_css$Html$Styled$Events$onInput(onInputEvent),
+																	$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
+																	$rtfeldman$elm_css$Html$Styled$Events$onFocus(onFocusEvent),
+																	viewStructure.isToolbar ? $rtfeldman$elm_css$Html$Styled$Attributes$tabindex(-1) : $rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
+																	$rtfeldman$elm_css$Html$Styled$Attributes$css(
+																	_List_fromArray(
+																		[
+																			$rtfeldman$elm_css$Css$fontFamily($rtfeldman$elm_css$Css$monospace),
+																			$rtfeldman$elm_css$Css$fontSize(
+																			$rtfeldman$elm_css$Css$px(h * $author$project$ViewVariables$inputFontSizePercent)),
+																			$rtfeldman$elm_css$Css$width(
+																			$rtfeldman$elm_css$Css$pct(100)),
+																			$rtfeldman$elm_css$Css$height(
+																			$rtfeldman$elm_css$Css$pct(100)),
+																			$rtfeldman$elm_css$Css$boxSizing($rtfeldman$elm_css$Css$borderBox),
+																			$rtfeldman$elm_css$Css$backgroundColor(backgroundColor),
+																			$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+																			$rtfeldman$elm_css$Css$padding(
+																			$rtfeldman$elm_css$Css$px(0)),
+																			$rtfeldman$elm_css$Css$border(
+																			$rtfeldman$elm_css$Css$px(2))
+																		]))
+																]),
+															_List_Nil))
+													]));
+										};
 									};
 								};
 							};
@@ -13129,7 +13260,7 @@ var $author$project$SvgDraw$drawBlockNameInput = F3(
 			$author$project$Model$BlockNameHighlight(call.id))(
 			$author$project$Model$BlockNameUpdate(call.id))($rtfeldman$elm_css$Css$transparent)(
 			A2($author$project$SvgDraw$blockNameEvents, call, viewStructure))(
-			$author$project$Update$nodeNameId(call.id));
+			$author$project$Update$nodeNameId(call.id))(viewStructure);
 	});
 var $author$project$Model$HeaderOutputClick = F2(
 	function (a, b) {
@@ -13139,29 +13270,8 @@ var $author$project$Model$InputHighlight = F2(
 	function (a, b) {
 		return {$: 'InputHighlight', a: a, b: b};
 	});
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
-	function (key, value) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
-			_List_Nil,
-			'');
-	});
-var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
-	return A2(
-		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
-		'tabIndex',
-		$elm$core$String$fromInt(n));
-};
-var $author$project$SvgDraw$nodeEvent = F5(
-	function (xpos, inputPos, ypos, event, domId) {
+var $author$project$SvgDraw$nodeEvent = F6(
+	function (xpos, inputPos, ypos, event, domId, viewStructure) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
@@ -13182,22 +13292,23 @@ var $author$project$SvgDraw$nodeEvent = F5(
 						$rtfeldman$elm_css$Html$Styled$div,
 						_List_fromArray(
 							[
-								$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(0),
+								$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(
+								viewStructure.isToolbar ? (-1) : 0),
 								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
 								$rtfeldman$elm_css$Html$Styled$Events$onFocus(event)
 							]),
 						_List_Nil))
 				]));
 	});
-var $author$project$SvgDraw$drawNodeWithEvent = F7(
-	function (xpos, inputPos, ypos, events, highlightevent, eventId, isHighlighted) {
+var $author$project$SvgDraw$drawNodeWithEvent = F9(
+	function (xpos, inputPos, ypos, events, highlightevent, eventId, isHighlighted, viewStructure, isHollow) {
 		return A2(
 			$elm$svg$Svg$g,
 			_List_Nil,
 			_List_fromArray(
 				[
-					A5($author$project$SvgDraw$nodeEvent, xpos, inputPos, ypos, highlightevent, eventId),
-					A5($author$project$SvgDraw$drawNode, xpos, inputPos, ypos, events, isHighlighted)
+					A6($author$project$SvgDraw$nodeEvent, xpos, inputPos, ypos, highlightevent, eventId, viewStructure),
+					A6($author$project$SvgDraw$drawNode, xpos, inputPos, ypos, events, isHighlighted, isHollow)
 				]));
 	});
 var $author$project$ViewVariables$lineWidth = '4';
@@ -13328,8 +13439,8 @@ var $author$project$Model$InputUpdate = F3(
 	});
 var $author$project$ViewVariables$textInputColor = A3($rtfeldman$elm_css$Css$rgb, 186, 232, 188);
 var $author$project$ViewVariables$textInputColorVariable = A3($rtfeldman$elm_css$Css$rgb, 108, 230, 113);
-var $author$project$SvgDraw$drawTextInput = F8(
-	function (call, str, events, xpos, inputPos, ypos, index, domId) {
+var $author$project$SvgDraw$drawTextInput = F9(
+	function (call, str, events, xpos, inputPos, ypos, index, domId, viewStructure) {
 		return $author$project$SvgDraw$svgTextInput(str)(inputPos.a + xpos)(ypos - (($author$project$ViewVariables$inputHeight / 2) | 0))(inputPos.b)($author$project$ViewVariables$inputHeight)(
 			A2($author$project$Model$InputHighlight, call.id, index))(
 			A2($author$project$Model$InputUpdate, call.id, index))(
@@ -13341,7 +13452,7 @@ var $author$project$SvgDraw$drawTextInput = F8(
 				} else {
 					return $author$project$ViewVariables$textInputColor;
 				}
-			}())(events)(domId);
+			}())(events)(domId)(viewStructure);
 	});
 var $author$project$Model$InputClick = F2(
 	function (a, b) {
@@ -13383,7 +13494,7 @@ var $author$project$DrawFunc$drawInput = F5(
 		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
 		var nodeWithEvent = function (_v5) {
-			return A7($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted);
+			return A9($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted, viewStructure, false);
 		};
 		switch (input.$) {
 			case 'Output':
@@ -13469,7 +13580,7 @@ var $author$project$DrawFunc$drawInput = F5(
 					}());
 			case 'Text':
 				var str = input.a;
-				return A8($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId);
+				return A9($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId, viewStructure);
 			default:
 				return nodeWithEvent(_Utils_Tuple0);
 		}
@@ -13480,13 +13591,14 @@ var $author$project$DrawFunc$drawInputLines = F5(
 			return _List_fromArray(
 				[
 					A3($author$project$SvgDraw$drawBlockNameInput, call, viewStructure, blockPos),
-					A5(
+					A6(
 					$author$project$SvgDraw$nodeEvent,
 					0,
 					_Utils_Tuple2(0, 0),
 					0,
 					$author$project$Model$OutputHighlight(call.id),
-					$author$project$Update$nodeOutputId(call.id))
+					$author$project$Update$nodeOutputId(call.id),
+					viewStructure)
 				]);
 		} else {
 			var input = inputs.a;
@@ -13565,16 +13677,55 @@ var $author$project$SvgDraw$headerNameEvents = F2(
 			$author$project$Model$HeaderNameClick(viewStructure.id),
 			$author$project$Model$HeaderClick(_function));
 	});
-var $author$project$Update$headerNameId = function (functionid) {
-	return 'hn' + $elm$core$String$fromInt(functionid);
-};
 var $author$project$SvgDraw$drawHeaderNameInput = F2(
 	function (_function, viewStructure) {
 		return $author$project$SvgDraw$svgTextInput(_function.name)($author$project$ViewVariables$blockTextXPadding)($author$project$ViewVariables$functionHeaderSquareY + $author$project$ViewVariables$nodeRadius)(viewStructure.headerPos.width - (2 * $author$project$ViewVariables$blockTextXPadding))($author$project$ViewVariables$blockTextInputHeight)(
 			$author$project$Model$HeaderNameHighlight(viewStructure.id))(
 			$author$project$Model$HeaderNameUpdate(viewStructure.id))($rtfeldman$elm_css$Css$transparent)(
 			A2($author$project$SvgDraw$headerNameEvents, _function, viewStructure))(
-			$author$project$Update$headerNameId(viewStructure.id));
+			$author$project$Update$headerNameId(viewStructure.id))(viewStructure);
+	});
+var $author$project$Model$HeaderAddOutput = F2(
+	function (a, b) {
+		return {$: 'HeaderAddOutput', a: a, b: b};
+	});
+var $author$project$Model$HeaderAddOutputRightClick = F2(
+	function (a, b) {
+		return {$: 'HeaderAddOutputRightClick', a: a, b: b};
+	});
+var $author$project$SvgDraw$headerEventsFinal = F2(
+	function (inputCounter, viewStructure) {
+		return viewStructure.isToolbar ? _List_Nil : A2(
+			$author$project$SvgDraw$svgClickEvents,
+			A2($author$project$Model$HeaderAddOutput, viewStructure.id, inputCounter),
+			A2($author$project$Model$HeaderAddOutputRightClick, viewStructure.id, inputCounter));
+	});
+var $author$project$DrawFunc$drawHeaderFinalOutput = F2(
+	function (viewStructure, inputCounter) {
+		var isInputHighlighted = false;
+		var events = A2($author$project$SvgDraw$headerEventsFinal, inputCounter, viewStructure);
+		var domId = A2($author$project$Update$headerNodeId, viewStructure.id, inputCounter);
+		var blockPos = viewStructure.headerPos;
+		var nodePos = function () {
+			var _v0 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
+			if (_v0.$ === 'Just') {
+				var nodeP = _v0.a;
+				return nodeP;
+			} else {
+				return _Utils_Tuple2(-100, -100);
+			}
+		}();
+		return A9(
+			$author$project$SvgDraw$drawNodeWithEvent,
+			0,
+			nodePos,
+			$author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$nodeRadius,
+			events,
+			A2($author$project$Model$HeaderAddOutput, viewStructure.id, inputCounter),
+			domId,
+			isInputHighlighted,
+			viewStructure,
+			true);
 	});
 var $author$project$Model$HeaderOutputHighlight = F2(
 	function (a, b) {
@@ -13623,9 +13774,9 @@ var $author$project$DrawFunc$drawHeaderOutput = F3(
 			var str = input.a;
 			return $author$project$SvgDraw$svgTextInput(str)(nodePos.a)($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$inputHeight)(nodePos.b)($author$project$ViewVariables$inputHeight)(
 				A2($author$project$Model$HeaderOutputHighlight, viewStructure.id, inputCounter))(
-				A2($author$project$Model$HeaderOutputUpdate, viewStructure.id, inputCounter))($author$project$ViewVariables$textInputColorVariable)(events)(domId);
+				A2($author$project$Model$HeaderOutputUpdate, viewStructure.id, inputCounter))($author$project$ViewVariables$textInputColorVariable)(events)(domId)(viewStructure);
 		} else {
-			return A7(
+			return A9(
 				$author$project$SvgDraw$drawNodeWithEvent,
 				0,
 				nodePos,
@@ -13633,13 +13784,18 @@ var $author$project$DrawFunc$drawHeaderOutput = F3(
 				events,
 				A2($author$project$Model$HeaderOutputHighlight, viewStructure.id, inputCounter),
 				domId,
-				isInputHighlighted);
+				isInputHighlighted,
+				viewStructure,
+				false);
 		}
 	});
 var $author$project$DrawFunc$drawHeaderOutputs = F3(
 	function (funcArgs, viewStructure, inputCounter) {
 		if (!funcArgs.b) {
-			return _List_Nil;
+			return _List_fromArray(
+				[
+					A2($author$project$DrawFunc$drawHeaderFinalOutput, viewStructure, inputCounter)
+				]);
 		} else {
 			var input = funcArgs.a;
 			var rest = funcArgs.b;
