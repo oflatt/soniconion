@@ -1,5 +1,6 @@
 module DrawFunc exposing (drawFuncWithConnections)
 import Model exposing (..)
+import ModelHelpers exposing (isStandInInfinite)
 import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, InputPosition)
 import LineRouting exposing (CallLineRoute)
 import ViewVariables
@@ -125,7 +126,7 @@ drawInput call input blockPos inputCounter viewStructure =
                 Just nodePos -> nodePos
                 Nothing -> (-100, -100) -- something went wrong
         nodeWithEvent =
-            (\_ ->
+            (\isHollow ->
                  (SvgDraw.drawNodeWithEvent
                       blockPos.xpos
                       nodePosition
@@ -135,7 +136,7 @@ drawInput call input blockPos inputCounter viewStructure =
                       inputStringId
                       isInputHighlighted
                       viewStructure
-                      False))
+                      isHollow))
     in
         case input of
             Output id ->
@@ -151,8 +152,8 @@ drawInput call input blockPos inputCounter viewStructure =
                     Svg.node "g" []
                         (case (drawOutputLine call blockPos inputCounter viewStructure
                                    outputEvents isLineHighlighted id 0) of
-                             Just line -> [line, (nodeWithEvent ())]
-                             Nothing -> [(nodeWithEvent ())])
+                             Just line -> [line, (nodeWithEvent False)]
+                             Nothing -> [(nodeWithEvent False)])
             FunctionArg index ->
                 let isLineHighlighted =
                         (case viewStructure.mouseState.mouseSelection of
@@ -166,8 +167,8 @@ drawInput call input blockPos inputCounter viewStructure =
                     Svg.node "g" []
                         (case (drawOutputLine call blockPos inputCounter viewStructure
                                    outputEvents isLineHighlighted viewStructure.id index) of
-                             Just line -> [line, (nodeWithEvent ())]
-                             Nothing -> [(nodeWithEvent ())])
+                             Just line -> [line, (nodeWithEvent False)]
+                             Nothing -> [(nodeWithEvent False)])
             Text str ->
                 (SvgDraw.drawTextInput
                      call
@@ -179,7 +180,10 @@ drawInput call input blockPos inputCounter viewStructure =
                      inputCounter
                      inputStringId
                      viewStructure)
-            Hole -> (nodeWithEvent ()) -- TODO this should be hole case
+            Hole ->
+                if isStandInInfinite call input inputCounter
+                then (nodeWithEvent True)
+                else (nodeWithEvent False)
  
                         
 drawInputLines call inputs blockPos inputCounter viewStructure =

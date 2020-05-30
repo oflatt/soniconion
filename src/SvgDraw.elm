@@ -153,7 +153,7 @@ drawNode xpos inputPosition ypos events isHighlighted isHollow =
                       ,(circle [r (String.fromInt innerR)
                                ,cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2) + xpos))
                                ,cy (String.fromInt ypos)
-                               ,fill "white"]
+                               ,fill ViewVariables.holeGrey]
                             [])])
              else
                  [outerCircle])

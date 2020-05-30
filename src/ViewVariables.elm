@@ -70,6 +70,7 @@ blockColor = "rgb(50, 214, 232)"
 textInputColor = (rgb 186 232 188)
 textInputColorVariable = (rgb 108 230 113)
 errorColor = (rgb 255 150 150)
+holeGrey = "rgb(200, 200, 200)"
 
 
 functionHeaderSquareY = functionHeaderHeight-blockHeight+nodeRadius

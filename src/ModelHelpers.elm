@@ -1,6 +1,6 @@
 module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
                              ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
-                             ,fixAllInvalidInputs, getFunc)
+                             ,fixAllInvalidInputs, getFunc, isStandInInfinite)
 
 import Dict exposing (Dict)
 
@@ -22,7 +22,15 @@ idToPositionCalls func dict pos =
         (e::es) -> (idToPositionCalls es
                         (Dict.insert e.id pos dict)
                         (pos + 1))
- 
+
+isStandInInfinite call input index =
+    case Dict.get call.functionName builtInFunctions of
+        Nothing -> False
+        Just builtInSpec ->
+            case builtInSpec.argList of
+                Infinite base lastname -> index >= (List.length base)
+                _ -> False
+                   
 eliminateHoles inputs =
     case inputs of
         [] -> [Hole]
