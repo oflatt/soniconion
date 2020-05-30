@@ -153,14 +153,14 @@ getAllBlockPositions maybeMoveInfo func currentY =
                 newY = if isMoved then
                            (case maybeMoveInfo of
                                 Just moveInfo -> (currentY + ViewVariables.blockSpace + (callLinesSpace moveInfo.movedCall))
-                                Nothing -> 0 )
+                                Nothing -> 0)
                        else currentY + ViewVariables.blockSpace + (callLinesSpace call)-- should not happen!
                 iteration = getAllBlockPositions newMoveInfo restCall newY
 
                 blockPos = if isMoved then
                                (case maybeMoveInfo of
                                     Just moveInfo -> (movedInfoBlockPos moveInfo)
-                                    Nothing -> (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False)) -- should not happen
+                                    Nothing -> (makeBlockPosition 0 0 call False)) -- should not happen
                            else (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False)
             in
                 (topCall :: (Tuple.first iteration)

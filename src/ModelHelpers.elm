@@ -1,5 +1,6 @@
 module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
-                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc)
+                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
+                             ,fixAllInvalidInputs)
 
 import Dict exposing (Dict)
 
@@ -151,6 +152,11 @@ removeCallsR calls id =
         
 removeCall func id =
     fixInvalidInputs {func | calls = removeCallsR func.calls id}
+
+-- unsafe because it doesn't fix invalid inputs
+-- after placing a block, fixInvalidInputs needs to be called on the func
+removeCallUnsafe func id =
+    {func | calls = removeCallsR func.calls id}
         
 updateFuncOnion onion funcId update =
     case onion of
@@ -172,33 +178,54 @@ removeFunc onion funcId =
             if func.id == funcId then funcs else func :: (removeFunc funcs funcId)
     
         
-fixInputs inputs idToPos currentIndex =
+fixInputs inputs idToPos currentIndex validF =
     case inputs of
         [] -> []
         (input::rest) ->
             case input of
                 Output id ->
                     case Dict.get id idToPos of
-                        Nothing -> (Hole) :: fixInputs rest idToPos currentIndex
+                        Nothing -> (Hole) :: fixInputs rest idToPos currentIndex validF
                         Just index ->
                             if index >= currentIndex
-                            then (Hole) :: fixInputs rest idToPos currentIndex
-                            else input :: fixInputs rest idToPos currentIndex
-                _ -> input :: fixInputs rest idToPos currentIndex
+                            then (Hole) :: fixInputs rest idToPos currentIndex validF
+                            else input :: fixInputs rest idToPos currentIndex validF
+                FunctionArg index ->
+                    if validF index then
+                        input :: fixInputs rest idToPos currentIndex validF
+                    else (Hole) :: fixInputs rest idToPos currentIndex validF
+                _ -> input :: fixInputs rest idToPos currentIndex validF
                        
-fixCallInputs call idToPos currentIndex =
-    {call | inputs = fixInputs call.inputs idToPos currentIndex}
+fixCallInputs call idToPos currentIndex validF =
+    {call | inputs = fixInputs call.inputs idToPos currentIndex validF}
                        
-fixInvalidInputsHelper func idToPos currentIndex =
+fixInvalidInputsHelper func idToPos currentIndex validF =
     case func of
         [] -> []
         (call::calls) ->
-            (fixCallInputs call idToPos currentIndex) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1)
+            (fixCallInputs call idToPos currentIndex validF) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1 ) validF
 
+validFunctionArg header pos =
+    case header of
+        [] -> False
+        (h::rest) ->
+            if pos == 0
+            then
+                (case h of
+                     Text _ -> False
+                     _ -> True)
+            else validFunctionArg rest (pos-1)
+    
+                
 fixInvalidInputs : Function -> Function
 fixInvalidInputs func =
     let idToPos = idToPosition func Dict.empty 0
+        validF = validFunctionArg func.args
     in
-        {func | calls = (fixInvalidInputsHelper func.calls idToPos 0)}
+        {func | calls = (fixInvalidInputsHelper func.calls idToPos 0 validF)}
+
+fixAllInvalidInputs : Onion -> Onion
+fixAllInvalidInputs onion =
+    List.map fixInvalidInputs onion
 
 

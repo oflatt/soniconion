@@ -24,7 +24,7 @@ formatBlockPositions testFunc mouse blockInfo =
              (ViewStructure.getViewStructure
                   (case blockInfo of
                        Nothing -> testFunc
-                       Just info -> (ModelHelpers.removeCall testFunc info.movedCall.id))
+                       Just info -> (ModelHelpers.removeCallUnsafe testFunc info.movedCall.id))
                   mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 blockInfo False).blockPositions)
 
             
@@ -70,7 +70,7 @@ blockPositionsTest =
                   (Ok [0
                       ,blockSpace*2 + (1+2)*lineSpaceBeforeBlock
                       ,blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock
-                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing
+                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing-ViewVariables.blockHeight//2
                       ,blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock]))]
 
 

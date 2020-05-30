@@ -22,7 +22,7 @@ import Model exposing (..)
 import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateInputOn
-                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc)
+                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe)
 
 
 
@@ -121,7 +121,7 @@ headerClickModel model func =
          ,Cmd.none))
 
 blockClickModel model call funcId =
-    (let removed = updateFunc model funcId (\func -> removeCall func call.id)
+    (let removed = updateFunc model funcId (\func -> removeCallUnsafe func call.id)
          oldMouse = model.mouseState
          newMouse = {oldMouse |
                          mouseSelection = (BlockSelected funcId call)}
@@ -220,24 +220,6 @@ finishBlockAtPos func blockId =
                 calls
             else
                 currentCall :: finishBlockAtPos calls blockId
-        
-placeBlockAtPos func blockId blockPos blockPositions call =
-    case func of
-        [] -> [call]
-        (currentCall::calls) ->
-            if currentCall.id == blockId
-            then
-                placeBlockAtPos calls blockId blockPos blockPositions call
-            else
-                case Dict.get currentCall.id blockPositions of
-                    Nothing -> log "No block in placeBlockAtPos" func
-                    Just currentBlockPos ->
-                        if blockPos.ypos < currentBlockPos.ypos
-                        then
-                            call :: (finishBlockAtPos func blockId)
-                        else
-                            currentCall :: (placeBlockAtPos calls blockId blockPos blockPositions call)
-
 
 programDropped model =
     let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
@@ -250,7 +232,7 @@ modelBlockDropped model =
     let oldMouse = model.mouseState
         newMouse =
             {oldMouse | mouseSelection = NoneSelected}
-        newProgram = (programDropped model)
+        newProgram = ModelHelpers.fixAllInvalidInputs (programDropped model)
     in
         ({model |
               mouseState = newMouse

@@ -114,7 +114,7 @@ makeMain id calls =
     (constructFunction id "main" calls)
 
 constructFunction id name calls =
-    (Function name id [Hole] calls)
+    (Function name id [] calls)
         
 getCallById id func =
     case func of

@@ -55,14 +55,14 @@ getOutputPos outputId viewStructure outputIndex =
             (Dict.get outputId viewStructure.blockPositions)
         
 -- outputIndex is used for the function header
-drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> List (Svg.Attribute Msg) -> Bool -> Id -> Int -> (Svg Msg)
+drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> List (Svg.Attribute Msg) -> Bool -> Id -> Int
+               -> Maybe (Svg Msg)
 drawOutputLine call blockPos inputCounter viewStructure events isLineHighlighted outputId outputIndex =
-    Maybe.withDefault (SvgDraw.errorSvgNode "Can't find line output")
-        (Maybe.map2
-             (\otherBlockPos routing ->
-                  SvgDraw.drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routing viewStructure)
-             (getOutputPos outputId viewStructure outputIndex)
-             (getInputRouting call inputCounter viewStructure))    
+    (Maybe.map2
+         (\otherBlockPos routing ->
+              SvgDraw.drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routing viewStructure)
+         (getOutputPos outputId viewStructure outputIndex)
+         (getInputRouting call inputCounter viewStructure))
 
             
 drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
@@ -132,8 +132,10 @@ drawInput call input blockPos inputCounter viewStructure =
                         (SvgDraw.svgClickEvents (OutputClick id) NoOp)
                 in
                     Svg.node "g" []
-                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvents isLineHighlighted id 0)
-                        ,(nodeWithEvent ())]
+                        (case (drawOutputLine call blockPos inputCounter viewStructure
+                                   outputEvents isLineHighlighted id 0) of
+                             Just line -> [line, (nodeWithEvent ())]
+                             Nothing -> [(nodeWithEvent ())])
             FunctionArg index ->
                 let isLineHighlighted =
                         (case viewStructure.mouseState.mouseSelection of
