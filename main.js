@@ -12497,6 +12497,7 @@ var $author$project$Model$OutputRightClick = function (a) {
 	return {$: 'OutputRightClick', a: a};
 };
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $author$project$ViewVariables$holeGrey = 'rgb(200, 200, 200)';
 var $author$project$ViewVariables$hollowNodeOutlineProportion = 0.25;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $author$project$SvgDraw$drawNode = F6(
@@ -12534,7 +12535,7 @@ var $author$project$SvgDraw$drawNode = F6(
 									$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
 									$elm$svg$Svg$Attributes$cy(
 									$elm$core$String$fromInt(ypos)),
-									$elm$svg$Svg$Attributes$fill('white')
+									$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$holeGrey)
 								]),
 							_List_Nil)
 						]);
@@ -13454,6 +13455,25 @@ var $author$project$SvgDraw$drawTextInput = F9(
 				}
 			}())(events)(domId)(viewStructure);
 	});
+var $author$project$ModelHelpers$isStandInInfinite = F3(
+	function (call, input, index) {
+		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Nothing') {
+			return false;
+		} else {
+			var builtInSpec = _v0.a;
+			var _v1 = builtInSpec.argList;
+			if (_v1.$ === 'Infinite') {
+				var base = _v1.a;
+				var lastname = _v1.b;
+				return _Utils_cmp(
+					index,
+					$elm$core$List$length(base)) > -1;
+			} else {
+				return false;
+			}
+		}
+	});
 var $author$project$Model$InputClick = F2(
 	function (a, b) {
 		return {$: 'InputClick', a: a, b: b};
@@ -13472,9 +13492,9 @@ var $author$project$SvgDraw$nodeEvents = F3(
 var $author$project$DrawFunc$drawInput = F5(
 	function (call, input, blockPos, inputCounter, viewStructure) {
 		var nodePosition = function () {
-			var _v7 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
-			if (_v7.$ === 'Just') {
-				var nodePos = _v7.a;
+			var _v6 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
+			if (_v6.$ === 'Just') {
+				var nodePos = _v6.a;
 				return nodePos;
 			} else {
 				return _Utils_Tuple2(-100, -100);
@@ -13482,10 +13502,10 @@ var $author$project$DrawFunc$drawInput = F5(
 		}();
 		var nodeEvents = A3($author$project$SvgDraw$nodeEvents, call, viewStructure, inputCounter);
 		var isInputHighlighted = function () {
-			var _v6 = viewStructure.mouseState.mouseSelection;
-			if (_v6.$ === 'InputSelected') {
-				var inputId = _v6.a;
-				var inputIndex = _v6.b;
+			var _v5 = viewStructure.mouseState.mouseSelection;
+			if (_v5.$ === 'InputSelected') {
+				var inputId = _v5.a;
+				var inputIndex = _v5.b;
 				return _Utils_eq(inputId, call.id) && _Utils_eq(inputCounter, inputIndex);
 			} else {
 				return false;
@@ -13493,8 +13513,8 @@ var $author$project$DrawFunc$drawInput = F5(
 		}();
 		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
-		var nodeWithEvent = function (_v5) {
-			return A9($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted, viewStructure, false);
+		var nodeWithEvent = function (isHollow) {
+			return A9($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted, viewStructure, isHollow);
 		};
 		switch (input.$) {
 			case 'Output':
@@ -13528,12 +13548,12 @@ var $author$project$DrawFunc$drawInput = F5(
 							return _List_fromArray(
 								[
 									line,
-									nodeWithEvent(_Utils_Tuple0)
+									nodeWithEvent(false)
 								]);
 						} else {
 							return _List_fromArray(
 								[
-									nodeWithEvent(_Utils_Tuple0)
+									nodeWithEvent(false)
 								]);
 						}
 					}());
@@ -13569,12 +13589,12 @@ var $author$project$DrawFunc$drawInput = F5(
 							return _List_fromArray(
 								[
 									line,
-									nodeWithEvent(_Utils_Tuple0)
+									nodeWithEvent(false)
 								]);
 						} else {
 							return _List_fromArray(
 								[
-									nodeWithEvent(_Utils_Tuple0)
+									nodeWithEvent(false)
 								]);
 						}
 					}());
@@ -13582,7 +13602,7 @@ var $author$project$DrawFunc$drawInput = F5(
 				var str = input.a;
 				return A9($author$project$SvgDraw$drawTextInput, call, str, nodeEvents, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, inputCounter, inputStringId, viewStructure);
 			default:
-				return nodeWithEvent(_Utils_Tuple0);
+				return A3($author$project$ModelHelpers$isStandInInfinite, call, input, inputCounter) ? nodeWithEvent(true) : nodeWithEvent(false);
 		}
 	});
 var $author$project$DrawFunc$drawInputLines = F5(
