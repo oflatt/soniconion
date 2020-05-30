@@ -147,8 +147,10 @@ drawInput call input blockPos inputCounter viewStructure =
                     outputEvents = SvgDraw.svgClickEvents (HeaderOutputClick viewStructure.id index) NoOp
                 in
                     Svg.node "g" []
-                        [(drawOutputLine call blockPos inputCounter viewStructure outputEvents isLineHighlighted viewStructure.id index)
-                        ,(nodeWithEvent ())]
+                        (case (drawOutputLine call blockPos inputCounter viewStructure
+                                   outputEvents isLineHighlighted viewStructure.id index) of
+                             Just line -> [line, (nodeWithEvent ())]
+                             Nothing -> [(nodeWithEvent ())])
             Text str ->
                 (SvgDraw.drawTextInput
                      call
