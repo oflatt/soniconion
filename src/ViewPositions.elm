@@ -24,17 +24,7 @@ selectedFunc mouseState func svgWindowWidth svgWindowHeight=
     in
         {view | headerPos = newPos}
 
-            
-getById : List Function -> Id -> Maybe Function
-getById onion id =
-    case onion of
-        [] -> Nothing
-        (f::rest) ->
-            if f.id == id
-            then
-                Just f
-            else getById rest id
-
+           
             
 getSelected mouseState svgWindowWidth svgWindowHeight =    
     case mouseState.mouseSelection of

@@ -1,6 +1,6 @@
 module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
                              ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
-                             ,fixAllInvalidInputs)
+                             ,fixAllInvalidInputs, getFunc)
 
 import Dict exposing (Dict)
 
@@ -171,6 +171,17 @@ updateFuncOnion onion funcId update =
 updateFunc model funcId update =
     {model | program = (updateFuncOnion model.program funcId update)}
 
+getFunc : List Function -> Id -> Maybe Function
+getFunc onion id =
+    case onion of
+        [] -> Nothing
+        (f::rest) ->
+            if f.id == id
+            then
+                Just f
+            else getFunc rest id
+
+        
 removeFunc onion funcId =
     case onion of
         [] -> []

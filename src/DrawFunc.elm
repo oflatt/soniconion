@@ -64,7 +64,20 @@ drawOutputLine call blockPos inputCounter viewStructure events isLineHighlighted
          (getOutputPos outputId viewStructure outputIndex)
          (getInputRouting call inputCounter viewStructure))
 
-            
+
+drawHeaderFinalOutput viewStructure inputCounter =
+    let blockPos = viewStructure.headerPos
+        nodePos =
+            (case (Dict.get inputCounter blockPos.inputPositions) of
+                 Just nodeP -> nodeP
+                 Nothing -> (-100, -100)) -- something went wrong
+        domId = (Update.headerNodeId viewStructure.id inputCounter)
+        events = SvgDraw.headerEventsFinal inputCounter viewStructure
+        isInputHighlighted = False
+    in
+        (SvgDraw.drawNodeWithEvent 0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
+             events (HeaderAddOutput viewStructure.id inputCounter) domId isInputHighlighted viewStructure True)
+        
 drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
 drawHeaderOutput input viewStructure inputCounter =
     let blockPos = viewStructure.headerPos
@@ -88,10 +101,12 @@ drawHeaderOutput input viewStructure inputCounter =
                              (HeaderOutputUpdate viewStructure.id inputCounter)
                              ViewVariables.textInputColorVariable
                              events
-                             domId)
+                             domId
+                             viewStructure)
             _ -> (SvgDraw.drawNodeWithEvent
                       0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
-                      events (HeaderOutputHighlight viewStructure.id inputCounter) domId isInputHighlighted)
+                      events (HeaderOutputHighlight viewStructure.id inputCounter) domId isInputHighlighted
+                      viewStructure False)
                          
             
 drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
@@ -118,7 +133,9 @@ drawInput call input blockPos inputCounter viewStructure =
                       nodeEvents
                       highlightEvent
                       inputStringId
-                      isInputHighlighted))
+                      isInputHighlighted
+                      viewStructure
+                      False))
     in
         case input of
             Output id ->
@@ -160,21 +177,22 @@ drawInput call input blockPos inputCounter viewStructure =
                      nodePosition
                      (blockPos.ypos + ViewVariables.nodeRadius)
                      inputCounter
-                     inputStringId)
+                     inputStringId
+                     viewStructure)
             Hole -> (nodeWithEvent ()) -- TODO this should be hole case
  
                         
 drawInputLines call inputs blockPos inputCounter viewStructure =
     case inputs of
         [] -> [SvgDraw.drawBlockNameInput call viewStructure blockPos
-              ,SvgDraw.nodeEvent 0 (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id)]
+              ,SvgDraw.nodeEvent 0 (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id) viewStructure]
         (input::rest) ->
             (drawInput call input blockPos inputCounter viewStructure) ::
                 (drawInputLines call rest blockPos (inputCounter + 1) viewStructure)
 
 drawHeaderOutputs funcArgs viewStructure inputCounter =
     case funcArgs of
-        [] -> []
+        [] -> [drawHeaderFinalOutput viewStructure inputCounter]
         (input::rest) ->
             (drawHeaderOutput input viewStructure inputCounter) ::
                 (drawHeaderOutputs rest viewStructure (inputCounter+1))
@@ -215,7 +233,8 @@ drawCallEnding call viewStructure =
                      (((blockPos.width//2)-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
                      (ViewVariables.outputNodeY + blockPos.ypos)
                      events
-                     isOutputHighlighted)
+                     isOutputHighlighted
+                     False)
         Nothing ->
             SvgDraw.errorSvgNode "Call without a block position when drawing endings"
 

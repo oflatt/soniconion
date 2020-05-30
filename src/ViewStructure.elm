@@ -89,16 +89,21 @@ getInputWidth input =
         Text str -> ViewVariables.numCharactersToInputWidth (String.length str)
         _ -> ViewVariables.nodeRadius*2
         
-inputPositionList inputs counter currentX =
+inputPositionList inputs counter currentX shouldAddTail=
     case inputs of
-        [] -> []
+        [] ->
+            if shouldAddTail then
+                [(counter, (currentX, getInputWidth Hole))]
+            else
+                []
         (input::rest) ->
             let width = getInputWidth input
             in
-                (counter, (currentX, width)) :: (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing))
+                (counter, (currentX, width)) ::
+                    (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing) shouldAddTail)
         
-makeInputPositions call =
-    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding)
+makeInputPositions call shouldAddTail =
+    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding shouldAddTail)
 
 inputPositionsMax inputPositions =
     case Dict.get ((Dict.size inputPositions)-1) inputPositions of
@@ -109,8 +114,8 @@ inputPositionsMax inputPositions =
 getBlockWidth call inputPositions =
     max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
         
-makeBlockPosition xpos ypos call shouldCenter =
-    let inputPositions = (makeInputPositions call)
+makeBlockPosition xpos ypos call shouldCenter shouldAddTail =
+    let inputPositions = (makeInputPositions call shouldAddTail)
         blockW = getBlockWidth call inputPositions
         blockXpos =
             if shouldCenter then
@@ -125,10 +130,10 @@ makeBlockPosition xpos ypos call shouldCenter =
         (BlockPosition blockXpos blockYpos blockW inputPositions)
 
 getHeaderBlockPos func xoffset yoffset =
-    makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False
+    makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False True
 
 movedInfoBlockPos moveInfo =
-    (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos) moveInfo.movedCall True)
+    (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos) moveInfo.movedCall True False)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> (List Call, BlockPositions)
@@ -160,8 +165,8 @@ getAllBlockPositions maybeMoveInfo func currentY =
                 blockPos = if isMoved then
                                (case maybeMoveInfo of
                                     Just moveInfo -> (movedInfoBlockPos moveInfo)
-                                    Nothing -> (makeBlockPosition 0 0 call False)) -- should not happen
-                           else (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False)
+                                    Nothing -> (makeBlockPosition 0 0 call False False)) -- should not happen
+                           else (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False False)
             in
                 (topCall :: (Tuple.first iteration)
                 ,(Dict.insert topCall.id blockPos (Tuple.second iteration)))

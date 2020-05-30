@@ -58,6 +58,8 @@ type Msg = MouseOver PageName
          | HeaderClick Function
          | HeaderNameHighlight Id
          | HeaderNameUpdate Id String
+         | HeaderAddOutput Id Int
+         | HeaderAddOutputRightClick Id Int
          
            
          | BlockClick Call Id -- position of the function in svg coordinates also passed in
@@ -135,6 +137,7 @@ type MouseSelection = BlockSelected Id Call -- id of function it came from
                     | NameSelected Id
                     | OutputSelected Id
                     | FunctionOutputSelected Id Int
+                    | FunctionNameSelected Id
                     | NoneSelected
 
 type alias MouseState = {mouseX : Int

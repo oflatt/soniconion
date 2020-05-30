@@ -22,7 +22,8 @@ import Model exposing (..)
 import BuiltIn exposing (constructCall)
 import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateInputOn
-                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe)
+                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
+                             ,getFunc)
 
 
 
@@ -155,6 +156,13 @@ inputHighlightModel model id index =
                   mouseState = newMouse}
             ,focusInputCommand (nodeInputId id index))
 
+headerNameHighlightModel model id =
+    let oldMouse = model.mouseState
+        newMouse = {oldMouse | mouseSelection = (FunctionNameSelected id)}
+    in
+        ({model | mouseState = newMouse}
+        ,focusInputCommand (headerNameId id))
+            
 blockNameHighlightModel : Model -> Id -> (Model, Cmd Msg)
 blockNameHighlightModel model id =
     let oldMouse = model.mouseState
@@ -197,8 +205,33 @@ outputHighlightModel model id =
 inputUpdateModel model id index str =
     case str of
         "" -> (updateInput model id index (\i -> Hole), focusInputCommand (nodeInputId id index))
-        _  -> (updateInput model id index (\i -> (Text str)), Cmd.none) 
+        _  -> (updateInput model id index (\i -> (Text str)), Cmd.none)
 
+headerNameUpdateModel model id str =
+    ((updateFunc model id (\func -> {func | name = str}))
+    ,Cmd.none)
+
+addFuncOutput model id =
+    updateFunc model id
+        (\func ->
+             let newInputs = func.args ++ [Hole]
+             in
+                 {func | args = newInputs})
+    
+    
+headerAddOutputModel model id index =
+    let added = (addFuncOutput model id)
+    in
+        (headerHighlightModel added id index)
+
+
+            
+headerAddOutputRightClickModel model id index =
+    let added = (addFuncOutput model id)
+    in
+        (headerOutputRightClickModel added id index)
+
+            
 blockNameUpdateModel model id str =
     ModelHelpers.updateCall model id (\call -> {call | functionName = str}) 
               
@@ -384,16 +417,23 @@ update msg model =
         HeaderOutputRightClick id index ->
             headerOutputRightClickModel model id index
 
-        HeaderNameClick id -> (model, Cmd.none)
+        HeaderNameClick id ->
+            headerNameHighlightModel model id
 
         HeaderClick func ->
             headerClickModel model func
 
-        HeaderNameHighlight id -> (model, Cmd.none)
+        HeaderNameHighlight id ->
+            headerNameHighlightModel model id
 
-        HeaderNameUpdate id str -> (model, Cmd.none)
+        HeaderNameUpdate id str ->
+            headerNameUpdateModel model id str
 
+        HeaderAddOutput id inputCounter ->
+            headerAddOutputModel model id inputCounter
 
+        HeaderAddOutputRightClick id inputCounter ->
+            headerAddOutputRightClickModel model id inputCounter
                 
         InputHighlight id index ->
             (inputHighlightModel model id index)

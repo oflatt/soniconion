@@ -1,7 +1,7 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
-                             headerEvents, drawHeaderNameInput)
+                             headerEvents, drawHeaderNameInput, headerEventsFinal)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -73,8 +73,8 @@ svgText xpos ypos textIn fontSizeIn fillIn =
     [Svg.text textIn]
 
 
-svgTextInput: String -> Int -> Int -> Int -> Int -> Msg -> (String ->  Msg) -> Css.ColorValue compatible -> List (Svg.Attribute Msg) -> String -> (Svg Msg)
-svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events domId =
+svgTextInput: String -> Int -> Int -> Int -> Int -> Msg -> (String ->  Msg) -> Css.ColorValue compatible -> List (Svg.Attribute Msg) -> String -> ViewStructure -> (Svg Msg)
+svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events domId viewStructure=
     Svg.foreignObject
         (events ++
              [x (String.fromInt xpos)
@@ -87,6 +87,8 @@ svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events 
                   ,Html.Styled.Events.onInput onInputEvent
                   ,Html.Styled.Attributes.id domId
                   ,onFocus onFocusEvent
+                  ,(if viewStructure.isToolbar then Html.Styled.Attributes.tabindex -1
+                    else Html.Styled.Attributes.tabindex 0)
                   ,css [Css.fontFamily Css.monospace
                        ,Css.fontSize (Css.px ((toFloat h)*ViewVariables.inputFontSizePercent))
                        ,Css.width
@@ -100,8 +102,9 @@ svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events 
                        ,Css.border (px 2)]]
                   [])]
         
-drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String -> (Svg Msg)
-drawTextInput call str events xpos inputPos ypos index domId =
+drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String ->
+              ViewStructure -> (Svg Msg)
+drawTextInput call str events xpos inputPos ypos index domId viewStructure =
     svgTextInput
         str
         ((Tuple.first inputPos)+xpos)
@@ -115,8 +118,9 @@ drawTextInput call str events xpos inputPos ypos index domId =
              Nothing -> ViewVariables.textInputColor)
         events
         domId
+        viewStructure
 
-nodeEvent xpos inputPos ypos event domId =
+nodeEvent xpos inputPos ypos event domId viewStructure =
     Svg.foreignObject
         [x (String.fromInt ((Tuple.first inputPos)+xpos))
         ,y (String.fromInt ypos)
@@ -124,28 +128,46 @@ nodeEvent xpos inputPos ypos event domId =
         ,height (String.fromInt ViewVariables.nodeRadius)]
         [toUnstyled
              (div
-              [Html.Styled.Attributes.tabindex 0
+              [Html.Styled.Attributes.tabindex (if viewStructure.isToolbar then -1 else 0)
               ,Html.Styled.Attributes.id domId
               ,(onFocus event)]
              [])]
 
-drawNode xpos inputPosition ypos events isHighlighted =
-    (circle (events ++
+drawNode xpos inputPosition ypos events isHighlighted isHollow =
+    let outerCircle =
+            (circle
                  [r (String.fromInt ((Tuple.second inputPosition)//2))
                  , cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2) + xpos))
                  , cy (String.fromInt ypos)
-                 , fill (if isHighlighted then "blue" else "black")])
-         [])
+                 , fill (if isHighlighted then "blue" else "black")]
+                 [])
+    in
+        Svg.g
+            events
+            (if isHollow
+             then
+                 (let innerR = floor ((toFloat (Tuple.second inputPosition)) * 0.5 *
+                                         (1-ViewVariables.hollowNodeOutlineProportion))
+                  in
+                      [outerCircle
+                      ,(circle [r (String.fromInt innerR)
+                               ,cx (String.fromInt ((Tuple.first inputPosition)+((Tuple.second inputPosition)//2) + xpos))
+                               ,cy (String.fromInt ypos)
+                               ,fill "white"]
+                            [])])
+             else
+                 [outerCircle])
 
         
 -- nodes has inputs underneath them so that they can be tabbed
-drawNodeWithEvent xpos inputPos ypos events highlightevent eventId isHighlighted =
+drawNodeWithEvent xpos inputPos ypos events highlightevent eventId isHighlighted viewStructure isHollow =
     Svg.g
         []
         [
-         nodeEvent xpos inputPos ypos highlightevent eventId
-        ,drawNode xpos inputPos ypos events isHighlighted
+         nodeEvent xpos inputPos ypos highlightevent eventId viewStructure
+        ,drawNode xpos inputPos ypos events isHighlighted isHollow
         ]
+
 
         
         
@@ -215,6 +237,13 @@ headerEvents inputCounter viewStructure =
         []
     else
         svgClickEvents (HeaderOutputClick viewStructure.id inputCounter) (HeaderOutputRightClick viewStructure.id inputCounter)
+
+headerEventsFinal inputCounter viewStructure =
+    if viewStructure.isToolbar
+    then
+        []
+    else
+        svgClickEvents (HeaderAddOutput viewStructure.id inputCounter) (HeaderAddOutputRightClick viewStructure.id inputCounter)
             
         
 -- shape for functionName objects
@@ -278,7 +307,8 @@ drawBlockNameInput call viewStructure blockPos =
          (BlockNameUpdate call.id)
          Css.transparent
          (blockNameEvents call viewStructure)
-         (Update.nodeNameId call.id))
+         (Update.nodeNameId call.id)
+         viewStructure)
 
 drawHeaderNameInput function viewStructure =
     (svgTextInput function.name
@@ -290,7 +320,8 @@ drawHeaderNameInput function viewStructure =
          (HeaderNameUpdate viewStructure.id)
          Css.transparent
          (headerNameEvents function viewStructure)
-         (Update.headerNameId viewStructure.id))
+         (Update.headerNameId viewStructure.id)
+         viewStructure)
 
         
                 

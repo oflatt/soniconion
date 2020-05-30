@@ -40,6 +40,7 @@ lineWidth = "4"
 lineSpaceBeforeBlock = blockSpacing*3 // 2
                
 nodeRadius = blockHeight // 7
+hollowNodeOutlineProportion = 0.25
 inputPadding = nodeRadius * 3
 inputSpacing = nodeRadius * 1
 
