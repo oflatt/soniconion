@@ -7554,7 +7554,7 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 		}
 	});
 var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
-	return ($author$project$ViewVariables$functionHeaderHeight + $author$project$ViewStructure$countOutputs(func.args)) + $author$project$ViewVariables$blockSpacing;
+	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
 };
 var $author$project$ViewStructure$getBlockPositions = F5(
 	function (func, mouseState, xoffset, yoffset, maybeMove) {
@@ -7630,7 +7630,7 @@ var $author$project$LineRouting$findMaxBurden = F4(
 		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
 			return 0;
 		} else {
-			var callId = A2(
+			var callId = (currentIndex < 0) ? currentIndex : A2(
 				$elm$core$Maybe$withDefault,
 				-100,
 				A2(
@@ -7656,7 +7656,7 @@ var $author$project$LineRouting$findThisRouting = F4(
 				var outputIndex = _v1.a;
 				return outputIndex;
 			} else {
-				return 0;
+				return inputInfo.outputId;
 			}
 		}();
 		var cIndex = function () {
@@ -8299,7 +8299,7 @@ var $author$project$LineRouting$byOutput = F2(
 				var pos = _v1.a;
 				return _Utils_Tuple2(-pos, -callPos);
 			} else {
-				return _Utils_Tuple2(1, -callPos);
+				return _Utils_Tuple2(99999 + callPos, 0);
 			}
 		} else {
 			return _Utils_Tuple2(1, 1);
@@ -13357,8 +13357,9 @@ var $author$project$SvgDraw$taxiLine = F3(
 					])),
 			_List_Nil);
 	});
-var $author$project$SvgDraw$drawConnector = F8(
-	function (call, blockPos, inputCounter, otherBlockPos, events, isLineHighlighted, routeOffset, viewStructure) {
+var $author$project$SvgDraw$drawConnector = F9(
+	function (call, blockPos, inputCounter, otherBlockPos, events, isLineHighlighted, routeOffset, viewStructure, topOffset) {
+		var topY = otherBlockPos.b + ($author$project$ViewVariables$lineSpaceBeforeBlock * topOffset);
 		var otherBlockOutputX = otherBlockPos.a;
 		var nodeX = function () {
 			var _v0 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
@@ -13372,8 +13373,12 @@ var $author$project$SvgDraw$drawConnector = F8(
 		var lineX = (routeOffset < 0) ? ($author$project$ViewVariables$lineXSpace * routeOffset) : ((routeOffset > 0) ? (($author$project$ViewVariables$lineXSpace * routeOffset) + viewStructure.funcBlockMaxWidth) : otherBlockOutputX);
 		var lastY = (blockPos.ypos + $author$project$ViewVariables$nodeRadius) - ($author$project$ViewVariables$lineSpaceBeforeBlock * (1 + A2($author$project$ViewStructure$countOutputsBefore, call.inputs, inputCounter)));
 		var linepoints = _List_fromArray(
-			[otherBlockOutputX, otherBlockPos.b, otherBlockOutputX, otherBlockPos.b + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, otherBlockPos.b + $author$project$ViewVariables$lineSpaceBeforeBlock, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
+			[otherBlockOutputX, otherBlockPos.b, otherBlockOutputX, topY, lineX, topY, lineX, lastY, nodeX, lastY, nodeX, blockPos.ypos + $author$project$ViewVariables$nodeRadius]);
 		return A3($author$project$SvgDraw$taxiLine, linepoints, events, isLineHighlighted);
+	});
+var $author$project$DrawFunc$funcLineYOffset = F2(
+	function (viewStructure, outputIndex) {
+		return 1 + A2($author$project$ViewStructure$countOutputsBefore, viewStructure.sortedFunc.args, outputIndex);
 	});
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
@@ -13429,7 +13434,17 @@ var $author$project$DrawFunc$drawOutputLine = F8(
 			$elm$core$Maybe$map2,
 			F2(
 				function (otherBlockPos, routing) {
-					return A8($author$project$SvgDraw$drawConnector, call, blockPos, inputCounter, otherBlockPos, events, isLineHighlighted, routing, viewStructure);
+					return A9(
+						$author$project$SvgDraw$drawConnector,
+						call,
+						blockPos,
+						inputCounter,
+						otherBlockPos,
+						events,
+						isLineHighlighted,
+						routing,
+						viewStructure,
+						A2($author$project$DrawFunc$funcLineYOffset, viewStructure, outputIndex));
 				}),
 			A3($author$project$DrawFunc$getOutputPos, outputId, viewStructure, outputIndex),
 			A3($author$project$DrawFunc$getInputRouting, call, inputCounter, viewStructure));
@@ -13454,6 +13469,17 @@ var $author$project$SvgDraw$drawTextInput = F9(
 					return $author$project$ViewVariables$textInputColor;
 				}
 			}())(events)(domId)(viewStructure);
+	});
+var $author$project$DrawFunc$inputHighlightedP = F3(
+	function (viewStructure, call, inputCounter) {
+		var _v0 = viewStructure.mouseState.mouseSelection;
+		if (_v0.$ === 'InputSelected') {
+			var inputId = _v0.a;
+			var inputIndex = _v0.b;
+			return _Utils_eq(inputId, call.id) && _Utils_eq(inputCounter, inputIndex);
+		} else {
+			return false;
+		}
 	});
 var $author$project$ModelHelpers$isStandInInfinite = F3(
 	function (call, input, index) {
@@ -13491,26 +13517,12 @@ var $author$project$SvgDraw$nodeEvents = F3(
 	});
 var $author$project$DrawFunc$drawInput = F5(
 	function (call, input, blockPos, inputCounter, viewStructure) {
-		var nodePosition = function () {
-			var _v6 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
-			if (_v6.$ === 'Just') {
-				var nodePos = _v6.a;
-				return nodePos;
-			} else {
-				return _Utils_Tuple2(-100, -100);
-			}
-		}();
+		var nodePosition = A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(0, 0),
+			A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions));
 		var nodeEvents = A3($author$project$SvgDraw$nodeEvents, call, viewStructure, inputCounter);
-		var isInputHighlighted = function () {
-			var _v5 = viewStructure.mouseState.mouseSelection;
-			if (_v5.$ === 'InputSelected') {
-				var inputId = _v5.a;
-				var inputIndex = _v5.b;
-				return _Utils_eq(inputId, call.id) && _Utils_eq(inputCounter, inputIndex);
-			} else {
-				return false;
-			}
-		}();
+		var isInputHighlighted = A3($author$project$DrawFunc$inputHighlightedP, viewStructure, call, inputCounter);
 		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
 		var nodeWithEvent = function (isHollow) {
