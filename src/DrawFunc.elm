@@ -54,14 +54,18 @@ getOutputPos outputId viewStructure outputIndex =
                  ((otherPos.xpos + (otherPos.width//2))
                  ,otherPos.ypos + ViewVariables.outputNodeY))
             (Dict.get outputId viewStructure.blockPositions)
-        
+
+funcLineYOffset viewStructure outputIndex =
+    1 + (ViewStructure.countOutputsBefore viewStructure.sortedFunc.args outputIndex)
+                
 -- outputIndex is used for the function header
 drawOutputLine : Call -> BlockPosition -> Int -> ViewStructure -> List (Svg.Attribute Msg) -> Bool -> Id -> Int
                -> Maybe (Svg Msg)
 drawOutputLine call blockPos inputCounter viewStructure events isLineHighlighted outputId outputIndex =
     (Maybe.map2
          (\otherBlockPos routing ->
-              SvgDraw.drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routing viewStructure)
+              SvgDraw.drawConnector call blockPos inputCounter otherBlockPos events
+              isLineHighlighted routing viewStructure (funcLineYOffset viewStructure outputIndex))
          (getOutputPos outputId viewStructure outputIndex)
          (getInputRouting call inputCounter viewStructure))
 
@@ -109,22 +113,21 @@ drawHeaderOutput input viewStructure inputCounter =
                       events (HeaderOutputHighlight viewStructure.id inputCounter) domId isInputHighlighted
                       viewStructure False)
                          
-            
+
+inputHighlightedP viewStructure call inputCounter =
+    case viewStructure.mouseState.mouseSelection of
+        InputSelected inputId inputIndex ->
+            (inputId == call.id) && (inputCounter == inputIndex)
+        _ -> False
+                 
 drawInput : Call -> Input -> BlockPosition -> Int -> ViewStructure  -> Svg.Svg Msg
 drawInput call input blockPos inputCounter viewStructure =
     let nodeEvents = SvgDraw.nodeEvents call viewStructure inputCounter
         highlightEvent = (InputHighlight call.id inputCounter)
         inputStringId = nodeInputId call.id inputCounter
-        isInputHighlighted =
-            case viewStructure.mouseState.mouseSelection of
-                InputSelected inputId inputIndex ->
-                    (inputId == call.id) && (inputCounter == inputIndex)
-                _ -> False
+        isInputHighlighted = inputHighlightedP viewStructure call inputCounter
         nodePosition: InputPosition
-        nodePosition =
-            case (Dict.get inputCounter blockPos.inputPositions) of
-                Just nodePos -> nodePos
-                Nothing -> (-100, -100) -- something went wrong
+        nodePosition = Maybe.withDefault (0, 0) (Dict.get inputCounter blockPos.inputPositions)
         nodeWithEvent =
             (\isHollow ->
                  (SvgDraw.drawNodeWithEvent

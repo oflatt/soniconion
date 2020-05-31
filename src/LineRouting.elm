@@ -67,7 +67,7 @@ byOutput idToPos element =
         Just callPos ->
             (case Dict.get element.outputId idToPos of
                 Just pos -> (-pos, -callPos)
-                Nothing -> (1, -callPos))-- this must be a function argument
+                Nothing -> (99999+callPos, 0))-- positive position for function argument, doing -1 then -2 then -3...
         Nothing -> (1, 1) -- should not happen
             
 getOutputOrdering : Function -> IdToPos -> OutputOrdering
@@ -81,9 +81,13 @@ findMaxBurden fArray outputBurden currentIndex maxIndex =
     then 0
     else
         let callId =
-                (Maybe.withDefault -100
-                     (Maybe.map (\call -> call.id)
-                          (Array.get currentIndex fArray)))
+                if currentIndex < 0 -- for function arguments
+                then
+                    currentIndex
+                else
+                    (Maybe.withDefault -100
+                         (Maybe.map (\call -> call.id)
+                              (Array.get currentIndex fArray)))
         in
             max (findMaxBurden fArray outputBurden (currentIndex+1) maxIndex)
                 (Maybe.withDefault 0 (Dict.get callId outputBurden))
@@ -96,7 +100,7 @@ findThisRouting inputInfo outputBurden fArray idToPos =
                       Nothing -> 0)-- should never happen
         oIndex = (case Dict.get inputInfo.outputId idToPos of
                       Just outputIndex -> outputIndex
-                      Nothing -> 0)-- should never happen
+                      Nothing -> inputInfo.outputId)-- output is a function arg so the negative index stays
     in
         (findMaxBurden fArray outputBurden (oIndex+1) (cIndex-1))+1
                     

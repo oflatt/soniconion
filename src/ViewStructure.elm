@@ -80,7 +80,7 @@ countOutputsBefore inputs threshhold =
 
 countOutputs inputs =
     (countOutputsBefore inputs (List.length inputs))
-                           
+
 callLinesSpace call =
     (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
 
@@ -172,8 +172,7 @@ getAllBlockPositions maybeMoveInfo func currentY =
                 ,(Dict.insert topCall.id blockPos (Tuple.second iteration)))
 
 getFuncHeaderHeight func =
-    ViewVariables.functionHeaderHeight + (countOutputs func.args) + ViewVariables.blockSpacing
-                                   
+    ViewVariables.functionHeaderHeight + (countOutputs func.args)*ViewVariables.lineSpaceBeforeBlock + ViewVariables.blockSpacing
 
 fixMoveInfo xoffset yoffset maybeMove =
     case maybeMove of

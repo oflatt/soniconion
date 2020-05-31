@@ -325,9 +325,10 @@ drawHeaderNameInput function viewStructure =
 
         
                 
-drawConnector : Call -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Svg Msg
-drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routeOffset viewStructure =
+drawConnector : Call -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Int -> Svg Msg
+drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routeOffset viewStructure topOffset =
     let otherBlockOutputX = (Tuple.first otherBlockPos)
+        topY = (Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock * topOffset
         lineX =
             (if routeOffset < 0
              then ViewVariables.lineXSpace * routeOffset
@@ -348,10 +349,10 @@ drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted 
             ,(Tuple.second otherBlockPos)
             -- just below
             ,otherBlockOutputX
-            ,(Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock
+            ,topY
             -- to right or left
             ,lineX
-            ,(Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock
+            ,topY
             -- down to other block
             ,lineX
             ,lastY
