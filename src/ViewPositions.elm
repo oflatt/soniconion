@@ -1,262 +1,98 @@
-module ViewPositions exposing (..)
+module ViewPositions exposing (getViewStructures)
 
-
+import LineRouting exposing (LineRouting, getLineRouting, getMaxLine, getMinLine)
 import Model exposing (..)
+import ModelHelpers exposing (idToPosition, IdToPos)
 import ViewVariables
+import Utils
+import ViewStructure exposing (mouseToSvgCoordinates, ViewStructure, getViewStructure, maybeMovedInfo
+                              ,MovedBlockInfo)
 
 import Dict exposing (Dict)
-import Array exposing (Array)
-import List
 import Debug exposing (log)
 
--- skip index of -1 if 
-type alias MovedBlockInfo = {movedCall : Call
-                             ,movedPos : (Int, Int)}
 
-mouseToSvgCoordinates: MouseState -> Int -> Int -> (Int, Int)
-mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight =
-    ((mouseState.mouseX * ViewVariables.viewportWidth) // svgScreenWidth
-    ,((mouseState.mouseY - ViewVariables.svgYpos) * (getViewportHeight svgScreenWidth svgScreenHeight)) // svgScreenHeight)
-
-svgYposToIndex: Int -> Int
-svgYposToIndex yPos =
-    yPos // (ViewVariables.blockSpace)
-    
-getMovedInfo func mouseState mouseSvgCoordinates =
-    case func of
-        [] -> Nothing
-        (call::calls) ->
-            case mouseState.mouseSelection of
-                BlockSelected id ->
-                    if id == call.id
-                    then
-                        Just (MovedBlockInfo
-                                  call
-                                  ((Tuple.first mouseSvgCoordinates) - (ViewVariables.blockWidth // 2)
-                                  ,(Tuple.second mouseSvgCoordinates) - (ViewVariables.blockHeight // 2))) -- center block on mouse
-                    else getMovedInfo calls mouseState mouseSvgCoordinates
-                _ -> getMovedInfo calls mouseState mouseSvgCoordinates
-
-type alias BlockPos = (Int, Int)
-type alias CallLineRoute = List (Maybe Int) -- the relative positions of the outside of the line to the middle, in increments
-type alias LineRouting = List CallLineRoute
-type alias BlockPositions = Dict Id BlockPos
-type alias ViewStructure = {blockPositions : BlockPositions
-                           ,lineRouting : LineRouting
-                           ,sortedFunc : Function}
-
-blockPositionsToPositionList func blockPositions =
-    case func of
-        [] -> Ok []
-        (call::calls) ->
-            case Dict.get call.id blockPositions of
-                Nothing -> Err "block not in blockPositions"
-                Just pos ->
-                    case blockPositionsToPositionList calls blockPositions of
-                        Err e -> Err e
-                        Ok positions ->
-                            Ok (pos :: positions)
-
--- gets extra space for the outputs of a call
-countOutputs inputs =
-    case inputs of
-        [] -> 0
-        (input::rest) ->
-            case input of
-                Output id -> 1 + (countOutputs rest)
-                _ -> countOutputs rest
-                           
-callLinesSpace call =
-    (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
-
--- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Maybe MovedBlockInfo -> Function -> MouseState -> Int -> BlockPositions
-getAllBlockPositions maybeMoveInfo func mouseState currentY =
-    case func of
-        [] ->
-            case maybeMoveInfo of
-                Just moveInfo ->
-                    Dict.insert moveInfo.movedCall.id moveInfo.movedPos Dict.empty
-                Nothing ->
-                    Dict.empty
-        (call::calls) ->
-            case maybeMoveInfo of
-                Just moveInfo ->
-                    if call == moveInfo.movedCall
-                    then
-                        -- skip the moved call
-                        getAllBlockPositions maybeMoveInfo calls mouseState currentY
-                    else
-                        -- if we need to use up the moved block
-                        if currentY+ViewVariables.blockHeight > (Tuple.second moveInfo.movedPos)
-                        then
-                            Dict.insert moveInfo.movedCall.id moveInfo.movedPos
-                                (getAllBlockPositions Nothing func -- continue with whole func
-                                     mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace moveInfo.movedCall)))
-                        else
-                            -- iterate normally
-                            Dict.insert call.id (ViewVariables.functionXSpacing, currentY+(callLinesSpace call))
-                                (getAllBlockPositions maybeMoveInfo calls
-                                     mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
-                                    
-                Nothing ->
-                    -- iterate normally 
-                    Dict.insert call.id (ViewVariables.functionXSpacing, currentY+(callLinesSpace call))
-                        (getAllBlockPositions maybeMoveInfo calls
-                             mouseState (currentY+ViewVariables.blockSpace+(callLinesSpace call)))
-
-                      
-getBlockPositions: Function -> MouseState -> Int -> Int -> BlockPositions
-getBlockPositions func mouseState svgScreenWidth svgScreenHeight =
-    let moveInfo = getMovedInfo func mouseState (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight)
+selectedFunc mouseState func svgWindowWidth svgWindowHeight=
+    let view = (getViewStructure func mouseState svgWindowWidth svgWindowHeight
+                    0 0 Nothing False)
+        mouseCoordinates = (mouseToSvgCoordinates mouseState svgWindowWidth
+                                svgWindowHeight 0 0)
+        xpos = (Tuple.first mouseCoordinates)-(view.funcWidth//2)
+        ypos = (Tuple.second mouseCoordinates)-ViewVariables.functionHeaderHeight//2
+        oldPos = view.headerPos
+        newPos = {oldPos | xpos = xpos, ypos = ypos}
     in
-        getAllBlockPositions moveInfo func mouseState 0
+        {view | headerPos = newPos}
 
-type alias IdToPos = Dict Id Int
-
-idToPosAdd func dict currentPos =
-    case func of
-        [] -> dict
-        (call::calls) -> Dict.insert call.id currentPos (idToPosAdd calls dict (currentPos + 1))
-
-blockSorter blockPositions call =
-    case Dict.get call.id blockPositions of
-        Nothing -> -100 -- todo some sort of error handeling
-        Just pos -> Tuple.second pos
-                   
-
-makeIdToPos : Function -> BlockPositions -> (Function, IdToPos)
-makeIdToPos func blockPositions =
-    let sorted = (List.sortBy (blockSorter blockPositions) func)
-    in
-        (sorted, idToPosAdd sorted Dict.empty 0)
-
-updateConnectedArray : List Input -> IdToPos -> ConnectedArray -> Bool -> (Bool, ConnectedArray)
-updateConnectedArray inputs indexToPos array isLeft =
-    case inputs of
-        [] -> (isLeft, array)
-        (input::rest) ->
-            case input of
-                Output id ->
-                    case Dict.get id indexToPos of
-                        -- TODO throw error here
-                        Nothing -> updateConnectedArray rest indexToPos array isLeft
-                        Just pos ->
-                            if isLeft
-                            then
-                                updateConnectedArray rest indexToPos
-                                    ((Array.set pos 1 (Tuple.first array)), (Tuple.second array))
-                                    False
-                            else
-                                updateConnectedArray
-                                    rest indexToPos
-                                    ((Tuple.first array), (Array.set pos 1 (Tuple.second array)))
-                                    True
-                _ -> updateConnectedArray rest indexToPos array isLeft
-                     
-type alias ConnectedArray = (Array Int, Array Int)
-                     
--- returns an array with 1's representing that the output is connected
-getOutputConnectedArrayHelper: Function -> IdToPos -> ConnectedArray -> Bool -> ConnectedArray
-getOutputConnectedArrayHelper func indexToPos array isLeft =
-    case func of
-        [] -> array
-        (call::calls) ->
-            let update = (updateConnectedArray call.inputs indexToPos array isLeft)
-            in
-                getOutputConnectedArrayHelper calls indexToPos (Tuple.second update) (Tuple.first update)
-
-getOutputConnectedArray : Function -> IdToPos -> ConnectedArray
-getOutputConnectedArray func indexToPos =
-    let oneArray = (Array.repeat (List.length func) 0)
-    in
-        getOutputConnectedArrayHelper func indexToPos (oneArray, oneArray) True
-
-countOutputsBetween subConnectedArray startIndex endIndex =
-    if endIndex <= (startIndex + 1)
-    then
-        0
-    else
-        case Array.get (startIndex+1) subConnectedArray of
-            Nothing -> 0 -- TODO throw error
-            Just connectedness ->
-                connectedness + (countOutputsBetween subConnectedArray (startIndex+1) endIndex)
-                
-    
-getOutputRouting id connectedArray idToPos isLeft thisCallId =
-    case Dict.get id idToPos of
-        Nothing -> 0 -- TODO throw error
-        Just outputIndex ->
-            case Dict.get thisCallId idToPos of
-                Nothing -> 0 -- TODO throw error
-                Just callIndex ->
-                    if outputIndex == (callIndex-1)
-                    then 0
-                    else
-                        let startingSign =
-                                if isLeft
-                                then -1
-                                else 1
-                            subConnectedArray =
-                                if isLeft
-                                then (Tuple.first connectedArray)
-                                else (Tuple.second connectedArray)
-                        in
-                            startingSign + (startingSign * (countOutputsBetween subConnectedArray outputIndex callIndex))
-    
-getInputsRouting : List Input -> ConnectedArray -> IdToPos -> Bool -> Id -> (CallLineRoute, Bool)
-getInputsRouting inputs connectedArray idToPos isLeft thisCallId =
-    case inputs of
-        [] -> ([], isLeft)
-        (input::rest) ->
-            case input of
-                Output id ->
-                    let
-                        restAnswer = getInputsRouting rest connectedArray idToPos (not isLeft) thisCallId
-                    in
-                        ((Just (getOutputRouting id connectedArray idToPos isLeft thisCallId) ::
-                             (Tuple.first restAnswer))
-                        ,(Tuple.second restAnswer))
-                        
-                _ ->
-                    let
-                        restAnswer = getInputsRouting rest connectedArray idToPos isLeft thisCallId
-                    in
-                        (Nothing :: (Tuple.first restAnswer)
-                        ,(Tuple.second restAnswer))
-
-    
-getLineRouting : Function -> ConnectedArray -> IdToPos -> Bool -> LineRouting
-getLineRouting func connectedArray idToPos isLeft=
-    case func of
-        [] -> []
-        (call::calls) ->
-            let routing = (getInputsRouting call.inputs connectedArray idToPos isLeft call.id)
-            in
-             (Tuple.first routing) ::
-                (getLineRouting calls connectedArray idToPos (Tuple.second routing))
-
-getViewStructure func mouseState svgScreenWidth svgScreenHeight =
-    let blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
-        madePos = makeIdToPos func blockPositions
-        sortedFunc = (Tuple.first madePos)
-        idToPos = (Tuple.second madePos)
-        connectedArray = getOutputConnectedArray sortedFunc idToPos
-        lineRouting = getLineRouting sortedFunc connectedArray idToPos True
-    in
-        (ViewStructure
-             blockPositions
-             lineRouting
-             sortedFunc)
-
-
-createViewboxDimensions w h =
-    let
-        width = String.fromInt (w)
-        height = String.fromInt (h)
-    in
-        width ++ " " ++ height
-
-getViewportHeight windowWidth windowHeight =
-    ViewVariables.viewportWidth * windowHeight // windowWidth
+           
             
+getSelected mouseState svgWindowWidth svgWindowHeight =    
+    case mouseState.mouseSelection of
+        FunctionSelected func ->
+            Just (selectedFunc mouseState func svgWindowWidth svgWindowHeight)
+        _ -> Nothing
+
+
+getCurrentMoveInfo maybeMoved rest xpos testStructure =
+    (case maybeMoved of
+         Nothing -> Nothing
+         Just moveI ->
+             (case rest of
+                  [] -> Just moveI
+                  _ -> (if (Tuple.first moveI.movedPos) <= xpos + testStructure.funcWidth
+                        then Just moveI else Nothing)))
+             
+recursivePosition : Int -> Int -> Maybe ViewStructure -> Maybe MovedBlockInfo ->
+                    MouseState -> Int -> Int -> Onion -> List ViewStructure
+recursivePosition xpos ypos maybeSelected maybeMoved mouseState svgWindowWidth svgWindowHeight onion =
+    case onion of
+        [] ->
+            case maybeSelected of
+                Nothing -> []
+                Just selected -> [selected]
+        (func::rest) ->
+            let -- first compute structure without move info to see how wide it is
+                testStructure =
+                    (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos Nothing False)
+                currentMoveInfo = getCurrentMoveInfo maybeMoved rest xpos testStructure
+                    
+                -- re-compute structure with moveinfo when needed
+                newStructure =
+                    (case currentMoveInfo of
+                         Nothing -> testStructure
+                         Just moveInfo ->
+                             (getViewStructure func mouseState svgWindowWidth svgWindowHeight xpos ypos currentMoveInfo False))
+                isSelected = case maybeSelected of
+                                 Nothing -> False
+                                 Just selected -> selected.headerPos.xpos <= xpos + newStructure.funcWidth
+                newMoveInfo =
+                    (case currentMoveInfo of
+                         Nothing -> maybeMoved
+                         Just moveInfo -> Nothing)
+                newW = if isSelected then
+                           (case maybeSelected of
+                                Just selected -> selected.funcWidth
+                                Nothing -> 0) -- should not happen
+                       else newStructure.funcWidth
+                newx = xpos + newW + ViewVariables.functionXSpacing
+                newy = ypos
+                newMaybeSelected = if isSelected then Nothing else maybeSelected
+                recurList = if isSelected then onion else rest
+                recurrance =
+                    (recursivePosition newx newy newMaybeSelected newMoveInfo mouseState
+                         svgWindowWidth svgWindowHeight recurList)
+            in
+                if isSelected
+                then
+                    case maybeSelected of
+                        Just selected -> selected :: recurrance
+                        Nothing -> recurrance -- should not happen!
+                else newStructure :: recurrance
+
+
+getViewStructures onion mouseState svgWindowWidth svgWindowHeight =
+    let selected = (getSelected mouseState svgWindowWidth svgWindowHeight)
+        moved = maybeMovedInfo mouseState svgWindowWidth svgWindowHeight
+    in
+        recursivePosition ViewVariables.funcInitialX ViewVariables.funcInitialY
+             selected moved mouseState svgWindowWidth svgWindowHeight onion

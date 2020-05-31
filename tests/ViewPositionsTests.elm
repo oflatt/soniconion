@@ -7,90 +7,79 @@ import Model exposing (..)
 import Array exposing (Array)
 import Dict exposing (Dict)
 
-import TestModel
-import ViewPositions exposing (..)
-import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock)
-
-myexpect item1 item2 =
-    (\_ ->
-         (Expect.equal item1 item2))
-
-outputConnectedArrayTest func expected =
-    let
-        svgScreenWidth = 1000
-        svgScreenHeight = 1000
-        mouseState = (MouseState 0 0 NoneSelected)
-        blockPositions = (getBlockPositions func mouseState svgScreenWidth svgScreenHeight)
-        madePos = makeIdToPos func blockPositions
-        sortedFunc = (Tuple.first madePos)
-        idToPos = (Tuple.second madePos)
-        connectedArray = getOutputConnectedArray sortedFunc idToPos
-    in
-        (myexpect
-             connectedArray
-             expected)
-        
-fixInvalidInputs : Test
-fixInvalidInputs =
-    describe "getOutputConnectedArray"
-        [test "no connections"
-             (outputConnectedArrayTest TestModel.testFunctionHoles
-                  (Array.fromList [0,0,0,0]
-                  ,Array.fromList [0,0,0,0]))
-        ,test "test connections"
-            (outputConnectedArrayTest TestModel.testFunction
-                  ((Array.fromList [1, 0, 1, 0])
-                  ,(Array.fromList [0, 1, 0, 0])))
-        ,test "test complex"
-            (outputConnectedArrayTest TestModel.complexRoutingFunc
-                 ((Array.fromList [1, 1, 0, 0, 0])
-                 ,(Array.fromList [1, 1, 0, 1, 0])))
-        ]
+import TestModel exposing (myexpect)
+import ModelHelpers
+import ViewStructure exposing (MovedBlockInfo)
+import ViewVariables exposing (functionXSpacing, blockSpace, lineSpaceBeforeBlock, blockSpacing
+                              ,functionHeaderHeight)
                 
 
+blockPositionToNormalYpos blockPos = blockPos.ypos - (functionHeaderHeight + blockSpacing)
 
-getLineRouting : Test
-getLineRouting =
-    describe "getLineRouting"
-        [test "no connections"
-             (myexpect
-                  (ViewPositions.getViewStructure TestModel.testFunctionHoles
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
-                  [[Nothing, Nothing], [Nothing, Nothing], [Nothing, Nothing], [Nothing]])
-        ,test "basic example"
-            (myexpect
-                 (ViewPositions.getViewStructure TestModel.testFunction
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
-                 [[Nothing, Nothing], [Nothing, Nothing], [Just -1, Just 0], [Just 0]])
-        ,test "complex routing"
-            (myexpect
-                 (ViewPositions.getViewStructure TestModel.complexRoutingFunc
-                       (MouseState 0 0 NoneSelected) 0 0).lineRouting
-                 [[Nothing, Nothing], [Just 0, Nothing], [Just 2, Nothing], [Just -1, Just 1], [Just -2, Just 0]])]
+formatBlockPositions : Function -> MouseState -> Maybe MovedBlockInfo -> Result String (List Int)
+formatBlockPositions testFunc mouse blockInfo =
+    Result.map (List.map blockPositionToNormalYpos)
+        (ViewStructure.blockPositionsToPositionList
+             testFunc.calls
+             (ViewStructure.getViewStructure
+                  (case blockInfo of
+                       Nothing -> testFunc
+                       Just info -> (ModelHelpers.removeCallUnsafe testFunc info.movedCall.id))
+                  mouse ViewVariables.viewportHeight ViewVariables.viewportHeight 0 0 blockInfo False).blockPositions)
+
+            
+emptyMouse = (MouseState 0 0 0 0 NoneSelected)
 
 
+             
+secondToLastMouse = (MouseState (ViewVariables.funcInitialX + 20)
+                         (ViewVariables.svgYpos + functionHeaderHeight + blockSpacing
+                              +blockSpace+2*lineSpaceBeforeBlock
+                              +(ViewVariables.blockHeight//2))
+                         0
+                         0
+                         (BlockSelected 0 TestModel.complex3))
 
-        
+maybeSecond = (ViewStructure.maybeMovedInfo secondToLastMouse ViewVariables.viewportHeight
+                   (ViewVariables.viewportWidth ViewVariables.viewportHeight ViewVariables.viewportHeight))
+
+              
+                    
 blockPositionsTest : Test
 blockPositionsTest =
     describe "getBlockPositions"
         [test "test func"
              (myexpect
-                  (ViewPositions.blockPositionsToPositionList TestModel.testFunction
-                       (ViewPositions.getViewStructure TestModel.testFunction
-                            (MouseState 0 0 NoneSelected) 1000 1000).blockPositions)
-                  (Ok [(functionXSpacing, 0)
-                      ,(functionXSpacing, blockSpace)
-                      ,(functionXSpacing, blockSpace*2 + 2*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*3 + (1+2)*lineSpaceBeforeBlock)]))
+                  (formatBlockPositions TestModel.testFunction emptyMouse Nothing)
+                  (Ok [0
+                      ,blockSpace
+                      ,blockSpace*2 + 2*lineSpaceBeforeBlock
+                      ,blockSpace*3 + (1+2)*lineSpaceBeforeBlock]))
         ,test "complex connections"
              (myexpect
-                  (ViewPositions.blockPositionsToPositionList TestModel.complexRoutingFunc
-                       (ViewPositions.getViewStructure TestModel.complexRoutingFunc
-                            (MouseState 0 0 NoneSelected) 1000 1000).blockPositions)
-                  (Ok [(functionXSpacing, 0)
-                      ,(functionXSpacing, blockSpace + lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*2 + (1+1)*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*3 + (1+1+2)*lineSpaceBeforeBlock)
-                      ,(functionXSpacing, blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock)]))]
+                  (formatBlockPositions TestModel.complexRoutingFunc emptyMouse Nothing)
+                  (Ok [0
+                      ,blockSpace + lineSpaceBeforeBlock
+                      ,blockSpace*2 + (1+1)*lineSpaceBeforeBlock
+                      ,blockSpace*3 + (1+1+2)*lineSpaceBeforeBlock
+                      ,blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock]))
+        ,test "move block two up"
+             (myexpect
+                  (formatBlockPositions TestModel.complexRoutingFunc
+                       secondToLastMouse maybeSecond)
+                  (Ok [0
+                      ,blockSpace*2 + (1+2)*lineSpaceBeforeBlock
+                      ,blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock
+                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing-ViewVariables.blockHeight//2
+                      ,blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock]))]
 
+
+movedInfoTest : Test
+movedInfoTest =
+    describe "getMovedInfo"
+        [test "test select second to last"
+             (myexpect
+                  maybeSecond
+                  (Just (ViewStructure.MovedBlockInfo TestModel.complex3
+                             (secondToLastMouse.mouseX, secondToLastMouse.mouseY-ViewVariables.svgYpos))))
+               ]

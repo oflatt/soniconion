@@ -1,7 +1,8 @@
 module Compiler.OnionToExpr exposing (onionToCompModel)
 import Model exposing (..)
-import BuiltIn exposing (builtInFunctions)
+import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..))
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel)
+import Compiler.CompModel as CompModel
 import Utils
 
 import Debug exposing (log)
@@ -15,7 +16,7 @@ import Result exposing (andThen)
 
 type alias IdToIndex = Dict Id Int
 
-makeIdToIndex : Function -> Dict Id Int -> Int -> Dict Id Int
+makeIdToIndex : List Call -> Dict Id Int -> Int -> Dict Id Int
 makeIdToIndex func dict index =
     case func of
         [] -> dict
@@ -25,16 +26,22 @@ makeIdToIndex func dict index =
 
 inputToValue input idToIndex =
     case input of
-        Output o ->
-            case Dict.get o idToIndex of
+        Output output ->
+            case Dict.get output idToIndex of
                 Just index -> Ok (StackIndex index)
                 Nothing -> Err "Invalid input found" -- this should never happen, since the ui should disallow actions that lead to it
-        Text t ->
-            case String.toFloat t of
-                Nothing -> Err "Could not parse number"
-                Just f -> Ok (ConstV f)
-        Hole -> Err "No argument supplied to a function call"
+        Text text ->
+            case Dict.get text BuiltIn.builtInVariables of
+                Nothing ->
+                    (case String.toFloat text of
+                         Nothing -> Err "Could not parse number"
+                         Just float -> Ok (ConstV float))
+                Just (Number value) -> Ok (ConstV value)
+                Just (StackReference index) -> Ok (StackIndex index)
+                Just (JavaScript varName) -> Ok (ScriptVariable varName)
+        _ -> Err "No argument supplied to a function call" -- TODO This should be just the hole case
 
+                
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)
 inputsToValues inputs idToIndex =
     case inputs of
@@ -44,23 +51,48 @@ inputsToValues inputs idToIndex =
                 (::)
                 (inputToValue input idToIndex)
                 (inputsToValues rest idToIndex)
-                                  
-isFunctionValid : String -> Bool                                    
-isFunctionValid funcName =
-    Dict.member funcName builtInFunctions
-    
+
+checkCorrectNumberArguments builtIn inputs =
+    case builtIn.argList of
+        Finite args -> (List.length inputs) >= (List.length args)
+        Infinite args othername -> (List.length inputs) >= (List.length args)
+
+dropFinalHole argList =
+    case argList of
+        [] -> []
+        [finalArg] ->
+            case finalArg of
+                Hole -> []
+                _ -> argList
+        (arg::args) -> arg :: dropFinalHole args
+                                   
+-- drops the hole at the end of inifinite arguments
+argumentSubset builtIn inputs =
+    case builtIn.argList of
+        Finite args -> inputs
+        Infinite args othername -> dropFinalHole inputs
+                    
+callToExprBuiltIn builtIn call idToIndex =
+    let filteredInputs = argumentSubset builtIn call.inputs
+    in
+        if (checkCorrectNumberArguments builtIn filteredInputs)
+        then
+            (case inputsToValues filteredInputs idToIndex of
+                 Ok children -> Ok (Expr call.functionName call.id children builtIn.compileExprFunction)
+                 Err e -> Err e)
+        else
+            Err "Wrong number of arguments"
+                    
 callToExpr : Call -> IdToIndex -> Result Error Expr
 callToExpr call idToIndex =
-    if isFunctionValid call.functionName
-    then
-        case inputsToValues call.inputs idToIndex of
-            Ok children -> Ok (Expr call.functionName call.id children)
-            Err e -> Err e
-    else
-        Err "Not a built in function"
+    case Dict.get call.functionName builtInFunctions of
+        Just builtIn ->
+            callToExprBuiltIn builtIn call idToIndex
+        Nothing ->
+            Err "Not a built in function"
 
 
-functionToMethod : Function -> IdToIndex -> Result Error Method
+functionToMethod : List Call -> IdToIndex -> Result Error Method
 functionToMethod function idToIndex =
     case function of
         [] -> Ok []
@@ -76,7 +108,7 @@ onionToCompModel onion =
     case onion of
         [] -> Ok []
         (f::fs) ->
-            case functionToMethod f (makeIdToIndex f Dict.empty 0) of
+            case functionToMethod f.calls (makeIdToIndex f.calls Dict.empty 0) of
                 Ok method ->
                     case onionToCompModel fs of
                         Ok rest -> Ok (method :: rest)

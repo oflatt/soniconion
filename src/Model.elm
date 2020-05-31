@@ -1,9 +1,11 @@
 module Model exposing (..)
 
+import Browser.Dom as Dom
 import Url
 import Browser
 import Browser.Navigation as Nav
 import Dict exposing (Dict)
+import Keyboard.Event exposing (KeyboardEvent)
 
 import Json.Decode as Decode
 
@@ -13,26 +15,71 @@ type alias MousePos =
     , y : Int
     }
 
+type alias Pos =
+    { xpos : Int
+    , ypos : Int}
+
 mouseDecoder : Decode.Decoder MousePos
 mouseDecoder = 
     Decode.map2 MousePos
         (Decode.field "clientX" Decode.int)
         (Decode.field "clientY" Decode.int)
+            
+handelScrollResult scrollRes =
+    case scrollRes of
+        Ok res -> ScrollChange res
+        Err err -> NoOp
+            
+scrollChangeDecoder =
+    (Decode.decodeValue
+        (Decode.map2 Pos
+             (Decode.field "xpos" Decode.int)
+             (Decode.field "ypos" Decode.int))) >> handelScrollResult
+            
 
 type Msg = MouseOver PageName
          | MouseLeave PageName
+         | KeyboardInput KeyboardEvent
          | LinkClicked Browser.UrlRequest
          | PageChange String
          | UrlChanged Url.Url
+         | ScrollChange Pos
          | WindowResize Int Int
          | PlaySound
          | MouseMoved MousePos
          | MouseRelease
-         | BlockClick Id
+
+
+         | HeaderOutputHighlight Id Int
+         | HeaderOutputUpdate Id Int String
+         | HeaderOutputClick Id Int
+         | HeaderOutputRightClick Id Int
+         | HeaderNameClick Id
+         | HeaderClick Function
+         | HeaderNameHighlight Id
+         | HeaderNameUpdate Id String
+         | HeaderAddOutput Id Int
+         | HeaderAddOutputRightClick Id Int
+         
+           
+         | BlockClick Call Id -- position of the function in svg coordinates also passed in
          | InputClick Id Int
          | OutputClick Id
-         | SetError String
+         | InputHighlight Id Int
+         | OutputHighlight Id
+         | InputRightClick Id Int
+         | OutputRightClick Id
+         | BlockNameHighlight Id
+         | BlockNameClick Id
          | InputUpdate Id Int String
+         | BlockNameUpdate Id String
+           
+         | SpawnBlock String -- when you click a block in the toolbar put it in hand
+         | SpawnFunction String
+         | SetError String
+         | SilentDomError (Result Dom.Error ())
+         | NoOp
+
 
 pageNames : List String
 pageNames = ["Home", "Unused"]
@@ -56,13 +103,21 @@ type alias Id = Int
 -- id of function output or a constant
 type Input = Output Id
            | Text String
+           | FunctionArg Int
            | Hole
 
 type alias Onion = List Function
-type alias Function = List Call    
+type alias Function = { name: String
+                      , id: Id
+                      , args: List Input
+                      , calls: List Call}
 
+makeMain id calls =
+    (constructFunction id "main" calls)
 
-
+constructFunction id name calls =
+    (Function name id [] calls)
+        
 getCallById id func =
     case func of
         [] -> Nothing
@@ -76,20 +131,22 @@ type alias Call = {id: Id
                   ,functionName: String
                   ,outputText: String}
 
--- id needs to be unique to the Onion
-constructCall : Id -> String -> Call
-constructCall id functionName =
-    (Call id [] functionName "")
-    
-type MouseSelection = BlockSelected Id
+type MouseSelection = BlockSelected Id Call -- id of function it came from
+                    | FunctionSelected Function
                     | InputSelected Id Int -- id of block and index of input
+                    | NameSelected Id
                     | OutputSelected Id
+                    | FunctionOutputSelected Id Int
+                    | FunctionNameSelected Id
                     | NoneSelected
 
 type alias MouseState = {mouseX : Int
                         ,mouseY : Int
+                        ,scrollX : Int
+                        ,scrollY : Int
                         ,mouseSelection : MouseSelection}
-
+                        
+    
 type alias ErrorBox = {error : String}
 
 type alias Model = {currentPage: PageName
@@ -101,7 +158,8 @@ type alias Model = {currentPage: PageName
                    ,windowHeight : Int
                    ,program : Onion
                    ,mouseState : MouseState
-                   ,errorBoxMaybe : Maybe ErrorBox}
+                   ,errorBoxMaybe : Maybe ErrorBox
+                   ,idCounter : Int}
 
 getindexurl url =
     let str = (Url.toString url)
@@ -115,14 +173,8 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowHeight : Int}
 
        
--- play is assumed to be at the end
 initialProgram : Onion
-initialProgram = [[(Call 80 [Text "0", Text "440", Text "2"] "sine" "")
-                  ,(Call 98 [Output 80, Text "600", Text "1"] "sine" "")
-                  ,(Call 82 [Output 80, Text "400", Text "1"] "sine" "")
-                  ,(Call 23 [Output 98, Text "300", Text "1"] "sine" "")
-                  ]
-                 ]
+initialProgram = [makeMain 0 []]
 
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model
@@ -136,6 +188,9 @@ initialModel flags url key = ((Model
                                    (MouseState
                                         0
                                         0
+                                        0
+                                        0
                                         NoneSelected)
-                                   Nothing),
+                                   Nothing
+                                   1), -- id for inital main used
                                    Cmd.none)

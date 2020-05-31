@@ -6,7 +6,12 @@ var app = Elm.Main.init({
     outerWindowHeight : window.outerHeight}
     });
 
+document.addEventListener("mousemove", onMouseMove)
 
+function onMouseMove(event) {
+    window.mouseXPos = event.clientX;
+    window.mouseYPos = event.clientY;
+}
 
 // a note object has a frequency field, and nothing else
 
@@ -17,6 +22,15 @@ function makeInitialState(stackIn) {
 
 function getTime() {
     return (new Date()).getTime()/1000;
+}
+
+function mathMod(a, b) {
+    var res = a%b;
+    if (res < 0) {
+	return res + abs(b);
+    } else {
+	return res;
+    }
 }
 
 function update(state, notes) {
@@ -40,10 +54,15 @@ function update(state, notes) {
 
 
 app.ports.evalJavascript.subscribe(function(javascriptCode) {
-    return Function('update', 'getTime', 'makeInitialState', '"use strict";' + javascriptCode)(
-        update, getTime, makeInitialState
+    return Function('update', 'getTime', 'makeInitialState', 'mathMod', '"use strict";' + javascriptCode)(
+        update, getTime, makeInitialState, mathMod
     );
 });
+
+window.onscroll = function() {
+    app.ports.scrollChange.send({xpos: document.documentElement.scrollLeft,
+				 ypos: document.documentElement.scrollTop});
+};
 
 
 // example program

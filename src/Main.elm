@@ -3,13 +3,14 @@ module Main exposing (main)
 
 import Model exposing (..)
 import View exposing (view)
-import Update exposing (update)
+import Update exposing (update, scrollChange)
 
 import Task
 import Browser
 import Browser.Events
 import Browser.Dom
 import Browser.Navigation as Nav
+import Keyboard.Event exposing (KeyboardEvent, decodeKeyboardEvent)
 import Css exposing (..)
 import Html
 import Html.Styled exposing (..)
@@ -23,6 +24,7 @@ import Tuple
 import Debug exposing (log)
 import Json.Encode as E
 import Json.Decode as Decode
+
 
 main : Program Flags Model Msg
 main =
@@ -45,6 +47,8 @@ subscriptions model =
     Sub.batch
     [ Browser.Events.onResize WindowResize
     , Browser.Events.onMouseMove (Decode.map MouseMoved mouseDecoder)
-    , Browser.Events.onMouseUp (Decode.succeed MouseRelease)]
+    , Browser.Events.onMouseUp (Decode.succeed MouseRelease)
+    , Browser.Events.onKeyDown (Decode.map KeyboardInput decodeKeyboardEvent)
+    , scrollChange scrollChangeDecoder]
 
     -- mouse down handled by svg objects and buttons
