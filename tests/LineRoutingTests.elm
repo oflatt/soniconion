@@ -79,4 +79,11 @@ getLineRoutingTest =
                       ,[Just -2]
                       ,[Just 1]
                       ,[Just -1]]
-                      TestModel.threeLeftRoutingFunc)]
+                      TestModel.threeLeftRoutingFunc)
+        ,test "route around func arg"
+            (testLineRoute
+                 [[]
+                 ,[Just -1]
+                 ,[Just 1]
+                 ,[Just -2]]
+                 TestModel.argumentsRoutingFunc)]

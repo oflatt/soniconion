@@ -45,6 +45,9 @@ complexRoutingFunc =
 
 plusCall id routes =
     (Call id (List.map Output routes) "+" "")
+
+argCall id funcArgs =
+    (Call id (List.map FunctionArg funcArgs) "+" "")
     
 threeLeftRoutingFunc : Function
 threeLeftRoutingFunc =
@@ -57,3 +60,11 @@ threeLeftRoutingFunc =
          ,(plusCall 5 [2])
          ,(plusCall 6 [3])
          ,(plusCall 7 [4])])
+
+argumentsRoutingFunc : Function
+argumentsRoutingFunc =
+    (makeMain 0
+         [(argCall 1 [])
+         ,(argCall 2 [0])
+         ,(argCall 3 [1])
+         ,(argCall 4 [2])])
