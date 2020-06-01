@@ -6,31 +6,43 @@ Internally, a song is a tree of streams of notes, an anchor, and a duration
 Song : {notes : Tree (Stream Note)
        anchor : float
        duration : float}
+The duration and anchor can be infinite, the stream of notes being lazy
+If the duration is computed lazily from the stream of notes (unless it is marked infinite)
+
 
 A note has a duration, frequency, and volume, ect
 Note(duration, frequency, volume)
 
 
 Typing a number literal $n$ coerces it into
-{leaf Note(duration = n, 0, 0), n, n}
+(Song (leaf Note(duration = n, 0, 0)) n n)
 
 The duration of a song is the time when it ends.
 The anchor is the atatchment point for new songs.
 
-Arithmetic operators perform on songs and return songs whose volume is 0
+Arithmetic operators operate on the anchors of songs
+They generally pick the first song and return it with the newly computed anchor
+Ex:
+  (+ (Song note1 3 3) (Song note2 -1 -1)) = (Song note1 2 3)
+  (* (Song note1 4 4) (Song note2 2 2)) = (Song note1 8 4)
 
-The + operator returns
-  song whose volume is 0 and ...
-
-Join operator : Lazily join two streams
-
-
-Min operator :
-    Given two streams, compute the min anchor_time between them.
-    Runs infinitely if given two infinite streams with no end time defined.
-    
+Exceptions:
+The min and max operators return the song with the min or max anchor respectively
+Ex:
+  (max (Song note1 2 8) (Song note2 4 2)) = (Song note2 4 2)
 
 
-Plus operator 
-  Adds duration of each song together
+
+The main constructor is note:
+The arguments are a song, frequency, and duration
+note returns a new song with a note of duration and frequency added to a stream starting at
+a time corresponding to the anchor of the song
+
+
+The join operator (::) is like + but combines all the songs in sequence, attatching them at the anchor point
+Ex:
+  (:: (Song (Node [Note 1 440 1]) 1 1) (Song (Node [Note 2 440 1]) 0 1))
+    = (Song (Node [Note 1 440 1, Note 2 440 1]) 1 2)
+The join operator must lazily join streams in order to avoid incorrectly joining infinite streams
+
 

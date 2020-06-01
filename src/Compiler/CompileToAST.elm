@@ -1,6 +1,7 @@
 module Compiler.CompileToAST exposing (compileToAST, getCacheValue)
 import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), systemValues, forRange)
 import Utils
+import Dict exposing (Dict)
 
 cacheIsNull ast =
     Unary "==" [(Literal "null"), (CacheRef ast)]
@@ -111,10 +112,10 @@ compileMethod method =
             
 
 compileFunctions compModel =
-    case compModel of
-        [method] -> compileMethod method
-        _ -> Empty -- do not support multiple methods yet
-
+    case Dict.get "main" compModel of
+        Just method -> compileMethod method
+        _ -> Empty -- no multiple methods yet
+             
 compileToAST : CompModel -> AST
 compileToAST compModel =
     Begin (astHead ++

@@ -48,3 +48,13 @@ dictAppendAll dict list =
     case list of
         [] -> dict
         (ele::eles) -> dictAppend (dictAppendAll dict eles) (Tuple.first ele) (Tuple.second ele)
+
+
+resultMap func list =
+    case list of
+        [] -> Ok []
+        (first::rest) ->
+            Result.map2
+                (::)
+                (func first)
+                (resultMap func rest)

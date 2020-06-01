@@ -1,7 +1,7 @@
 module Compiler.CompModel exposing (..)
 
 import Model exposing (Id)
-import Array exposing (Array)
+import Dict exposing (Dict)
 
 -- Environment : List Value
 
@@ -17,7 +17,7 @@ type Value = StackIndex Int
 
 type CompileExprFunction = CompileExprFunction (Expr -> AST)
              
-type alias CompModel = List Method
+type alias CompModel = Dict String Method
 
 type alias Method = List Expr
 

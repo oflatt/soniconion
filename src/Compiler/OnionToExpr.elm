@@ -3,11 +3,12 @@ import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..))
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel)
 import Compiler.CompModel as CompModel
-import Utils
+import Utils exposing (resultMap)
 
 import Debug exposing (log)
 import Json.Encode as Encode
 import Dict exposing (Dict)
+import Set exposing (Set)
 import Tuple
 import List
 import Result exposing (andThen)
@@ -15,6 +16,7 @@ import Result exposing (andThen)
 
 
 type alias IdToIndex = Dict Id Int
+type alias OnionMap = Dict String Function -- name of func to function
 
 makeIdToIndex : List Call -> Dict Id Int -> Int -> Dict Id Int
 makeIdToIndex func dict index =
@@ -52,8 +54,8 @@ inputsToValues inputs idToIndex =
                 (inputToValue input idToIndex)
                 (inputsToValues rest idToIndex)
 
-checkCorrectNumberArguments builtIn inputs =
-    case builtIn.argList of
+checkCorrectNumberArguments argList inputs =
+    case argList of
         Finite args -> (List.length inputs) >= (List.length args)
         Infinite args othername -> (List.length inputs) >= (List.length args)
 
@@ -67,50 +69,66 @@ dropFinalHole argList =
         (arg::args) -> arg :: dropFinalHole args
                                    
 -- drops the hole at the end of inifinite arguments
-argumentSubset builtIn inputs =
-    case builtIn.argList of
+argumentSubset argList inputs =
+    case argList of
         Finite args -> inputs
         Infinite args othername -> dropFinalHole inputs
                     
-callToExprBuiltIn builtIn call idToIndex =
-    let filteredInputs = argumentSubset builtIn call.inputs
+callToExprWith call idToIndex argList compileExprFunction =
+    let filteredInputs = argumentSubset argList call.inputs
     in
-        if (checkCorrectNumberArguments builtIn filteredInputs)
+        if (checkCorrectNumberArguments argList filteredInputs)
         then
             (case inputsToValues filteredInputs idToIndex of
-                 Ok children -> Ok (Expr call.functionName call.id children builtIn.compileExprFunction)
+                 Ok children -> Ok (Expr call.functionName call.id children compileExprFunction)
                  Err e -> Err e)
         else
             Err "Wrong number of arguments"
                     
-callToExpr : Call -> IdToIndex -> Result Error Expr
-callToExpr call idToIndex =
+callToExpr : Call -> IdToIndex -> OnionMap -> Result Error Expr
+callToExpr call idToIndex onionMap =
     case Dict.get call.functionName builtInFunctions of
         Just builtIn ->
-            callToExprBuiltIn builtIn call idToIndex
+            callToExprWith call idToIndex builtIn.argList builtIn.compileExprFunction
         Nothing ->
             Err "Not a built in function"
 
 
-functionToMethod : List Call -> IdToIndex -> Result Error Method
-functionToMethod function idToIndex =
-    case function of
-        [] -> Ok []
-        (call::calls) ->
-            Result.map2
-                (::)
-                (callToExpr call idToIndex)
-                (functionToMethod calls idToIndex)
-  
-        
+callsToMethod : List Call -> OnionMap -> IdToIndex -> Result Error Method
+callsToMethod calls onionMap idToIndex =
+    resultMap (\call -> (callToExpr call idToIndex onionMap)) calls
+   
+functionToMethod : OnionMap -> Function -> Result Error (String, Method)
+functionToMethod onionMap func =
+    let idToPos = makeIdToIndex func.calls Dict.empty 0
+    in
+        Result.map
+            (\method -> (func.name, method))
+            (callsToMethod func.calls onionMap idToPos)
+
+
+makeOnionMap : Onion -> Result Error OnionMap
+makeOnionMap onion =
+    case onion of
+        [] -> Ok Dict.empty
+        (func::funcs) ->
+            (makeOnionMap funcs)
+                |> andThen
+                   (\currentMap ->
+                     if Dict.member func.name currentMap
+                     then Err ("Cannot define two functions with the name " ++ func.name)
+                     else
+                         Ok (Dict.insert func.name func currentMap))
+                
+                
+
+    
+                    
 onionToCompModel : Onion -> Result Error CompModel
 onionToCompModel onion =
-    case onion of
-        [] -> Ok []
-        (f::fs) ->
-            case functionToMethod f.calls (makeIdToIndex f.calls Dict.empty 0) of
-                Ok method ->
-                    case onionToCompModel fs of
-                        Ok rest -> Ok (method :: rest)
-                        Err e -> Err e
-                Err e -> Err e
+    (makeOnionMap onion)
+        |> andThen
+           (\onionMap ->
+                Result.map Dict.fromList
+                    (resultMap (functionToMethod onionMap) onion))
+            
