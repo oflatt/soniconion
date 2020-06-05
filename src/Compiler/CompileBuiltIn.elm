@@ -14,12 +14,12 @@ buildValue val =
         ConstV c ->
             makeLit (litFloat c)
         ScriptVariable str ->
-            Lit str
+            makeLit (Lit str)
 
 buildIf expr =
     case expr.children of
         (cond::thenValue::elseValue::[]) ->
-            (If (buildValue cond)
+            (If (getLit (buildValue cond) "anchor")
                  (buildValue thenValue)
                  (buildValue elseValue))
         _ -> Empty -- fail silently
@@ -36,7 +36,7 @@ buildWave expr =
 buildUnaryRest children op =
     case children of
         [] -> Empty -- should not happen
-        (arg::[]) -> (buildValue arg)
+        (arg::[]) -> (getLit (buildValue arg) "anchor")
         args -> (Unary op
                      (List.map
                           (\arg ->

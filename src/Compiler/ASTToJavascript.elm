@@ -52,6 +52,7 @@ javascriptBegin commands =
                 ,";"
                 ,(case final of
                       VarSet _ _ -> ""
+                      VarDeclaration _ _ -> ""
                       _ -> "return ")
                 ,(aSTToJavascript final)
                 ,"}())"]
@@ -97,8 +98,7 @@ javascriptSet object field value =
         ,"."
         ,aSTToJavascript field
         ," = "
-        ,aSTToJavascript value
-        ,";"]
+        ,aSTToJavascript value]
                    
 aSTToJavascript astArgument =
     case astArgument of
