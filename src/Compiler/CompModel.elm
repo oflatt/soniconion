@@ -71,6 +71,7 @@ forRange varName beginAST endAST bodyAST =
 litFloat float = (Lit (String.fromFloat float))
 litInt int = (Lit (String.fromInt int))
 getLit obj str = (Get obj (Lit str))
+getAnchor obj = getLit obj "anchor"
 
 maximum args =  CallFunction (Lit "Math.max") args
 sum args = Unary "+" args

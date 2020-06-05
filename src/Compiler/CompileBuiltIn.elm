@@ -2,7 +2,7 @@ module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptC
                                              buildUnaryWithSingleLead, buildIf)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
-                                   ,getLit)
+                                   ,getLit, getAnchor)
 import Compiler.CompileFunction exposing (getCacheValue)
 import Compiler.Song exposing (makeLit, join, addSine)
 
@@ -72,5 +72,5 @@ buildUnaryWithSingleLead lead expr =
 
             
 buildJavascriptCall funcName expr =
-    CallFunction (Lit funcName) (List.map buildValue expr.children)
+    makeLit (CallFunction (Lit funcName) (List.map getAnchor (List.map buildValue expr.children)))
                                           
