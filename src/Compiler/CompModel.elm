@@ -29,10 +29,17 @@ type alias Expr =
 
 
 type AST = Empty
-         | Literal String
+         | Lit String
 
+         | Object (List (String, AST))
+         | CopySet AST (List (String, AST))
+         | Get AST AST
+         | Set AST AST AST
+         
+         | Array (List AST)
+           
          | Begin (List AST)
-         | BeginThunk (List AST)
+         | Let (List (String, AST)) AST
            
          | CallFunction AST (List AST)
          | Function (List String) AST -- arguments, body
@@ -42,24 +49,28 @@ type AST = Empty
          | VarSet AST AST
          
            
-         | CachePushNull
          | CachePush AST
          | CacheUpdate AST AST
-         | NotesPush AST
-         | FunctionsPush AST
 
          | CacheRef AST
-         | FunctionRef AST
 
          | If AST AST AST
          | Unary String (List AST)
          | SingleOp String AST
 
          
-
+false = Lit "false"
+true = Lit "true"
     
 forRange varName beginAST endAST bodyAST =
-    For (VarDeclaration (Literal varName) beginAST)
-        (Unary "<" [(Literal varName), endAST])
-        (Literal (varName ++ "++"))
+    For (VarDeclaration (Lit varName) beginAST)
+        (Unary "<" [(Lit varName), endAST])
+        (Lit (varName ++ "++"))
         bodyAST
+
+litFloat float = (Lit (String.fromFloat float))
+litInt int = (Lit (String.fromInt int))
+getLit obj str = (Get obj (Lit str))
+
+maximum args =  CallFunction (Lit "Math.max") args
+sum args = Unary "+" args

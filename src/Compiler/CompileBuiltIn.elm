@@ -1,18 +1,20 @@
 module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
                                              buildUnaryWithSingleLead, buildIf)
     
-import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..))
-import Compiler.CompileToAST exposing (getCacheValue)
+import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
+                                   ,getLit)
+import Compiler.CompileFunction exposing (getCacheValue)
+import Compiler.Song exposing (makeLit, join, addSine)
 
 
 buildValue val =
     case val of
         StackIndex i ->
-            getCacheValue (Literal (String.fromInt i))
+            getCacheValue (litInt i)
         ConstV c ->
-            Literal (String.fromFloat c)
+            makeLit (litFloat c)
         ScriptVariable str ->
-            Literal str
+            Lit str
 
 buildIf expr =
     case expr.children of
@@ -26,35 +28,37 @@ buildWave : Expr -> AST
 buildWave expr =
     case expr.children of
         (time::frequency::duration::[]) ->
-            let timeAST = buildValue time
-                frequencyAST = buildValue frequency
-                durationAST = buildValue duration
-            in
-                (Begin
-                     [(If (Unary "&&"
-                               [(Unary ">=" [(Literal "time"), timeAST])
-                               ,(Unary "<" [(Literal "time"), (Unary "+" [timeAST, durationAST])])])
-                          (NotesPush frequencyAST)
-                          Empty)
-                     ,(Unary "+" [timeAST, durationAST])])
+            addSine (buildValue time) (buildValue frequency) (buildValue duration)
         _ -> Empty -- fail silently
 
 
              
-buildUnaryMultiple children op =
+buildUnaryRest children op =
     case children of
         [] -> Empty -- should not happen
-        (arg::[]) -> (buildValue arg)-- should not happen
-        args -> (Unary op (List.map buildValue args))
+        (arg::[]) -> (buildValue arg)
+        args -> (Unary op
+                     (List.map
+                          (\arg ->
+                               (getLit (buildValue arg) "anchor"))
+                          args))
 
 buildGeneralUnary defaultValue singleArgumentLead expr =
     (case expr.children of
-         [] -> (Literal defaultValue)
+         [] -> makeLit (Lit defaultValue)
          (arg::[]) ->
              case singleArgumentLead of
                  "" -> (buildValue arg)
-                 lead -> SingleOp lead (buildValue arg)
-         _ -> (buildUnaryMultiple expr.children expr.functionName))
+                 lead -> (Let [("tmp", (buildValue arg))]
+                              (CopySet (Lit "tmp")
+                                   [("anchor", (SingleOp lead (getLit (Lit "tmp") "anchor")))]))
+         (arg::args) ->
+             (Let [("tmp", (buildValue arg))]
+                  (CopySet (Lit "tmp")
+                       [("anchor"
+                        ,(Unary expr.functionName
+                              [(getLit (Lit "tmp") "anchor")
+                              ,(buildUnaryRest args expr.functionName)]))])))
 
              
 buildUnary expr =
@@ -66,8 +70,7 @@ buildUnaryWithDefault default expr =
 buildUnaryWithSingleLead lead expr =
     buildGeneralUnary "0" lead expr
 
-    
-        
+            
 buildJavascriptCall funcName expr =
-    CallFunction (Literal funcName) (List.map buildValue expr.children)
+    CallFunction (Lit funcName) (List.map buildValue expr.children)
                                           

@@ -1,123 +1,67 @@
-module Compiler.CompileToAST exposing (compileToAST, getCacheValue)
-import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), systemValues, forRange)
+module Compiler.CompileToAST exposing (compileToAST)
+import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), forRange)
+import Compiler.CompileFunction exposing (compileFunction, getValueFunctionAST)
+import Compiler.Song
 import Utils
 import Dict exposing (Dict)
 
-cacheIsNull ast =
-    Unary "==" [(Literal "null"), (CacheRef ast)]
 
-updateCache cacheIndex localIndex =
-    CacheUpdate cacheIndex (CallFunction (FunctionRef localIndex) [])
-        
-getValueFunctionAST =
-    VarDeclaration (Literal "getValueAt")
-        (Function ["cacheILocal", "PC"]
-                  (Begin
-                       [(VarDeclaration (Literal "res") (Literal "null"))
-                       ,(VarDeclaration (Literal "cacheI") (Unary "+" [(Literal "cacheILocal"), (Literal "PC")]))
-                       ,(If
-                         (cacheIsNull (Literal "cacheI"))
-                         (Begin
-                              [(updateCache (Literal "cacheI") (Literal "cacheILocal"))
-                              ,(VarSet (Literal "res") (CacheRef (Literal "cacheI")))])
-                         (VarSet (Literal "res") (CacheRef (Literal "cacheI"))))
-                       ,(Literal "res")]))
-
-getCacheValue ast =
-    CallFunction (Literal "getValueAt") [ast, (Literal "PC")]
-        
+ 
 initialVariables =
-    [VarSet (Literal "cache") (Literal "[]")
-    ,VarSet (Literal "notes") (Literal "[]")
-    ,VarSet (Literal "time") (Unary "-" [(Literal "getTime()"), (Literal "startTime")])
-    ,VarSet (Literal "PC") (Literal "0")
-     ]
+    [VarSet (Lit "time") (Unary "-" [(Lit "getTime()"), (Lit "startTime")])]
 
 globals =
-    [(VarDeclaration (Literal "startTime") (Literal "getTime()"))
-    , (VarDeclaration (Literal "functions") (Literal "[]"))]
+    [(VarDeclaration (Lit "startTime") (Lit "getTime()"))
+    ,(VarDeclaration (Lit "functions") (Object []))]
 
 varSetToVarDec ast =
     case ast of
         VarSet a b -> (VarDeclaration a b)
-        _ -> (VarDeclaration (Literal "bad") (Literal "shouldnothappen"))
+        _ -> (VarDeclaration (Lit "bad") (Lit "shouldnothappen"))
     
 initialVariablesDeclaration =
     List.map varSetToVarDec initialVariables
 
-    
-astHead =
-    (getValueFunctionAST ::
-         (globals ++ initialVariablesDeclaration))
-
 recur =
-    (CallFunction (Literal "setTimeout") [(Literal "recur"), (Literal "4")])
+    (CallFunction (Lit "setTimeout") [(Lit "recur"), (Lit "4")])
         
 loopFunctionBody =
-    BeginThunk (initialVariables ++
-                    [CallFunction (FunctionRef (Unary "-" [(Literal "functions.length"), (Literal "1")])) []
-                    ,CallFunction (Literal "update") [(Literal "state"), (Literal "notes")]
-                    ,recur])
+    (Begin (initialVariables ++
+                [CallFunction (Lit "update")
+                     [(Lit "state")
+                     ,(CallFunction (Get (Lit "functions") (Lit "main")) [])
+                     ,(Lit "time")]
+                ,recur]))
 
 loopFunctionAST =
-    (VarDeclaration (Literal "recur")
+    (VarDeclaration (Lit "recur")
          (Function []
               loopFunctionBody))
             
 loopAST =
-    BeginThunk
-        [(VarDeclaration (Literal "state") (Literal "makeInitialState()"))
-        ,loopFunctionAST
-        ,recur]
-        
+    (Begin
+         [(VarDeclaration (Lit "state") (Lit "makeInitialState()"))
+         ,loopFunctionAST
+         ,recur])
        
-functionStart method =
-    (forRange "i"
-         (Literal "0")
-         (Literal (String.fromInt (List.length method)))
-         (CachePushNull))
 
-functionEnd method =
-    Empty
+astHead =
+    (getValueFunctionAST ::
+         (globals ++ initialVariablesDeclaration ++ Compiler.Song.javascriptFuncs))
 
+
+compileOneFunction funcTuple =
+    (Set (Lit "functions") (Lit (Tuple.first funcTuple)) (compileFunction (Tuple.second funcTuple)))
+    
+    
         
-
-            
-compileExpr expr isReturnFunction entireMethod =
-    (FunctionsPush
-         (Function
-              []
-              (let compiledExpr =
-                       (case expr.compileExprFunction of
-                            CompileExprFunction func -> func expr)
-               in
-                   if isReturnFunction
-                   then
-                       Begin
-                       [(functionStart entireMethod)
-                       ,compiledExpr
-                       ,(functionEnd entireMethod)]
-                   else
-                       compiledExpr)))
-        
-compileExprs method entireMethod =
-    case method of
-        [] -> []
-        (expr::[]) -> [compileExpr expr True entireMethod]
-        (expr::exprs) -> (compileExpr expr False entireMethod) :: (compileExprs exprs entireMethod)
-        
-compileMethod method =
-    BeginThunk
-    (compileExprs method method)
-            
-
 compileFunctions compModel =
-    case Dict.get "main" compModel of
-        Just method -> compileMethod method
-        _ -> Empty -- no multiple methods yet
+    (List.map compileOneFunction (Dict.toList compModel))
+
              
 compileToAST : CompModel -> AST
 compileToAST compModel =
     Begin (astHead ++
-               [(compileFunctions compModel)
-               ,loopAST])
+               (compileFunctions compModel)
+               ++ [loopAST])
+               
