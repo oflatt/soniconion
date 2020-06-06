@@ -192,7 +192,8 @@ drawInput call input blockPos inputCounter viewStructure =
 drawInputLines call inputs blockPos inputCounter viewStructure =
     case inputs of
         [] -> [SvgDraw.drawBlockNameInput call viewStructure blockPos
-              ,SvgDraw.nodeEvent 0 (0, 0) 0 (OutputHighlight call.id) (nodeOutputId call.id) viewStructure]
+              ,SvgDraw.nodeEvent blockPos.xpos (0, 0) (blockPos.ypos+ViewVariables.outputNodeY)
+                  (OutputHighlight call.id) (nodeOutputId call.id) viewStructure]
         (input::rest) ->
             (drawInput call input blockPos inputCounter viewStructure) ::
                 (drawInputLines call rest blockPos (inputCounter + 1) viewStructure)
