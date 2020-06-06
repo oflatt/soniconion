@@ -1,11 +1,8 @@
 module Compiler.CompileFunction exposing (compileFunction, getValueFunctionAST, getCacheValue)
 import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..),
-                                   forRange, litInt)
+                                   forRange, litInt, argName)
 import Utils
 import Dict exposing (Dict)
-
-
-
 cacheIsNull ast =
     Unary "==" [(Lit "null"), (CacheRef ast)]
         
@@ -26,7 +23,7 @@ functionStart method =
 
         
 functionEnd method =
-    getCacheValue (litInt ((List.length method)-1))
+    getCacheValue (litInt ((List.length method.exprs)-1))
 
             
 compileExpr expr entireMethod =
@@ -41,8 +38,13 @@ compileExprs method entireMethod =
         [] -> [] -- should not happen
         (expr::[]) -> [compileExpr expr entireMethod, (functionEnd entireMethod)]
         (expr::exprs) -> (compileExpr expr entireMethod) :: (compileExprs exprs entireMethod)
-        
+
+buildArgs method =
+    List.map
+        (\index -> argName index)
+        (List.range 0 (method.argCount-1))
+                         
 compileFunction method =
-    Function []
-        (Begin ((functionStart method) :: (compileExprs method method)))
+    Function (buildArgs method)
+        (Begin ((functionStart method) :: (compileExprs method.exprs method)))
             

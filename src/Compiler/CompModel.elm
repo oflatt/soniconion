@@ -12,6 +12,7 @@ systemValues =
     ,("mouseY", "window.mouseYPos")]
 
 type Value = StackIndex Int
+           | FArg Int
            | ConstV Float
            | ScriptVariable String
 
@@ -19,7 +20,8 @@ type CompileExprFunction = CompileExprFunction (Expr -> AST)
              
 type alias CompModel = Dict String Method
 
-type alias Method = List Expr
+type alias Method = {argCount : Int
+                    ,exprs : List Expr}
 
 type alias Expr =
     {functionName : String
@@ -75,3 +77,7 @@ getAnchor obj = getLit obj "anchor"
 
 maximum args =  CallFunction (Lit "Math.max") args
 sum args = Unary "+" args
+
+
+argName index =
+    "arg" ++ (String.fromInt index)

@@ -1,8 +1,8 @@
 module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
-                                             buildUnaryWithSingleLead, buildIf)
+                                             buildUnaryWithSingleLead, buildIf, buildFuncCall)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
-                                   ,getLit, getAnchor)
+                                   ,getLit, getAnchor, CompileExprFunction, argName)
 import Compiler.CompileFunction exposing (getCacheValue)
 import Compiler.Song exposing (makeLit, join, addSine)
 
@@ -13,6 +13,8 @@ buildValue val =
             getCacheValue (litInt i)
         ConstV c ->
             makeLit (litFloat c)
+        FArg index ->
+            (Lit (argName index))
         ScriptVariable str ->
             makeLit (Lit str)
 
@@ -60,6 +62,9 @@ buildGeneralUnary defaultValue singleArgumentLead expr =
                               [(getLit (Lit "tmp") "anchor")
                               ,(buildUnaryRest args expr.functionName)]))])))
 
+buildFuncCall : Expr -> AST
+buildFuncCall expr =
+    CallFunction (getLit (Lit "functions") expr.functionName) (List.map buildValue expr.children)
              
 buildUnary expr =
     buildGeneralUnary "0" "" expr

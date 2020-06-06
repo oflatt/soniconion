@@ -1,8 +1,9 @@
 module Compiler.OnionToExpr exposing (onionToCompModel)
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..))
-import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel)
+import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel, CompileExprFunction(..))
 import Compiler.CompModel as CompModel
+import Compiler.CompileBuiltIn exposing (buildFuncCall)
 import Utils exposing (resultMap)
 
 import Debug exposing (log)
@@ -41,7 +42,8 @@ inputToValue input idToIndex =
                 Just (Number value) -> Ok (ConstV value)
                 Just (StackReference index) -> Ok (StackIndex index)
                 Just (JavaScript varName) -> Ok (ScriptVariable varName)
-        _ -> Err "No argument supplied to a function call" -- TODO This should be just the hole case
+        FunctionArg index -> Ok (FArg index)
+        Hole -> Err "No argument supplied to a function call" 
 
                 
 inputsToValues : List Input -> IdToIndex -> Result Error (List Value)
@@ -91,11 +93,14 @@ callToExpr call idToIndex onionMap =
         Just builtIn ->
             callToExprWith call idToIndex builtIn.argList builtIn.compileExprFunction
         Nothing ->
-            Err "Not a built in function"
+            case Dict.get call.functionName onionMap of
+                Just func -> callToExprWith call idToIndex
+                             (Finite (List.repeat (List.length func.args) "")) (CompileExprFunction buildFuncCall)
+                _ -> Err "Not a function name"
 
 
-callsToMethod : List Call -> OnionMap -> IdToIndex -> Result Error Method
-callsToMethod calls onionMap idToIndex =
+callsToExprs : List Call -> OnionMap -> IdToIndex -> Result Error (List Expr)
+callsToExprs calls onionMap idToIndex =
     resultMap (\call -> (callToExpr call idToIndex onionMap)) calls
    
 functionToMethod : OnionMap -> Function -> Result Error (String, Method)
@@ -103,8 +108,8 @@ functionToMethod onionMap func =
     let idToPos = makeIdToIndex func.calls Dict.empty 0
     in
         Result.map
-            (\method -> (func.name, method))
-            (callsToMethod func.calls onionMap idToPos)
+            (\exprs -> (func.name, (Method (List.length func.args) exprs)))
+            (callsToExprs func.calls onionMap idToPos)
 
 
 makeOnionMap : Onion -> Result Error OnionMap

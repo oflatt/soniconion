@@ -1,5 +1,6 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
-                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler)
+                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler
+                        )
 import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
                                              buildUnaryWithSingleLead, buildIf)
