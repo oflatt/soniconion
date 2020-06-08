@@ -132,7 +132,7 @@ updateInput model id index inputFunc =
 updateCallIfMatchesId : Call -> (Call -> Call) -> Id -> Onion -> Call
 updateCallIfMatchesId call callFunc id onion =
     if call.id == id
-    then fixInputsForFunc (callFunc call) onion
+    then fixInputsForFunc onion (callFunc call)
     else call
         
 updateCallFunc : List Call -> Id -> (Call -> Call) -> Onion -> List Call
@@ -189,7 +189,7 @@ updateFuncOnion onion funcId update =
                 func :: (updateFuncOnion funcs funcId update)
         
 updateFunc model funcId update =
-    {model | program = (updateFuncOnion model.program funcId update)}
+    {model | program = fixAllInvalidInputs (updateFuncOnion model.program funcId update)}
 
 getFunc : List Function -> Id -> Maybe Function
 getFunc onion id =
@@ -270,11 +270,6 @@ fixInvalidInputs func =
     in
         {func | calls = (fixInvalidInputsHelper func.calls idToPos 0 validF)}
 
-fixAllInvalidInputs : Onion -> Onion
-fixAllInvalidInputs onion =
-    List.map fixInvalidInputs onion
-
-
 fixForArgList call argList =
     let inputs = call.inputs
     in
@@ -286,11 +281,19 @@ fixForArgList call argList =
 funcToArgList func =
     (Finite (List.repeat (List.length func.args) ""))
 
-fixInputsForFunc call onion =
+fixInputsForFunc onion call =
     case Dict.get call.functionName builtInFunctions of
         Just builtInSpec -> fixForArgList call builtInSpec.argList
         _ ->
             (case (Utils.findBy onion (\func -> func.name == call.functionName)) of
                  Just func -> fixForArgList call (funcToArgList func)
                  Nothing -> call)
-            
+
+fixAllForFunc onion func =
+    let calls = func.calls
+    in
+        {func | calls=(List.map (fixInputsForFunc onion) calls)}
+                
+fixAllInvalidInputs : Onion -> Onion
+fixAllInvalidInputs onion =
+    List.map (fixAllForFunc onion) (List.map fixInvalidInputs onion)

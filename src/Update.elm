@@ -212,11 +212,11 @@ headerNameUpdateModel model id str =
     ,Cmd.none)
 
 addFuncOutput model id =
-    updateFunc model id
+    (updateFunc model id
         (\func ->
              let newInputs = func.args ++ [Hole]
              in
-                 {func | args = newInputs})
+                 {func | args = newInputs}))
     
 headerAddOutputModel model id index =
     let added = (addFuncOutput model id)
