@@ -1,5 +1,6 @@
 module Compiler.OnionToExpr exposing (onionToCompModel)
 import Model exposing (..)
+import ModelHelpers exposing (OnionMap, makeOnionMap, funcToArgList)
 import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..))
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel, CompileExprFunction(..))
 import Compiler.CompModel as CompModel
@@ -16,8 +17,8 @@ import Result exposing (andThen)
 
 
 
+
 type alias IdToIndex = Dict Id Int
-type alias OnionMap = Dict String Function -- name of func to function
 
 makeIdToIndex : List Call -> Dict Id Int -> Int -> Dict Id Int
 makeIdToIndex func dict index =
@@ -95,7 +96,7 @@ callToExpr call idToIndex onionMap =
         Nothing ->
             case Dict.get call.functionName onionMap of
                 Just func -> callToExprWith call idToIndex
-                             (Finite (List.repeat (List.length func.args) "")) (CompileExprFunction buildFuncCall)
+                             (funcToArgList func) (CompileExprFunction buildFuncCall)
                 _ -> Err "Not a function name"
 
 
@@ -109,22 +110,7 @@ functionToMethod onionMap func =
     in
         Result.map
             (\exprs -> (func.name, (Method (List.length func.args) exprs)))
-            (callsToExprs func.calls onionMap idToPos)
-
-
-makeOnionMap : Onion -> Result Error OnionMap
-makeOnionMap onion =
-    case onion of
-        [] -> Ok Dict.empty
-        (func::funcs) ->
-            (makeOnionMap funcs)
-                |> andThen
-                   (\currentMap ->
-                     if Dict.member func.name currentMap
-                     then Err ("Cannot define two functions with the name " ++ func.name)
-                     else
-                         Ok (Dict.insert func.name func currentMap))
-                
+            (callsToExprs func.calls onionMap idToPos)                
                 
 
     

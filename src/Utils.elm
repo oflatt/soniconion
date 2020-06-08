@@ -22,6 +22,12 @@ last func =
         [a] -> Just a
         (c::cs) -> last cs
 
+findBy list key =
+    case list of
+        [] -> Nothing
+        (first::rest) ->
+            if (key first) then Just first else findBy rest key
+
 listToStringListRest : List Int -> String
 listToStringListRest l =
     case l of

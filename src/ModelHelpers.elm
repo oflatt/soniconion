@@ -1,14 +1,17 @@
 module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
                              ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
-                             ,fixAllInvalidInputs, getFunc, isStandInInfinite)
+                             ,fixAllInvalidInputs, getFunc, isStandInInfinite, OnionMap, makeOnionMap
+                             ,funcToArgList)
 
 import Dict exposing (Dict)
 
 import Model exposing (..)
+import Utils
 import BuiltIn exposing (builtInFunctions, ArgList(..))
-
+import Result exposing (andThen)
 
 type alias IdToPos = Dict Id Int
+type alias OnionMap = Dict String Function -- name of func to function
 
 addFuncPos func idToPos =
     Dict.insert func.id -1 idToPos
@@ -46,6 +49,15 @@ eliminateHolesAfter inputs mandatoryLength =
              
 fixInfiniteInputs inputs mandatoryLength = 
     (eliminateHolesAfter inputs mandatoryLength)
+
+fitInputsTo inputs mandatoryLength =
+    if ((List.length inputs) > mandatoryLength) then
+        (List.take mandatoryLength inputs)
+    else
+        (if (List.length inputs) < mandatoryLength then
+             (inputs ++ (List.repeat (mandatoryLength-(List.length inputs)) Hole))
+             else inputs)
+             
                     
 
 fixInputsForInfiniteArguments : List Input -> Call -> List Input
@@ -117,23 +129,23 @@ updateInput model id index inputFunc =
     updateInputOn model id index Nothing inputFunc
         
         
-updateCallIfMatchesId : Call -> (Call -> Call) -> Id -> Call
-updateCallIfMatchesId call callFunc id =
+updateCallIfMatchesId : Call -> (Call -> Call) -> Id -> Onion -> Call
+updateCallIfMatchesId call callFunc id onion =
     if call.id == id
-    then (callFunc call)
+    then fixInputsForFunc (callFunc call) onion
     else call
         
-updateCallFunc : List Call -> Id -> (Call -> Call) -> List Call
-updateCallFunc func id callFunc =
+updateCallFunc : List Call -> Id -> (Call -> Call) -> Onion -> List Call
+updateCallFunc func id callFunc onion =
     case func of
         [] -> []
-        (call::calls) -> (updateCallIfMatchesId call callFunc id) :: updateCallFunc calls id callFunc
+        (call::calls) -> (updateCallIfMatchesId call callFunc id onion) :: updateCallFunc calls id callFunc onion
         
 updateCallOnion : Onion -> Id -> (Call -> Call) -> Onion
 updateCallOnion onion id callFunc =
     case onion of
         [] -> []
-        (func::funcs) -> {func | calls=(updateCallFunc func.calls id callFunc)} :: (updateCallOnion funcs id callFunc)
+        (func::funcs) -> {func | calls=(updateCallFunc func.calls id callFunc onion)} :: (updateCallOnion funcs id callFunc)
                
 
 updateCall : Model -> Id -> (Call -> Call) -> (Model, Cmd Msg)
@@ -234,7 +246,22 @@ validFunctionArg header pos =
                      Text _ -> False
                      _ -> True)
             else validFunctionArg rest (pos-1)
-    
+
+
+
+makeOnionMap : Onion -> Result Error OnionMap
+makeOnionMap onion =
+    case onion of
+        [] -> Ok Dict.empty
+        (func::funcs) ->
+            (makeOnionMap funcs)
+                |> andThen
+                   (\currentMap ->
+                     if Dict.member func.name currentMap
+                     then Err ("Cannot define two functions with the name " ++ func.name)
+                     else
+                         Ok (Dict.insert func.name func currentMap))
+
                 
 fixInvalidInputs : Function -> Function
 fixInvalidInputs func =
@@ -248,3 +275,22 @@ fixAllInvalidInputs onion =
     List.map fixInvalidInputs onion
 
 
+fixForArgList call argList =
+    let inputs = call.inputs
+    in
+        (case argList of
+             Infinite finite _ -> {call | inputs = (fixInfiniteInputs inputs (List.length finite))}
+             Finite finite ->
+                 {call | inputs = (fitInputsTo inputs (List.length finite))})
+        
+funcToArgList func =
+    (Finite (List.repeat (List.length func.args) ""))
+
+fixInputsForFunc call onion =
+    case Dict.get call.functionName builtInFunctions of
+        Just builtInSpec -> fixForArgList call builtInSpec.argList
+        _ ->
+            (case (Utils.findBy onion (\func -> func.name == call.functionName)) of
+                 Just func -> fixForArgList call (funcToArgList func)
+                 Nothing -> call)
+            

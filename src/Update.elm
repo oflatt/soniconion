@@ -218,7 +218,6 @@ addFuncOutput model id =
              in
                  {func | args = newInputs})
     
-    
 headerAddOutputModel model id index =
     let added = (addFuncOutput model id)
     in

@@ -120,7 +120,7 @@ drawTextInput call str events xpos inputPos ypos index domId viewStructure =
         domId
         viewStructure
 
-nodeEvent xpos inputPos ypos event domId viewStructure =
+nodeEvent xpos inputPos ypos event domId viewStructure isTabable =
     Svg.foreignObject
         [x (String.fromInt ((Tuple.first inputPos)+xpos))
         ,y (String.fromInt ypos)
@@ -128,7 +128,7 @@ nodeEvent xpos inputPos ypos event domId viewStructure =
         ,height (String.fromInt ViewVariables.nodeRadius)]
         [toUnstyled
              (div
-              [Html.Styled.Attributes.tabindex (if viewStructure.isToolbar then -1 else 0)
+              [Html.Styled.Attributes.tabindex (if (viewStructure.isToolbar || (not isTabable)) then -1 else 0)
               ,Html.Styled.Attributes.id domId
               ,(onFocus event)]
              [])]
@@ -164,7 +164,7 @@ drawNodeWithEvent xpos inputPos ypos events highlightevent eventId isHighlighted
     Svg.g
         []
         [
-         nodeEvent xpos inputPos ypos highlightevent eventId viewStructure
+         nodeEvent xpos inputPos ypos highlightevent eventId viewStructure (not isHollow)
         ,drawNode xpos inputPos ypos events isHighlighted isHollow
         ]
 
