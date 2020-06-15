@@ -1,4 +1,4 @@
-module Compiler.Song exposing (makeLit, join, addSine, javascriptFuncs)
+module Compiler.Song exposing (makeLit, append, addSine, javascriptFuncs, join)
 
 import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..),
                                         forRange, false, true, litFloat, maximum, sum, litInt, getLit)
@@ -31,8 +31,8 @@ makeLit : AST -> AST
 makeLit literal =
     CallFunction (Lit "noteSong") [(litInt 0) ,(litInt 0) , literal]
 
-joinFunc =
-    VarDeclaration (Lit "join")
+appendFunc =
+    VarDeclaration (Lit "append")
         (Function ["song1", "song2"]
              (Object [("type", songType)
                      ,("children"
@@ -45,15 +45,26 @@ joinFunc =
                      ,("duration", maximum [(getLit (Lit "song1") "duration")
                                            ,(sum [(getLit (Lit "song2") "duration"), (getLit (Lit "song2") "time")])])]))
 
+
         
-join : AST -> AST -> AST
+append : AST -> AST -> AST
+append song1 song2 =
+    CallFunction (Lit "append") [song1, song2]
+
+joinFunc =
+    VarDeclaration (Lit "join")
+        (Function ["song1", "song2"]
+             (If (Unary ">" [(getAnchor (Lit "song1")), (getAnchor (Lit "song2"))])
+                  (append (CopySet (Lit "song2") [("anchor", (litInt 0))]) (Lit "song1"))
+                  (append (CopySet (Lit "song1") [("anchor", (litInt 0))]) (Lit "song2"))))
+            
 join song1 song2 =
     CallFunction (Lit "join") [song1, song2]
-
+        
 addSine : AST -> AST -> AST -> AST
 addSine song frequency duration =
-    join song (CallFunction (Lit "noteSong") [(litInt 0), (getAnchor frequency), (getAnchor duration)])
+    append song (CallFunction (Lit "noteSong") [(litInt 0), (getAnchor frequency), (getAnchor duration)])
 
 
 javascriptFuncs =
-    [joinFunc, noteSongFunc]
+    [appendFunc, noteSongFunc, joinFunc]

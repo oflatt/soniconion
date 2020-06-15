@@ -237,14 +237,14 @@ blockNameEvents call viewStructure =
 
 headerNameEvents function viewStructure =
     if viewStructure.isToolbar
-    then svgClickEvents (SpawnFunction function.name (functionMouseOffset function viewStructure)) (SpawnFunction function.name (functionMouseOffset function viewStructure))
+    then svgClickEvents (SpawnFunction "" (functionMouseOffset function viewStructure)) (SpawnFunction "" (functionMouseOffset function viewStructure))
     else
         svgClickWithDefault (HeaderNameClick function (functionMouseOffset function viewStructure))
             (HeaderClick function (functionMouseOffset function viewStructure))
 
 headerBlockEvents function viewStructure =
     if viewStructure.isToolbar
-    then svgClickEvents (SpawnFunction function.name (functionMouseOffset function viewStructure)) (SpawnFunction function.name (functionMouseOffset function viewStructure))
+    then svgClickEvents (SpawnFunction "" (functionMouseOffset function viewStructure)) (SpawnFunction "" (functionMouseOffset function viewStructure))
     else
         svgClickEvents (HeaderClick function (functionMouseOffset function viewStructure)) (HeaderClick function (functionMouseOffset function viewStructure))
             

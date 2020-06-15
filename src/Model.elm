@@ -113,7 +113,10 @@ type alias Function = { name: String
                       , calls: List Call}
 
 makeMain id calls =
-    (constructFunction id "main" calls)
+    makeFunc id calls "main"
+
+makeFunc id calls name =
+    (constructFunction id name calls)
 
 constructFunction id name calls =
     (Function name id [] calls)

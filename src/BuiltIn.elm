@@ -3,9 +3,9 @@ module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, buil
                         )
 import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
-                                             buildUnaryWithSingleLead, buildIf)
+                                             buildUnaryWithSingleLead, buildIf, buildJoin, buildAppend)
 import Dict exposing (Dict)
-import Model exposing (Function, Call, Input(..), Id, makeMain)
+import Model exposing (Function, Call, Input(..), Id, makeMain, makeFunc)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
 
 -- infinite has a min number of args with the names of the args
@@ -26,9 +26,17 @@ waveCompiler = CompileExprFunction buildWave
 
 generalList : List BuiltInSpec
 generalList = [(BuiltInSpec
-                    "sine"
+                    "note"
                     (Finite ["time", "frequency", "duration"])
                     (CompileExprFunction buildWave))
+              ,(BuiltInSpec
+                    "append"
+                    (Infinite [] "songs")
+                    (CompileExprFunction buildAppend))
+              ,(BuiltInSpec
+                    "join"
+                    (Infinite [] "songs")
+                    (CompileExprFunction buildJoin))
               ,(BuiltInSpec
                     "if"
                     (Finite ["condition", "thenValue", "elseValue"])
@@ -87,7 +95,7 @@ makeAllFunction builtInList counter =
         [] -> []
         (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = (makeMain -1 (makeAllFunction builtInFunctionList -100))
+allBuiltInAsFunction = (makeFunc -1 (makeAllFunction builtInFunctionList -100) "function")
 
 callWithHoles id name numHoles =
     Call id (List.repeat numHoles Hole) name ""

@@ -1,10 +1,11 @@
-module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
-                                             buildUnaryWithSingleLead, buildIf, buildFuncCall)
+module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault
+                                        ,buildUnaryWithSingleLead, buildIf, buildFuncCall, buildJoin
+                                        ,buildAppend)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
                                    ,getLit, getAnchor, CompileExprFunction, argName)
 import Compiler.CompileFunction exposing (getCacheValue)
-import Compiler.Song exposing (makeLit, join, addSine)
+import Compiler.Song exposing (makeLit, append, addSine, join)
 
 
 buildValue val =
@@ -78,4 +79,18 @@ buildUnaryWithSingleLead lead expr =
             
 buildJavascriptCall funcName expr =
     makeLit (CallFunction (Lit funcName) (List.map getAnchor (List.map buildValue expr.children)))
-                                          
+
+appendAll : (List AST) -> (AST -> AST -> AST) -> AST
+appendAll songs func =
+    case songs of
+        [] -> (buildValue (ConstV 0))
+        [song] -> song
+        (song::rest) ->
+            func song (appendAll rest func)
+        
+buildAppend expr =
+    appendAll (List.map buildValue expr.children) append
+
+
+buildJoin expr =
+     appendAll (List.map buildValue expr.children) join
