@@ -103,14 +103,28 @@ callToExpr call idToIndex onionMap =
 callsToExprs : List Call -> OnionMap -> IdToIndex -> Result Error (List Expr)
 callsToExprs calls onionMap idToIndex =
     resultMap (\call -> (callToExpr call idToIndex onionMap)) calls
-   
+
+checkName func =
+    if String.isEmpty func.name
+    then
+        Err "Empty function name"
+    else
+        if String.contains " " func.name
+        then
+            Err "No whitespace allowed in function name"
+        else
+            Ok func.name
+
+        
 functionToMethod : OnionMap -> Function -> Result Error (String, Method)
 functionToMethod onionMap func =
     let idToPos = makeIdToIndex func.calls Dict.empty 0
+        funcName = checkName func
     in
-        Result.map
-            (\exprs -> (func.name, (Method (List.length func.args) exprs)))
-            (callsToExprs func.calls onionMap idToPos)                
+        Result.map2
+            (\exprs name -> (name, (Method (List.length func.args) exprs)))
+            (callsToExprs func.calls onionMap idToPos)
+            funcName
                 
 
     
