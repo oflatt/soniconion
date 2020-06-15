@@ -67,7 +67,7 @@ byOutput idToPos element =
         Just callPos ->
             (case Dict.get element.outputId idToPos of
                 Just pos -> (-pos, -callPos)
-                Nothing -> (99999+callPos, 0))-- positive position for function argument, doing -1 then -2 then -3...
+                Nothing -> (-element.outputId, -callPos))-- positive position for function argument, doing -1 then -2 then -3...
         Nothing -> (1, 1) -- should not happen
             
 getOutputOrdering : Function -> IdToPos -> OutputOrdering

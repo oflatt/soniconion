@@ -16,11 +16,4 @@ plusTest arguments result =
                             (Expr "+" 0 arguments (CompileExprFunction (buildUnaryWithDefault "0"))))
                        result))
 
-buildUnaryTest =
-    describe "buildUnary"
-        [test "basic + two arguments"
-             (plusTest [(ConstV 0.5), (ConstV 0.5)]
-                  (Unary "+" [(Literal "0.5"), (Literal "0.5")]))
-        ,test "no arguments"
-            (plusTest [] (Literal "0"))]
 

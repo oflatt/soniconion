@@ -86,4 +86,11 @@ getLineRoutingTest =
                  ,[Just -1]
                  ,[Just 1]
                  ,[Just -2]]
-                 TestModel.argumentsRoutingFunc)]
+                 TestModel.argumentsRoutingFunc)
+        ,test "route around reordered func arg"
+            (testLineRoute
+                 [[]
+                 ,[Just 1]
+                 ,[Just -2]
+                 ,[Just -1]]
+                 TestModel.argumentsRoutingFunc2)]

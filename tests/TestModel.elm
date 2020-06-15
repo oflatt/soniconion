@@ -68,3 +68,11 @@ argumentsRoutingFunc =
          ,(argCall 2 [0])
          ,(argCall 3 [1])
          ,(argCall 4 [2])])
+
+argumentsRoutingFunc2 : Function
+argumentsRoutingFunc2 =
+    (makeMain 0
+         [(argCall 1 [])
+         ,(argCall 2 [2])
+         ,(argCall 3 [3])
+         ,(argCall 4 [1])])
