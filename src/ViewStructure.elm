@@ -24,10 +24,11 @@ mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
 
 maybeMovedInfo mouseState svgScreenWidth svgScreenHeight =
     case mouseState.mouseSelection of
-        BlockSelected funcId call ->
+        BlockSelected funcId call mouseOffset ->
             Just (MovedBlockInfo
                       call
-                      (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight 0 0))
+                      (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight
+                           (Tuple.first mouseOffset) (Tuple.second mouseOffset)))
         _ -> Nothing
         
 -- xpos and width, with xpos relative to the block
@@ -133,7 +134,8 @@ getHeaderBlockPos func xoffset yoffset =
     makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False True
 
 movedInfoBlockPos moveInfo =
-    (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos) moveInfo.movedCall True False)
+    (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos)
+         moveInfo.movedCall False False)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
 getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> (List Call, BlockPositions)

@@ -4,7 +4,7 @@ import ModelHelpers exposing (isStandInInfinite)
 import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, InputPosition)
 import LineRouting exposing (CallLineRoute)
 import ViewVariables
-import SvgDraw
+import SvgDraw exposing (blockMouseOffset)
 import Update exposing (nodeInputId, nodeOutputId)
 
 import Browser
@@ -232,7 +232,8 @@ drawCallEnding call viewStructure =
                         _ -> False
                 events =
                     if viewStructure.isToolbar
-                    then (SvgDraw.svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName))
+                    then (SvgDraw.svgClickEvents (SpawnBlock call.functionName (blockMouseOffset call viewStructure))
+                              (SpawnBlock call.functionName (blockMouseOffset call viewStructure)))
                     else (SvgDraw.svgClickEvents (OutputClick call.id) (OutputRightClick call.id))
                         
             in
@@ -252,7 +253,7 @@ drawAllInputs func viewStructure =
         (call::calls) ->
             let callToDraw =
                     (case viewStructure.mouseState.mouseSelection of
-                         BlockSelected funcId movedCall ->
+                         BlockSelected funcId movedCall _ ->
                              (if funcId /= viewStructure.id && movedCall.id == call.id then
                                   let newInputs = List.map (\_ -> Hole) call.inputs
                                   in

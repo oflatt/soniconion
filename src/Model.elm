@@ -54,15 +54,16 @@ type Msg = MouseOver PageName
          | HeaderOutputUpdate Id Int String
          | HeaderOutputClick Id Int
          | HeaderOutputRightClick Id Int
-         | HeaderNameClick Id
-         | HeaderClick Function
+         | HeaderNameClick Function (Int, Int)
+         | HeaderClick Function (Int, Int)
          | HeaderNameHighlight Id
          | HeaderNameUpdate Id String
          | HeaderAddOutput Id Int
          | HeaderAddOutputRightClick Id Int
          
            
-         | BlockClick Call Id -- position of the function in svg coordinates also passed in
+         | BlockClick Call Id (Int, Int)
+         | BlockNameClick Call Id (Int, Int)
          | InputClick Id Int
          | OutputClick Id
          | InputHighlight Id Int
@@ -70,12 +71,11 @@ type Msg = MouseOver PageName
          | InputRightClick Id Int
          | OutputRightClick Id
          | BlockNameHighlight Id
-         | BlockNameClick Id
          | InputUpdate Id Int String
          | BlockNameUpdate Id String
            
-         | SpawnBlock String -- when you click a block in the toolbar put it in hand
-         | SpawnFunction String
+         | SpawnBlock String (Int, Int)-- when you click a block in the toolbar put it in hand
+         | SpawnFunction String (Int, Int)
          | SetError String
          | SilentDomError (Result Dom.Error ())
          | NoOp
@@ -131,8 +131,9 @@ type alias Call = {id: Id
                   ,functionName: String
                   ,outputText: String}
 
-type MouseSelection = BlockSelected Id Call -- id of function it came from
-                    | FunctionSelected Function
+type MouseSelection = BlockSelected Id Call (Int, Int) -- id of function it came from,
+                                -- the svg offset on the block of the mouse cursor when it clicked the block
+                    | FunctionSelected Function (Int, Int)-- the function in hand and the svg offset of cursor when clicked
                     | InputSelected Id Int -- id of block and index of input
                     | NameSelected Id
                     | OutputSelected Id

@@ -106,14 +106,11 @@ inputClickModel model id index =
 headerOutputClickModel model id index =
     headerHighlightModel model id index
         
-blockNameClickModel : Model -> Id -> (Model, Cmd Msg)
-blockNameClickModel model id =
-    blockNameHighlightModel model id
 
-headerClickModel model func =
+headerClickModel model func mouseOffset =
     (let oldMouse = model.mouseState
          newMouse = {oldMouse |
-                         mouseSelection = (FunctionSelected func)}
+                         mouseSelection = (FunctionSelected func mouseOffset)}
          newProgram = removeFunc model.program func.id
      in
          ({model |
@@ -121,15 +118,23 @@ headerClickModel model func =
           ,program = newProgram}
          ,Cmd.none))
 
-blockClickModel model call funcId =
+headerNameClickModel model func mouseOffset =
+    (headerClickModel model func mouseOffset)
+   
+blockClickModel model call funcId mouseOffset =
     (let removed = updateFunc model funcId (\func -> removeCallUnsafe func call.id)
          oldMouse = model.mouseState
          newMouse = {oldMouse |
-                         mouseSelection = (BlockSelected funcId call)}
+                         mouseSelection = (BlockSelected funcId call mouseOffset)}
      in
          ({removed |
                mouseState = newMouse}
          ,Cmd.none))
+
+blockNameClickModel : Model -> Call -> Id -> (Int, Int) -> (Model, Cmd Msg)
+blockNameClickModel model call funcId mouseOffset =
+    blockClickModel model call funcId mouseOffset
+
         
 focusInputCommand domId =
     (Dom.focus domId |> Task.attempt SilentDomError)
@@ -260,26 +265,26 @@ programDropped model =
     in
         List.map .sortedFunc viewStructures
         
-modelBlockDropped model =
+modelBlockDropped model call =
     let oldMouse = model.mouseState
         newMouse =
-            {oldMouse | mouseSelection = NoneSelected}
+            {oldMouse | mouseSelection = NameSelected call.id}
         newProgram = ModelHelpers.fixAllInvalidInputs (programDropped model)
     in
         ({model |
               mouseState = newMouse
          ,program = newProgram}
-        ,Cmd.none)        
+        ,focusInputCommand (nodeNameId call.id))        
         
-modelFunctionDropped model id =
+modelFunctionDropped model func =
     let oldMouse = model.mouseState
-        newMouse = {oldMouse | mouseSelection = NoneSelected}
+        newMouse = {oldMouse | mouseSelection = FunctionNameSelected func.id}
         newProgram = programDropped model
     in
         ({model |
               mouseState = newMouse
          ,program = newProgram}
-        ,Cmd.none)
+        ,focusInputCommand (headerNameId func.id))
 
 modelWithError : Model -> String -> Model
 modelWithError model errorString =
@@ -288,10 +293,10 @@ modelWithError model errorString =
         
 modelMouseRelease model =
     case model.mouseState.mouseSelection of
-        BlockSelected call funcId ->
-            modelBlockDropped model
-        FunctionSelected id ->
-            modelFunctionDropped model id
+        BlockSelected funcId call _ ->
+            modelBlockDropped model call
+        FunctionSelected func mouseOffset ->
+            modelFunctionDropped model func
         _ -> (model, Cmd.none)
                             
         
@@ -341,14 +346,14 @@ firstOrSpawn onion =
         [] -> (0, [(makeMain 0 [])])
         (func::rest) -> (func.id, onion)                         
                          
-spawnBlockModel : Model -> String -> (Model, Cmd Msg)
-spawnBlockModel model name =
+spawnBlockModel : Model -> String -> (Int, Int) -> (Model, Cmd Msg)
+spawnBlockModel model name mouseOffset =
     let oldMouse = model.mouseState
         newCall = constructCall model.idCounter name
         funcTuple = firstOrSpawn model.program
         funcId = (Tuple.first funcTuple)
         newProgram = (Tuple.second funcTuple)
-        newMouse = {oldMouse | mouseSelection = (BlockSelected funcId newCall)}
+        newMouse = {oldMouse | mouseSelection = (BlockSelected funcId newCall mouseOffset)}
     in
         ({model |
               idCounter = newCall.id+1
@@ -356,11 +361,11 @@ spawnBlockModel model name =
               ,program = newProgram}
         ,Cmd.none)
 
-spawnFuncModel : Model -> String -> (Model, Cmd Msg)
-spawnFuncModel model name =
+spawnFuncModel : Model -> String -> (Int, Int) -> (Model, Cmd Msg)
+spawnFuncModel model name mouseOffset =
     let oldMouse = model.mouseState
         newFunc = constructFunction model.idCounter name []
-        newMouse = {oldMouse | mouseSelection = (FunctionSelected newFunc)}
+        newMouse = {oldMouse | mouseSelection = (FunctionSelected newFunc mouseOffset)}
     in
         ({model |
               idCounter = newFunc.id+1
@@ -401,8 +406,14 @@ update msg model =
             
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
-        BlockClick call funcId ->
-            blockClickModel model call funcId
+
+                
+        BlockClick call funcId mouseOffset ->
+            blockClickModel model call funcId mouseOffset
+
+        BlockNameClick call funcId mouseOffset ->
+            blockNameClickModel model call funcId mouseOffset
+
 
         HeaderOutputHighlight id index ->
             headerHighlightModel model id index
@@ -416,11 +427,11 @@ update msg model =
         HeaderOutputRightClick id index ->
             headerOutputRightClickModel model id index
 
-        HeaderNameClick id ->
-            headerNameHighlightModel model id
+        HeaderNameClick id mouseOffset ->
+            headerNameClickModel model id mouseOffset
 
-        HeaderClick func ->
-            headerClickModel model func
+        HeaderClick func mouseOffset ->
+            headerClickModel model func mouseOffset
 
         HeaderNameHighlight id ->
             headerNameHighlightModel model id
@@ -455,20 +466,17 @@ update msg model =
         OutputRightClick id ->
             (outputRightClickModel model id)
 
-        BlockNameClick id ->
-            blockNameClickModel model id
-
         BlockNameHighlight id ->
             blockNameHighlightModel model id
 
         BlockNameUpdate id str ->
             blockNameUpdateModel model id str
                 
-        SpawnBlock name ->
-            spawnBlockModel model name
+        SpawnBlock name mouseOffset ->
+            spawnBlockModel model name mouseOffset
 
-        SpawnFunction name ->
-            spawnFuncModel model name
+        SpawnFunction name mouseOffset ->
+            spawnFuncModel model name mouseOffset
                 
         PlaySound ->
             playSoundResult model

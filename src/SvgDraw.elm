@@ -1,7 +1,7 @@
 module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
-                             headerEvents, drawHeaderNameInput, headerEventsFinal)
+                             headerEvents, drawHeaderNameInput, headerEventsFinal, blockMouseOffset)
 
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
@@ -9,7 +9,8 @@ import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
 import Update
 
-import ViewStructure exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, countOutputsBefore)
+import ViewStructure exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, countOutputsBefore
+                              ,mouseToSvgCoordinates)
 import LineRouting exposing (LineRouting)
 
 import Json.Decode as Json
@@ -205,24 +206,47 @@ svgClickWithDefault leftClickEvent rightClickEvent =
     [Svg.Events.preventDefaultOn "contextmenu" (Json.map alwaysPreventDefault (Json.succeed NoOp))
     ,Svg.Events.on "mousedown" (checkLeftDecoder leftClickEvent rightClickEvent)]
 
+viewStructureToMouse viewStructure =
+    mouseToSvgCoordinates viewStructure.mouseState viewStructure.svgWidth viewStructure.svgHeight 0 0
+    
+blockMouseOffset call viewStructure =
+    let coordinates = viewStructureToMouse viewStructure
+    in
+        case Dict.get call.id viewStructure.blockPositions of
+            Just blockPos -> ((Tuple.first coordinates)-blockPos.xpos-viewStructure.headerPos.xpos,
+                                  ((Tuple.second coordinates)-blockPos.ypos-viewStructure.headerPos.ypos))
+            Nothing -> (0, 0) -- should not happen
+                       
+functionMouseOffset function viewStructure =
+    let coordinates = viewStructureToMouse viewStructure 
+    in
+        ((Tuple.first coordinates) - viewStructure.headerPos.xpos,
+             (Tuple.second coordinates)- viewStructure.headerPos.ypos)
+        
+
+                       
 blockNameEvents call viewStructure =
-    if viewStructure.isToolbar
-    then
-        svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
-    else
-        svgClickWithDefault (BlockNameClick call.id) (BlockClick call viewStructure.id)
+    let coordinates = blockMouseOffset call viewStructure
+    in
+        (if viewStructure.isToolbar
+         then
+             svgClickEvents (SpawnBlock call.functionName coordinates) (SpawnBlock call.functionName coordinates)
+         else
+             svgClickWithDefault (BlockNameClick call viewStructure.id coordinates)
+                 (BlockNameClick call viewStructure.id coordinates))
 
 headerNameEvents function viewStructure =
     if viewStructure.isToolbar
-    then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
+    then svgClickEvents (SpawnFunction function.name (functionMouseOffset function viewStructure)) (SpawnFunction function.name (functionMouseOffset function viewStructure))
     else
-        svgClickWithDefault (HeaderNameClick viewStructure.id) (HeaderClick function)
+        svgClickWithDefault (HeaderNameClick function (functionMouseOffset function viewStructure))
+            (HeaderClick function (functionMouseOffset function viewStructure))
 
 headerBlockEvents function viewStructure =
     if viewStructure.isToolbar
-    then svgClickEvents (SpawnFunction function.name) (SpawnFunction function.name)
+    then svgClickEvents (SpawnFunction function.name (functionMouseOffset function viewStructure)) (SpawnFunction function.name (functionMouseOffset function viewStructure))
     else
-        svgClickEvents (HeaderClick function) (HeaderClick function)
+        svgClickEvents (HeaderClick function (functionMouseOffset function viewStructure)) (HeaderClick function (functionMouseOffset function viewStructure))
             
 nodeEvents call viewStructure inputCounter =
     if viewStructure.isToolbar
@@ -254,10 +278,11 @@ drawBlock call viewStructure =
             (rect
                  ((if viewStructure.isToolbar
                    then
-                       svgClickEvents (SpawnBlock call.functionName) (SpawnBlock call.functionName)
+                       (svgClickEvents (SpawnBlock call.functionName (blockMouseOffset call viewStructure))
+                            (SpawnBlock call.functionName (blockMouseOffset call viewStructure)))
                    else
-                       svgClickEvents (BlockClick call viewStructure.id)
-                       (BlockClick call viewStructure.id))
+                       svgClickEvents (BlockClick call viewStructure.id (blockMouseOffset call viewStructure))
+                           (BlockClick call viewStructure.id (blockMouseOffset call viewStructure)))
                       ++
                       [(svgTranslate blockPos.xpos blockPos.ypos)
                       ,x "0"

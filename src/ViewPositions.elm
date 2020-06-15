@@ -12,13 +12,13 @@ import Dict exposing (Dict)
 import Debug exposing (log)
 
 
-selectedFunc mouseState func svgWindowWidth svgWindowHeight=
+selectedFunc mouseState func svgWindowWidth svgWindowHeight mouseOffset =
     let view = (getViewStructure func mouseState svgWindowWidth svgWindowHeight
                     0 0 Nothing False)
         mouseCoordinates = (mouseToSvgCoordinates mouseState svgWindowWidth
                                 svgWindowHeight 0 0)
-        xpos = (Tuple.first mouseCoordinates)-(view.funcWidth//2)
-        ypos = (Tuple.second mouseCoordinates)-ViewVariables.functionHeaderHeight//2
+        xpos = (Tuple.first mouseCoordinates)-(Tuple.first mouseOffset)
+        ypos = (Tuple.second mouseCoordinates)-(Tuple.second mouseOffset)
         oldPos = view.headerPos
         newPos = {oldPos | xpos = xpos, ypos = ypos}
     in
@@ -28,8 +28,8 @@ selectedFunc mouseState func svgWindowWidth svgWindowHeight=
             
 getSelected mouseState svgWindowWidth svgWindowHeight =    
     case mouseState.mouseSelection of
-        FunctionSelected func ->
-            Just (selectedFunc mouseState func svgWindowWidth svgWindowHeight)
+        FunctionSelected func mouseOffset ->
+            Just (selectedFunc mouseState func svgWindowWidth svgWindowHeight mouseOffset)
         _ -> Nothing
 
 
