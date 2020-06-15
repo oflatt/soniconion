@@ -42,9 +42,6 @@ function songToNotes(song, currentTime) {
 	var current = ctuple[0];
 	var time = ctuple[1];
 	var duration = ctuple[2];
-	if(currentTime < 1) {
-	    console.log(current);
-	}
 	
 	if (current.type == "song") {
 	    for (var index = 0; index < current.children.length; index += 1) {
