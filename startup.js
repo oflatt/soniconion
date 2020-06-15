@@ -33,7 +33,35 @@ function mathMod(a, b) {
     }
 }
 
-function update(state, notes) {
+function songToNotes(song, currentTime) {
+    var stack = [[song, 0, 0]];
+    var notes = [];
+    while(stack.length > 0) {
+	var ctuple = stack.pop();
+	
+	var current = ctuple[0];
+	var time = ctuple[1];
+	var duration = ctuple[2];
+	if(currentTime < 1) {
+	    console.log(current);
+	}
+	
+	if (current.type == "song") {
+	    for (var index = 0; index < current.children.length; index += 1) {
+		stack.push([current.children[index](), time+current.time, current.duration]);
+	    }
+	} else { // note type
+	    if (time <= currentTime && time+duration > currentTime) {
+		notes.push(current);
+	    }
+	}
+    }
+    return notes;
+}
+
+function update(state, song, time) {
+    var notes = songToNotes(song, time);
+    
     for(var i = 0; i < notes.length; i++) {
 	if (state.synths.length <= i) {
 	    var newSynth = new Tone.Synth().toMaster();
@@ -65,28 +93,3 @@ window.onscroll = function() {
 };
 
 
-// example program
-function exampleCompiledProgram() {
-    var startTime = getTime();
-    function step(state){
-	var stack = [];
-	var notes = [];
-	var time = getTime();
-
-	// sine 1
-	var myEnd = startTime+2;
-	stack.push(myEnd);
-	if(time > startTime && time < myEnd) {
-	    notes.push({frequency: 440});
-	}
-
-
-	update(state, notes);
-	function recur() {
-	    step(state);
-	}
-	window.requestAnimationFrame(recur);
-    }
-
-    step(makeInitialState());
-}

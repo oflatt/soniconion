@@ -6091,9 +6091,9 @@ var $author$project$Main$subscriptions = function (model) {
 				$author$project$Update$scrollChange($author$project$Model$scrollChangeDecoder)
 			]));
 };
-var $author$project$Model$BlockSelected = F2(
-	function (a, b) {
-		return {$: 'BlockSelected', a: a, b: b};
+var $author$project$Model$BlockSelected = F3(
+	function (a, b, c) {
+		return {$: 'BlockSelected', a: a, b: b, c: c};
 	});
 var $author$project$ModelHelpers$removeCallsR = F2(
 	function (calls, id) {
@@ -6116,290 +6116,644 @@ var $author$project$ModelHelpers$removeCallUnsafe = F2(
 				calls: A2($author$project$ModelHelpers$removeCallsR, func.calls, id)
 			});
 	});
-var $author$project$ModelHelpers$updateFuncOnion = F3(
-	function (onion, funcId, update) {
-		if (!onion.b) {
-			return _List_Nil;
-		} else {
-			var func = onion.a;
-			var funcs = onion.b;
-			return _Utils_eq(func.id, funcId) ? A2(
-				$elm$core$List$cons,
-				update(func),
-				funcs) : A2(
-				$elm$core$List$cons,
-				func,
-				A3($author$project$ModelHelpers$updateFuncOnion, funcs, funcId, update));
-		}
+var $author$project$BuiltIn$BuiltInSpec = F3(
+	function (functionName, argList, compileExprFunction) {
+		return {argList: argList, compileExprFunction: compileExprFunction, functionName: functionName};
 	});
-var $author$project$ModelHelpers$updateFunc = F3(
-	function (model, funcId, update) {
-		return _Utils_update(
-			model,
-			{
-				program: A3($author$project$ModelHelpers$updateFuncOnion, model.program, funcId, update)
-			});
-	});
-var $author$project$Update$blockClickModel = F3(
-	function (model, call, funcId) {
-		var removed = A3(
-			$author$project$ModelHelpers$updateFunc,
-			model,
-			funcId,
-			function (func) {
-				return A2($author$project$ModelHelpers$removeCallUnsafe, func, call.id);
-			});
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A2($author$project$Model$BlockSelected, funcId, call)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				removed,
-				{mouseState: newMouse}),
-			$elm$core$Platform$Cmd$none);
-	});
-var $author$project$Model$NameSelected = function (a) {
-	return {$: 'NameSelected', a: a};
+var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
+	return {$: 'CompileExprFunction', a: a};
 };
-var $author$project$Model$SilentDomError = function (a) {
-	return {$: 'SilentDomError', a: a};
+var $author$project$BuiltIn$Finite = function (a) {
+	return {$: 'Finite', a: a};
 };
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
+var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
+var $author$project$Compiler$CompModel$If = F3(
+	function (a, b, c) {
+		return {$: 'If', a: a, b: b, c: c};
 	});
-var $elm$core$Task$onError = _Scheduler_onError;
-var $elm$core$Task$attempt = F2(
-	function (resultToMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2(
-					$elm$core$Task$onError,
-					A2(
-						$elm$core$Basics$composeL,
-						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-						$elm$core$Result$Err),
-					A2(
-						$elm$core$Task$andThen,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
-							$elm$core$Result$Ok),
-						task))));
+var $author$project$Compiler$CompModel$Lit = function (a) {
+	return {$: 'Lit', a: a};
+};
+var $author$project$Compiler$CompModel$argName = function (index) {
+	return 'arg' + $elm$core$String$fromInt(index);
+};
+var $author$project$Compiler$CompModel$CallFunction = F2(
+	function (a, b) {
+		return {$: 'CallFunction', a: a, b: b};
 	});
-var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
-var $author$project$Update$focusInputCommand = function (domId) {
+var $author$project$Compiler$CompileFunction$getCacheValue = function (ast) {
 	return A2(
-		$elm$core$Task$attempt,
-		$author$project$Model$SilentDomError,
-		$elm$browser$Browser$Dom$focus(domId));
+		$author$project$Compiler$CompModel$CallFunction,
+		$author$project$Compiler$CompModel$Lit('getValueAt'),
+		_List_fromArray(
+			[
+				$author$project$Compiler$CompModel$Lit('cache'),
+				ast
+			]));
 };
-var $author$project$Update$nodeNameId = function (callid) {
-	return 'n' + $elm$core$String$fromInt(callid);
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Compiler$CompModel$litFloat = function (_float) {
+	return $author$project$Compiler$CompModel$Lit(
+		$elm$core$String$fromFloat(_float));
 };
-var $author$project$Update$blockNameHighlightModel = F2(
-	function (model, id) {
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$NameSelected(id)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse}),
-			$author$project$Update$focusInputCommand(
-				$author$project$Update$nodeNameId(id)));
-	});
-var $author$project$Update$blockNameClickModel = F2(
-	function (model, id) {
-		return A2($author$project$Update$blockNameHighlightModel, model, id);
-	});
-var $author$project$ModelHelpers$updateCallIfMatchesId = F3(
-	function (call, callFunc, id) {
-		return _Utils_eq(call.id, id) ? callFunc(call) : call;
-	});
-var $author$project$ModelHelpers$updateCallFunc = F3(
-	function (func, id, callFunc) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$ModelHelpers$updateCallIfMatchesId, call, callFunc, id),
-				A3($author$project$ModelHelpers$updateCallFunc, calls, id, callFunc));
-		}
-	});
-var $author$project$ModelHelpers$updateCallOnion = F3(
-	function (onion, id, callFunc) {
-		if (!onion.b) {
-			return _List_Nil;
-		} else {
-			var func = onion.a;
-			var funcs = onion.b;
-			return A2(
-				$elm$core$List$cons,
-				_Utils_update(
-					func,
-					{
-						calls: A3($author$project$ModelHelpers$updateCallFunc, func.calls, id, callFunc)
-					}),
-				A3($author$project$ModelHelpers$updateCallOnion, funcs, id, callFunc));
-		}
-	});
-var $author$project$ModelHelpers$updateCall = F3(
-	function (model, id, callFunc) {
-		var oldMouse = model.mouseState;
-		var newOnion = A3($author$project$ModelHelpers$updateCallOnion, model.program, id, callFunc);
-		var newMouse = _Utils_update(
-			oldMouse,
-			{mouseSelection: $author$project$Model$NoneSelected});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newOnion}),
-			$elm$core$Platform$Cmd$none);
-	});
-var $author$project$Update$blockNameUpdateModel = F3(
-	function (model, id, str) {
-		return A3(
-			$author$project$ModelHelpers$updateCall,
-			model,
-			id,
-			function (call) {
-				return _Utils_update(
-					call,
-					{functionName: str});
-			});
-	});
-var $elm$url$Url$Builder$toQueryPair = function (_v0) {
-	var key = _v0.a;
-	var value = _v0.b;
-	return key + ('=' + value);
+var $author$project$Compiler$CompModel$litInt = function (_int) {
+	return $author$project$Compiler$CompModel$Lit(
+		$elm$core$String$fromInt(_int));
 };
-var $elm$url$Url$Builder$toQuery = function (parameters) {
-	if (!parameters.b) {
-		return '';
-	} else {
-		return '?' + A2(
-			$elm$core$String$join,
-			'&',
-			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
+var $author$project$Compiler$Song$makeLit = function (literal) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		$author$project$Compiler$CompModel$Lit('noteSong'),
+		_List_fromArray(
+			[
+				$author$project$Compiler$CompModel$litInt(0),
+				$author$project$Compiler$CompModel$litInt(0),
+				literal
+			]));
+};
+var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
+	switch (val.$) {
+		case 'StackIndex':
+			var i = val.a;
+			return $author$project$Compiler$CompileFunction$getCacheValue(
+				$author$project$Compiler$CompModel$litInt(i));
+		case 'ConstV':
+			var c = val.a;
+			return $author$project$Compiler$Song$makeLit(
+				$author$project$Compiler$CompModel$litFloat(c));
+		case 'FArg':
+			var index = val.a;
+			return $author$project$Compiler$CompModel$Lit(
+				$author$project$Compiler$CompModel$argName(index));
+		default:
+			var str = val.a;
+			return $author$project$Compiler$Song$makeLit(
+				$author$project$Compiler$CompModel$Lit(str));
 	}
 };
-var $elm$url$Url$Builder$absolute = F2(
-	function (pathSegments, parameters) {
-		return '/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters));
-	});
-var $elm$core$String$append = _String_append;
-var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var $author$project$Update$changeUrl = F3(
-	function (model, newurl, newPage) {
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{currentPage: newPage, url: newurl}),
-			A2(
-				$elm$browser$Browser$Navigation$pushUrl,
-				model.urlkey,
-				$elm$url$Url$toString(newurl)));
-	});
-var $author$project$Update$changeByName = F2(
-	function (model, pageName) {
-		var newurl = function () {
-			var _v0 = $elm$url$Url$fromString(
-				A2(
-					$elm$core$String$append,
-					model.indexurl,
-					A2(
-						$elm$url$Url$Builder$absolute,
-						_List_fromArray(
-							[pageName]),
-						_List_Nil)));
-			if (_v0.$ === 'Nothing') {
-				return model.url;
-			} else {
-				var url = _v0.a;
-				return url;
-			}
-		}();
-		return A3($author$project$Update$changeUrl, model, newurl, pageName);
-	});
-var $author$project$Model$Hole = {$: 'Hole'};
-var $author$project$Update$addFuncOutput = F2(
-	function (model, id) {
-		return A3(
-			$author$project$ModelHelpers$updateFunc,
-			model,
-			id,
-			function (func) {
-				var newInputs = _Utils_ap(
-					func.args,
-					_List_fromArray(
-						[$author$project$Model$Hole]));
-				return _Utils_update(
-					func,
-					{args: newInputs});
-			});
-	});
-var $author$project$Model$FunctionOutputSelected = F2(
+var $author$project$Compiler$CompModel$Get = F2(
 	function (a, b) {
-		return {$: 'FunctionOutputSelected', a: a, b: b};
+		return {$: 'Get', a: a, b: b};
 	});
-var $author$project$Update$headerNodeId = F2(
-	function (functionid, index) {
-		return 'h' + ($elm$core$String$fromInt(functionid) + ('-' + $elm$core$String$fromInt(index)));
+var $author$project$Compiler$CompModel$getLit = F2(
+	function (obj, str) {
+		return A2(
+			$author$project$Compiler$CompModel$Get,
+			obj,
+			$author$project$Compiler$CompModel$Lit(str));
 	});
-var $author$project$Update$headerHighlightModel = F3(
-	function (model, id, index) {
-		var oldMouse = model.mouseState;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A2($author$project$Model$FunctionOutputSelected, id, index)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse}),
-			$author$project$Update$focusInputCommand(
-				A2($author$project$Update$headerNodeId, id, index)));
-	});
-var $author$project$Update$headerAddOutputModel = F3(
-	function (model, id, index) {
-		var added = A2($author$project$Update$addFuncOutput, model, id);
-		return A3($author$project$Update$headerHighlightModel, added, id, index);
-	});
-var $author$project$Model$FunctionArg = function (a) {
-	return {$: 'FunctionArg', a: a};
+var $author$project$Compiler$CompileBuiltIn$buildIf = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var cond = _v0.a;
+		var _v1 = _v0.b;
+		var thenValue = _v1.a;
+		var _v2 = _v1.b;
+		var elseValue = _v2.a;
+		return A3(
+			$author$project$Compiler$CompModel$If,
+			A2(
+				$author$project$Compiler$CompModel$getLit,
+				$author$project$Compiler$CompileBuiltIn$buildValue(cond),
+				'anchor'),
+			$author$project$Compiler$CompileBuiltIn$buildValue(thenValue),
+			$author$project$Compiler$CompileBuiltIn$buildValue(elseValue));
+	} else {
+		return $author$project$Compiler$CompModel$Empty;
+	}
 };
-var $author$project$Model$Output = function (a) {
-	return {$: 'Output', a: a};
+var $author$project$Compiler$Song$getAnchor = function (val) {
+	return A2(
+		$author$project$Compiler$CompModel$Get,
+		val,
+		$author$project$Compiler$CompModel$Lit('anchor'));
 };
-var $author$project$ModelHelpers$updateInputAtIndex = F3(
-	function (inputs, index, inputFunc) {
-		if (!inputs.b) {
-			return _List_Nil;
+var $author$project$Compiler$Song$join = F2(
+	function (song1, song2) {
+		return A2(
+			$author$project$Compiler$CompModel$CallFunction,
+			$author$project$Compiler$CompModel$Lit('join'),
+			_List_fromArray(
+				[song1, song2]));
+	});
+var $author$project$Compiler$Song$addSine = F3(
+	function (song, frequency, duration) {
+		return A2(
+			$author$project$Compiler$Song$join,
+			song,
+			A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit('noteSong'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$litInt(0),
+						$author$project$Compiler$Song$getAnchor(frequency),
+						$author$project$Compiler$Song$getAnchor(duration)
+					])));
+	});
+var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
+	var _v0 = expr.children;
+	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+		var time = _v0.a;
+		var _v1 = _v0.b;
+		var frequency = _v1.a;
+		var _v2 = _v1.b;
+		var duration = _v2.a;
+		return A3(
+			$author$project$Compiler$Song$addSine,
+			$author$project$Compiler$CompileBuiltIn$buildValue(time),
+			$author$project$Compiler$CompileBuiltIn$buildValue(frequency),
+			$author$project$Compiler$CompileBuiltIn$buildValue(duration));
+	} else {
+		return $author$project$Compiler$CompModel$Empty;
+	}
+};
+var $author$project$BuiltIn$generalList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'sine',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['time', 'frequency', 'duration'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave)),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'if',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['condition', 'thenValue', 'elseValue'])),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildIf))
+	]);
+var $author$project$Compiler$CompModel$getAnchor = function (obj) {
+	return A2($author$project$Compiler$CompModel$getLit, obj, 'anchor');
+};
+var $author$project$Compiler$CompileBuiltIn$buildJavascriptCall = F2(
+	function (funcName, expr) {
+		return $author$project$Compiler$Song$makeLit(
+			A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit(funcName),
+				A2(
+					$elm$core$List$map,
+					$author$project$Compiler$CompModel$getAnchor,
+					A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children))));
+	});
+var $author$project$BuiltIn$javascriptFunctionList = _List_fromArray(
+	[
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'mod',
+		$author$project$BuiltIn$Finite(
+			_List_fromArray(
+				['numerator', 'divisor'])),
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			$author$project$Compiler$CompileBuiltIn$buildJavascriptCall('mathMod')))
+	]);
+var $author$project$BuiltIn$Infinite = F2(
+	function (a, b) {
+		return {$: 'Infinite', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$CopySet = F2(
+	function (a, b) {
+		return {$: 'CopySet', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$Let = F2(
+	function (a, b) {
+		return {$: 'Let', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$SingleOp = F2(
+	function (a, b) {
+		return {$: 'SingleOp', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$Unary = F2(
+	function (a, b) {
+		return {$: 'Unary', a: a, b: b};
+	});
+var $author$project$Compiler$CompileBuiltIn$buildUnaryRest = F2(
+	function (children, op) {
+		if (!children.b) {
+			return $author$project$Compiler$CompModel$Empty;
 		} else {
-			var thisinput = inputs.a;
-			var rest = inputs.b;
-			return (!index) ? A2(
-				$elm$core$List$cons,
-				inputFunc(thisinput),
-				rest) : A2(
-				$elm$core$List$cons,
-				thisinput,
-				A3($author$project$ModelHelpers$updateInputAtIndex, rest, index - 1, inputFunc));
+			if (!children.b.b) {
+				var arg = children.a;
+				return A2(
+					$author$project$Compiler$CompModel$getLit,
+					$author$project$Compiler$CompileBuiltIn$buildValue(arg),
+					'anchor');
+			} else {
+				var args = children;
+				return A2(
+					$author$project$Compiler$CompModel$Unary,
+					op,
+					A2(
+						$elm$core$List$map,
+						function (arg) {
+							return A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompileBuiltIn$buildValue(arg),
+								'anchor');
+						},
+						args));
+			}
 		}
 	});
-var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$Compiler$CompileBuiltIn$buildGeneralUnary = F3(
+	function (defaultValue, singleArgumentLead, expr) {
+		var _v0 = expr.children;
+		if (!_v0.b) {
+			return $author$project$Compiler$Song$makeLit(
+				$author$project$Compiler$CompModel$Lit(defaultValue));
+		} else {
+			if (!_v0.b.b) {
+				var arg = _v0.a;
+				if (singleArgumentLead === '') {
+					return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
+				} else {
+					var lead = singleArgumentLead;
+					return A2(
+						$author$project$Compiler$CompModel$Let,
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'tmp',
+								$author$project$Compiler$CompileBuiltIn$buildValue(arg))
+							]),
+						A2(
+							$author$project$Compiler$CompModel$CopySet,
+							$author$project$Compiler$CompModel$Lit('tmp'),
+							_List_fromArray(
+								[
+									_Utils_Tuple2(
+									'anchor',
+									A2(
+										$author$project$Compiler$CompModel$SingleOp,
+										lead,
+										A2(
+											$author$project$Compiler$CompModel$getLit,
+											$author$project$Compiler$CompModel$Lit('tmp'),
+											'anchor')))
+								])));
+				}
+			} else {
+				var arg = _v0.a;
+				var args = _v0.b;
+				return A2(
+					$author$project$Compiler$CompModel$Let,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'tmp',
+							$author$project$Compiler$CompileBuiltIn$buildValue(arg))
+						]),
+					A2(
+						$author$project$Compiler$CompModel$CopySet,
+						$author$project$Compiler$CompModel$Lit('tmp'),
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'anchor',
+								A2(
+									$author$project$Compiler$CompModel$Unary,
+									expr.functionName,
+									_List_fromArray(
+										[
+											A2(
+											$author$project$Compiler$CompModel$getLit,
+											$author$project$Compiler$CompModel$Lit('tmp'),
+											'anchor'),
+											A2($author$project$Compiler$CompileBuiltIn$buildUnaryRest, args, expr.functionName)
+										])))
+							])));
+			}
+		}
+	});
+var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
+	return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', '', expr);
+};
+var $author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault = F2(
+	function (_default, expr) {
+		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, _default, '', expr);
+	});
+var $author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead = F2(
+	function (lead, expr) {
+		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', lead, expr);
+	});
+var $author$project$BuiltIn$compareUnary = function (op) {
+	return A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		op,
+		A2(
+			$author$project$BuiltIn$Infinite,
+			_List_fromArray(
+				['leftComparable', 'rightComparable']),
+			'comparables'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary));
+};
+var $author$project$BuiltIn$compareUnaryOpList = A2(
+	$elm$core$List$map,
+	$author$project$BuiltIn$compareUnary,
+	_List_fromArray(
+		['>', '<', '>=', '<=', '==', '&&', '||']));
+var $author$project$BuiltIn$unaryList = _Utils_ap(
+	_List_fromArray(
+		[
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'+',
+			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('0'))),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'-',
+			A2(
+				$author$project$BuiltIn$Infinite,
+				_List_fromArray(
+					['num']),
+				'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead('-'))),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'/',
+			A2(
+				$author$project$BuiltIn$Infinite,
+				_List_fromArray(
+					['numerator']),
+				'denominators'),
+			$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary)),
+			A3(
+			$author$project$BuiltIn$BuiltInSpec,
+			'*',
+			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
+			$author$project$Compiler$CompModel$CompileExprFunction(
+				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('1')))
+		]),
+	$author$project$BuiltIn$compareUnaryOpList);
+var $author$project$BuiltIn$builtInFunctionList = _Utils_ap(
+	$author$project$BuiltIn$generalList,
+	_Utils_ap($author$project$BuiltIn$unaryList, $author$project$BuiltIn$javascriptFunctionList));
+var $author$project$BuiltIn$nameTuple = function (builtInList) {
+	return _Utils_Tuple2(builtInList.functionName, builtInList);
+};
+var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList(
+	A2($elm$core$List$map, $author$project$BuiltIn$nameTuple, $author$project$BuiltIn$builtInFunctionList));
+var $author$project$Utils$findBy = F2(
+	function (list, key) {
+		findBy:
+		while (true) {
+			if (!list.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var first = list.a;
+				var rest = list.b;
+				if (key(first)) {
+					return $elm$core$Maybe$Just(first);
+				} else {
+					var $temp$list = rest,
+						$temp$key = key;
+					list = $temp$list;
+					key = $temp$key;
+					continue findBy;
+				}
+			}
+		}
+	});
+var $author$project$Model$Hole = {$: 'Hole'};
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$ModelHelpers$fitInputsTo = F2(
+	function (inputs, mandatoryLength) {
+		return (_Utils_cmp(
+			$elm$core$List$length(inputs),
+			mandatoryLength) > 0) ? A2($elm$core$List$take, mandatoryLength, inputs) : ((_Utils_cmp(
+			$elm$core$List$length(inputs),
+			mandatoryLength) < 0) ? _Utils_ap(
+			inputs,
+			A2(
+				$elm$core$List$repeat,
+				mandatoryLength - $elm$core$List$length(inputs),
+				$author$project$Model$Hole)) : inputs);
+	});
+var $author$project$ModelHelpers$eliminateHoles = function (inputs) {
+	eliminateHoles:
+	while (true) {
+		if (!inputs.b) {
+			return _List_fromArray(
+				[$author$project$Model$Hole]);
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			if (input.$ === 'Hole') {
+				var $temp$inputs = rest;
+				inputs = $temp$inputs;
+				continue eliminateHoles;
+			} else {
+				return A2(
+					$elm$core$List$cons,
+					input,
+					$author$project$ModelHelpers$eliminateHoles(rest));
+			}
+		}
+	}
+};
+var $author$project$ModelHelpers$eliminateHolesAfter = F2(
+	function (inputs, mandatoryLength) {
+		eliminateHolesAfter:
+		while (true) {
+			if (!mandatoryLength) {
+				return $author$project$ModelHelpers$eliminateHoles(inputs);
+			} else {
+				var $temp$inputs = inputs,
+					$temp$mandatoryLength = mandatoryLength - 1;
+				inputs = $temp$inputs;
+				mandatoryLength = $temp$mandatoryLength;
+				continue eliminateHolesAfter;
+			}
+		}
+	});
+var $author$project$ModelHelpers$fixInfiniteInputs = F2(
+	function (inputs, mandatoryLength) {
+		return A2($author$project$ModelHelpers$eliminateHolesAfter, inputs, mandatoryLength);
+	});
+var $author$project$ModelHelpers$fixForArgList = F2(
+	function (call, argList) {
+		var inputs = call.inputs;
+		if (argList.$ === 'Infinite') {
+			var finite = argList.a;
+			return _Utils_update(
+				call,
+				{
+					inputs: A2(
+						$author$project$ModelHelpers$fixInfiniteInputs,
+						inputs,
+						$elm$core$List$length(finite))
+				});
+		} else {
+			var finite = argList.a;
+			return _Utils_update(
+				call,
+				{
+					inputs: A2(
+						$author$project$ModelHelpers$fitInputsTo,
+						inputs,
+						$elm$core$List$length(finite))
+				});
+		}
+	});
+var $author$project$ModelHelpers$funcToArgList = function (func) {
+	return $author$project$BuiltIn$Finite(
+		A2(
+			$elm$core$List$repeat,
+			$elm$core$List$length(func.args),
+			''));
+};
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -6431,6 +6785,43 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$ModelHelpers$fixInputsForFunc = F2(
+	function (onion, call) {
+		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Just') {
+			var builtInSpec = _v0.a;
+			return A2($author$project$ModelHelpers$fixForArgList, call, builtInSpec.argList);
+		} else {
+			var _v1 = A2(
+				$author$project$Utils$findBy,
+				onion,
+				function (func) {
+					return _Utils_eq(func.name, call.functionName);
+				});
+			if (_v1.$ === 'Just') {
+				var func = _v1.a;
+				return A2(
+					$author$project$ModelHelpers$fixForArgList,
+					call,
+					$author$project$ModelHelpers$funcToArgList(func));
+			} else {
+				return call;
+			}
+		}
+	});
+var $author$project$ModelHelpers$fixAllForFunc = F2(
+	function (onion, func) {
+		var calls = func.calls;
+		return _Utils_update(
+			func,
+			{
+				calls: A2(
+					$elm$core$List$map,
+					$author$project$ModelHelpers$fixInputsForFunc(onion),
+					calls)
+			});
+	});
+var $elm$core$Basics$ge = _Utils_ge;
 var $author$project$ModelHelpers$fixInputs = F4(
 	function (inputs, idToPos, currentIndex, validF) {
 		if (!inputs.b) {
@@ -6562,329 +6953,297 @@ var $author$project$ModelHelpers$fixInvalidInputs = function (func) {
 			calls: A4($author$project$ModelHelpers$fixInvalidInputsHelper, func.calls, idToPos, 0, validF)
 		});
 };
-var $author$project$BuiltIn$BuiltInSpec = F3(
-	function (functionName, argList, compileExprFunction) {
-		return {argList: argList, compileExprFunction: compileExprFunction, functionName: functionName};
-	});
-var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
-	return {$: 'CompileExprFunction', a: a};
-};
-var $author$project$BuiltIn$Finite = function (a) {
-	return {$: 'Finite', a: a};
-};
-var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
-var $author$project$Compiler$CompModel$If = F3(
-	function (a, b, c) {
-		return {$: 'If', a: a, b: b, c: c};
-	});
-var $author$project$Compiler$CompModel$Literal = function (a) {
-	return {$: 'Literal', a: a};
-};
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$Compiler$CompModel$CallFunction = F2(
-	function (a, b) {
-		return {$: 'CallFunction', a: a, b: b};
-	});
-var $author$project$Compiler$CompileToAST$getCacheValue = function (ast) {
+var $author$project$ModelHelpers$fixAllInvalidInputs = function (onion) {
 	return A2(
-		$author$project$Compiler$CompModel$CallFunction,
-		$author$project$Compiler$CompModel$Literal('getValueAt'),
-		_List_fromArray(
-			[
-				ast,
-				$author$project$Compiler$CompModel$Literal('PC')
-			]));
+		$elm$core$List$map,
+		$author$project$ModelHelpers$fixAllForFunc(onion),
+		A2($elm$core$List$map, $author$project$ModelHelpers$fixInvalidInputs, onion));
 };
-var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
-	switch (val.$) {
-		case 'StackIndex':
-			var i = val.a;
-			return $author$project$Compiler$CompileToAST$getCacheValue(
-				$author$project$Compiler$CompModel$Literal(
-					$elm$core$String$fromInt(i)));
-		case 'ConstV':
-			var c = val.a;
-			return $author$project$Compiler$CompModel$Literal(
-				$elm$core$String$fromFloat(c));
-		default:
-			var str = val.a;
-			return $author$project$Compiler$CompModel$Literal(str);
-	}
+var $author$project$ModelHelpers$updateFuncOnion = F3(
+	function (onion, funcId, update) {
+		if (!onion.b) {
+			return _List_Nil;
+		} else {
+			var func = onion.a;
+			var funcs = onion.b;
+			return _Utils_eq(func.id, funcId) ? A2(
+				$elm$core$List$cons,
+				update(func),
+				funcs) : A2(
+				$elm$core$List$cons,
+				func,
+				A3($author$project$ModelHelpers$updateFuncOnion, funcs, funcId, update));
+		}
+	});
+var $author$project$ModelHelpers$updateFunc = F3(
+	function (model, funcId, update) {
+		return _Utils_update(
+			model,
+			{
+				program: $author$project$ModelHelpers$fixAllInvalidInputs(
+					A3($author$project$ModelHelpers$updateFuncOnion, model.program, funcId, update))
+			});
+	});
+var $author$project$Update$blockClickModel = F4(
+	function (model, call, funcId, mouseOffset) {
+		var removed = A3(
+			$author$project$ModelHelpers$updateFunc,
+			model,
+			funcId,
+			function (func) {
+				return A2($author$project$ModelHelpers$removeCallUnsafe, func, call.id);
+			});
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: A3($author$project$Model$BlockSelected, funcId, call, mouseOffset)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				removed,
+				{mouseState: newMouse}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$blockNameClickModel = F4(
+	function (model, call, funcId, mouseOffset) {
+		return A4($author$project$Update$blockClickModel, model, call, funcId, mouseOffset);
+	});
+var $author$project$Model$NameSelected = function (a) {
+	return {$: 'NameSelected', a: a};
 };
-var $author$project$Compiler$CompileBuiltIn$buildIf = function (expr) {
-	var _v0 = expr.children;
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var cond = _v0.a;
-		var _v1 = _v0.b;
-		var thenValue = _v1.a;
-		var _v2 = _v1.b;
-		var elseValue = _v2.a;
+var $author$project$Model$SilentDomError = function (a) {
+	return {$: 'SilentDomError', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $elm$core$Task$attempt = F2(
+	function (resultToMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2(
+					$elm$core$Task$onError,
+					A2(
+						$elm$core$Basics$composeL,
+						A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+						$elm$core$Result$Err),
+					A2(
+						$elm$core$Task$andThen,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Task$succeed, resultToMessage),
+							$elm$core$Result$Ok),
+						task))));
+	});
+var $elm$browser$Browser$Dom$focus = _Browser_call('focus');
+var $author$project$Update$focusInputCommand = function (domId) {
+	return A2(
+		$elm$core$Task$attempt,
+		$author$project$Model$SilentDomError,
+		$elm$browser$Browser$Dom$focus(domId));
+};
+var $author$project$Update$nodeNameId = function (callid) {
+	return 'n' + $elm$core$String$fromInt(callid);
+};
+var $author$project$Update$blockNameHighlightModel = F2(
+	function (model, id) {
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$NameSelected(id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$nodeNameId(id)));
+	});
+var $author$project$ModelHelpers$updateCallIfMatchesId = F4(
+	function (call, callFunc, id, onion) {
+		return _Utils_eq(call.id, id) ? A2(
+			$author$project$ModelHelpers$fixInputsForFunc,
+			onion,
+			callFunc(call)) : call;
+	});
+var $author$project$ModelHelpers$updateCallFunc = F4(
+	function (func, id, callFunc, onion) {
+		if (!func.b) {
+			return _List_Nil;
+		} else {
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A4($author$project$ModelHelpers$updateCallIfMatchesId, call, callFunc, id, onion),
+				A4($author$project$ModelHelpers$updateCallFunc, calls, id, callFunc, onion));
+		}
+	});
+var $author$project$ModelHelpers$updateCallOnion = F3(
+	function (onion, id, callFunc) {
+		if (!onion.b) {
+			return _List_Nil;
+		} else {
+			var func = onion.a;
+			var funcs = onion.b;
+			return A2(
+				$elm$core$List$cons,
+				_Utils_update(
+					func,
+					{
+						calls: A4($author$project$ModelHelpers$updateCallFunc, func.calls, id, callFunc, onion)
+					}),
+				A3($author$project$ModelHelpers$updateCallOnion, funcs, id, callFunc));
+		}
+	});
+var $author$project$ModelHelpers$updateCall = F3(
+	function (model, id, callFunc) {
+		var oldMouse = model.mouseState;
+		var newOnion = A3($author$project$ModelHelpers$updateCallOnion, model.program, id, callFunc);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{mouseSelection: $author$project$Model$NoneSelected});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newOnion}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$blockNameUpdateModel = F3(
+	function (model, id, str) {
 		return A3(
-			$author$project$Compiler$CompModel$If,
-			$author$project$Compiler$CompileBuiltIn$buildValue(cond),
-			$author$project$Compiler$CompileBuiltIn$buildValue(thenValue),
-			$author$project$Compiler$CompileBuiltIn$buildValue(elseValue));
+			$author$project$ModelHelpers$updateCall,
+			model,
+			id,
+			function (call) {
+				return _Utils_update(
+					call,
+					{functionName: str});
+			});
+	});
+var $elm$url$Url$Builder$toQueryPair = function (_v0) {
+	var key = _v0.a;
+	var value = _v0.b;
+	return key + ('=' + value);
+};
+var $elm$url$Url$Builder$toQuery = function (parameters) {
+	if (!parameters.b) {
+		return '';
 	} else {
-		return $author$project$Compiler$CompModel$Empty;
+		return '?' + A2(
+			$elm$core$String$join,
+			'&',
+			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
 	}
 };
-var $author$project$Compiler$CompModel$Begin = function (a) {
-	return {$: 'Begin', a: a};
-};
-var $author$project$Compiler$CompModel$NotesPush = function (a) {
-	return {$: 'NotesPush', a: a};
-};
-var $author$project$Compiler$CompModel$Unary = F2(
-	function (a, b) {
-		return {$: 'Unary', a: a, b: b};
+var $elm$url$Url$Builder$absolute = F2(
+	function (pathSegments, parameters) {
+		return '/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters));
 	});
-var $author$project$Compiler$CompileBuiltIn$buildWave = function (expr) {
-	var _v0 = expr.children;
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var time = _v0.a;
-		var _v1 = _v0.b;
-		var frequency = _v1.a;
-		var _v2 = _v1.b;
-		var duration = _v2.a;
-		var timeAST = $author$project$Compiler$CompileBuiltIn$buildValue(time);
-		var frequencyAST = $author$project$Compiler$CompileBuiltIn$buildValue(frequency);
-		var durationAST = $author$project$Compiler$CompileBuiltIn$buildValue(duration);
-		return $author$project$Compiler$CompModel$Begin(
-			_List_fromArray(
-				[
-					A3(
-					$author$project$Compiler$CompModel$If,
+var $elm$core$String$append = _String_append;
+var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var $author$project$Update$changeUrl = F3(
+	function (model, newurl, newPage) {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{currentPage: newPage, url: newurl}),
+			A2(
+				$elm$browser$Browser$Navigation$pushUrl,
+				model.urlkey,
+				$elm$url$Url$toString(newurl)));
+	});
+var $author$project$Update$changeByName = F2(
+	function (model, pageName) {
+		var newurl = function () {
+			var _v0 = $elm$url$Url$fromString(
+				A2(
+					$elm$core$String$append,
+					model.indexurl,
 					A2(
-						$author$project$Compiler$CompModel$Unary,
-						'&&',
+						$elm$url$Url$Builder$absolute,
 						_List_fromArray(
-							[
-								A2(
-								$author$project$Compiler$CompModel$Unary,
-								'>=',
-								_List_fromArray(
-									[
-										$author$project$Compiler$CompModel$Literal('time'),
-										timeAST
-									])),
-								A2(
-								$author$project$Compiler$CompModel$Unary,
-								'<',
-								_List_fromArray(
-									[
-										$author$project$Compiler$CompModel$Literal('time'),
-										A2(
-										$author$project$Compiler$CompModel$Unary,
-										'+',
-										_List_fromArray(
-											[timeAST, durationAST]))
-									]))
-							])),
-					$author$project$Compiler$CompModel$NotesPush(frequencyAST),
-					$author$project$Compiler$CompModel$Empty),
-					A2(
-					$author$project$Compiler$CompModel$Unary,
-					'+',
+							[pageName]),
+						_List_Nil)));
+			if (_v0.$ === 'Nothing') {
+				return model.url;
+			} else {
+				var url = _v0.a;
+				return url;
+			}
+		}();
+		return A3($author$project$Update$changeUrl, model, newurl, pageName);
+	});
+var $author$project$Update$addFuncOutput = F2(
+	function (model, id) {
+		return A3(
+			$author$project$ModelHelpers$updateFunc,
+			model,
+			id,
+			function (func) {
+				var newInputs = _Utils_ap(
+					func.args,
 					_List_fromArray(
-						[timeAST, durationAST]))
-				]));
-	} else {
-		return $author$project$Compiler$CompModel$Empty;
-	}
-};
-var $author$project$BuiltIn$generalList = _List_fromArray(
-	[
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'sine',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['time', 'frequency', 'duration'])),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave)),
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'if',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['condition', 'thenValue', 'elseValue'])),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildIf))
-	]);
-var $author$project$Compiler$CompileBuiltIn$buildJavascriptCall = F2(
-	function (funcName, expr) {
-		return A2(
-			$author$project$Compiler$CompModel$CallFunction,
-			$author$project$Compiler$CompModel$Literal(funcName),
-			A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children));
+						[$author$project$Model$Hole]));
+				return _Utils_update(
+					func,
+					{args: newInputs});
+			});
 	});
-var $author$project$BuiltIn$javascriptFunctionList = _List_fromArray(
-	[
-		A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		'mod',
-		$author$project$BuiltIn$Finite(
-			_List_fromArray(
-				['numerator', 'divisor'])),
-		$author$project$Compiler$CompModel$CompileExprFunction(
-			$author$project$Compiler$CompileBuiltIn$buildJavascriptCall('mathMod')))
-	]);
-var $author$project$BuiltIn$Infinite = F2(
+var $author$project$Model$FunctionOutputSelected = F2(
 	function (a, b) {
-		return {$: 'Infinite', a: a, b: b};
+		return {$: 'FunctionOutputSelected', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$SingleOp = F2(
-	function (a, b) {
-		return {$: 'SingleOp', a: a, b: b};
+var $author$project$Update$headerNodeId = F2(
+	function (functionid, index) {
+		return 'h' + ($elm$core$String$fromInt(functionid) + ('-' + $elm$core$String$fromInt(index)));
 	});
-var $author$project$Compiler$CompileBuiltIn$buildUnaryMultiple = F2(
-	function (children, op) {
-		if (!children.b) {
-			return $author$project$Compiler$CompModel$Empty;
-		} else {
-			if (!children.b.b) {
-				var arg = children.a;
-				return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
-			} else {
-				var args = children;
-				return A2(
-					$author$project$Compiler$CompModel$Unary,
-					op,
-					A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, args));
-			}
-		}
+var $author$project$Update$headerHighlightModel = F3(
+	function (model, id, index) {
+		var oldMouse = model.mouseState;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: A2($author$project$Model$FunctionOutputSelected, id, index)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse}),
+			$author$project$Update$focusInputCommand(
+				A2($author$project$Update$headerNodeId, id, index)));
 	});
-var $author$project$Compiler$CompileBuiltIn$buildGeneralUnary = F3(
-	function (defaultValue, singleArgumentLead, expr) {
-		var _v0 = expr.children;
-		if (!_v0.b) {
-			return $author$project$Compiler$CompModel$Literal(defaultValue);
-		} else {
-			if (!_v0.b.b) {
-				var arg = _v0.a;
-				if (singleArgumentLead === '') {
-					return $author$project$Compiler$CompileBuiltIn$buildValue(arg);
-				} else {
-					var lead = singleArgumentLead;
-					return A2(
-						$author$project$Compiler$CompModel$SingleOp,
-						lead,
-						$author$project$Compiler$CompileBuiltIn$buildValue(arg));
-				}
-			} else {
-				return A2($author$project$Compiler$CompileBuiltIn$buildUnaryMultiple, expr.children, expr.functionName);
-			}
-		}
+var $author$project$Update$headerAddOutputModel = F3(
+	function (model, id, index) {
+		var added = A2($author$project$Update$addFuncOutput, model, id);
+		return A3($author$project$Update$headerHighlightModel, added, id, index);
 	});
-var $author$project$Compiler$CompileBuiltIn$buildUnary = function (expr) {
-	return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', '', expr);
+var $author$project$Model$FunctionArg = function (a) {
+	return {$: 'FunctionArg', a: a};
 };
-var $author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault = F2(
-	function (_default, expr) {
-		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, _default, '', expr);
-	});
-var $author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead = F2(
-	function (lead, expr) {
-		return A3($author$project$Compiler$CompileBuiltIn$buildGeneralUnary, '0', lead, expr);
-	});
-var $author$project$BuiltIn$compareUnary = function (op) {
-	return A3(
-		$author$project$BuiltIn$BuiltInSpec,
-		op,
-		A2(
-			$author$project$BuiltIn$Infinite,
-			_List_fromArray(
-				['leftComparable', 'rightComparable']),
-			'comparables'),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary));
+var $author$project$Model$Output = function (a) {
+	return {$: 'Output', a: a};
 };
-var $author$project$BuiltIn$compareUnaryOpList = A2(
-	$elm$core$List$map,
-	$author$project$BuiltIn$compareUnary,
-	_List_fromArray(
-		['>', '<', '>=', '<=', '==', '&&', '||']));
-var $author$project$BuiltIn$unaryList = _Utils_ap(
-	_List_fromArray(
-		[
-			A3(
-			$author$project$BuiltIn$BuiltInSpec,
-			'+',
-			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
-			$author$project$Compiler$CompModel$CompileExprFunction(
-				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('0'))),
-			A3(
-			$author$project$BuiltIn$BuiltInSpec,
-			'-',
-			A2(
-				$author$project$BuiltIn$Infinite,
-				_List_fromArray(
-					['num']),
-				'nums'),
-			$author$project$Compiler$CompModel$CompileExprFunction(
-				$author$project$Compiler$CompileBuiltIn$buildUnaryWithSingleLead('-'))),
-			A3(
-			$author$project$BuiltIn$BuiltInSpec,
-			'/',
-			A2(
-				$author$project$BuiltIn$Infinite,
-				_List_fromArray(
-					['numerator']),
-				'denominators'),
-			$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildUnary)),
-			A3(
-			$author$project$BuiltIn$BuiltInSpec,
-			'*',
-			A2($author$project$BuiltIn$Infinite, _List_Nil, 'nums'),
-			$author$project$Compiler$CompModel$CompileExprFunction(
-				$author$project$Compiler$CompileBuiltIn$buildUnaryWithDefault('1')))
-		]),
-	$author$project$BuiltIn$compareUnaryOpList);
-var $author$project$BuiltIn$builtInFunctionList = _Utils_ap(
-	$author$project$BuiltIn$generalList,
-	_Utils_ap($author$project$BuiltIn$unaryList, $author$project$BuiltIn$javascriptFunctionList));
-var $author$project$BuiltIn$nameTuple = function (builtInList) {
-	return _Utils_Tuple2(builtInList.functionName, builtInList);
-};
-var $author$project$BuiltIn$builtInFunctions = $elm$core$Dict$fromList(
-	A2($elm$core$List$map, $author$project$BuiltIn$nameTuple, $author$project$BuiltIn$builtInFunctionList));
-var $author$project$ModelHelpers$eliminateHoles = function (inputs) {
-	eliminateHoles:
-	while (true) {
+var $author$project$ModelHelpers$updateInputAtIndex = F3(
+	function (inputs, index, inputFunc) {
 		if (!inputs.b) {
-			return _List_fromArray(
-				[$author$project$Model$Hole]);
+			return _List_Nil;
 		} else {
-			var input = inputs.a;
+			var thisinput = inputs.a;
 			var rest = inputs.b;
-			if (input.$ === 'Hole') {
-				var $temp$inputs = rest;
-				inputs = $temp$inputs;
-				continue eliminateHoles;
-			} else {
-				return A2(
-					$elm$core$List$cons,
-					input,
-					$author$project$ModelHelpers$eliminateHoles(rest));
-			}
+			return (!index) ? A2(
+				$elm$core$List$cons,
+				inputFunc(thisinput),
+				rest) : A2(
+				$elm$core$List$cons,
+				thisinput,
+				A3($author$project$ModelHelpers$updateInputAtIndex, rest, index - 1, inputFunc));
 		}
-	}
-};
-var $author$project$ModelHelpers$eliminateHolesAfter = F2(
-	function (inputs, mandatoryLength) {
-		eliminateHolesAfter:
-		while (true) {
-			if (!mandatoryLength) {
-				return $author$project$ModelHelpers$eliminateHoles(inputs);
-			} else {
-				var $temp$inputs = inputs,
-					$temp$mandatoryLength = mandatoryLength - 1;
-				inputs = $temp$inputs;
-				mandatoryLength = $temp$mandatoryLength;
-				continue eliminateHolesAfter;
-			}
-		}
-	});
-var $author$project$ModelHelpers$fixInfiniteInputs = F2(
-	function (inputs, mandatoryLength) {
-		return A2($author$project$ModelHelpers$eliminateHolesAfter, inputs, mandatoryLength);
 	});
 var $author$project$ModelHelpers$fixInputsForInfiniteArguments = F2(
 	function (inputs, call) {
@@ -7024,9 +7383,10 @@ var $author$project$Update$headerAddOutputRightClickModel = F3(
 		var added = A2($author$project$Update$addFuncOutput, model, id);
 		return A3($author$project$Update$headerOutputRightClickModel, added, id, index);
 	});
-var $author$project$Model$FunctionSelected = function (a) {
-	return {$: 'FunctionSelected', a: a};
-};
+var $author$project$Model$FunctionSelected = F2(
+	function (a, b) {
+		return {$: 'FunctionSelected', a: a, b: b};
+	});
 var $author$project$ModelHelpers$removeFunc = F2(
 	function (onion, funcId) {
 		if (!onion.b) {
@@ -7040,20 +7400,24 @@ var $author$project$ModelHelpers$removeFunc = F2(
 				A2($author$project$ModelHelpers$removeFunc, funcs, funcId));
 		}
 	});
-var $author$project$Update$headerClickModel = F2(
-	function (model, func) {
+var $author$project$Update$headerClickModel = F3(
+	function (model, func, mouseOffset) {
 		var oldMouse = model.mouseState;
 		var newProgram = A2($author$project$ModelHelpers$removeFunc, model.program, func.id);
 		var newMouse = _Utils_update(
 			oldMouse,
 			{
-				mouseSelection: $author$project$Model$FunctionSelected(func)
+				mouseSelection: A2($author$project$Model$FunctionSelected, func, mouseOffset)
 			});
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
 				{mouseState: newMouse, program: newProgram}),
 			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$headerNameClickModel = F3(
+	function (model, func, mouseOffset) {
+		return A3($author$project$Update$headerClickModel, model, func, mouseOffset);
 	});
 var $author$project$Model$FunctionNameSelected = function (a) {
 	return {$: 'FunctionNameSelected', a: a};
@@ -7242,16 +7606,11 @@ var $author$project$Update$keyboardUpdate = F2(
 		}
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $author$project$ModelHelpers$fixAllInvalidInputs = function (onion) {
-	return A2($elm$core$List$map, $author$project$ModelHelpers$fixInvalidInputs, onion);
-};
 var $author$project$ViewVariables$functionXSpacing = 25;
 var $author$project$ViewVariables$toolbarWidth = 100;
 var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$toolbarWidth + $author$project$ViewVariables$functionXSpacing;
 var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
 var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
-var $author$project$ViewVariables$blockHeight = 50;
-var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
 var $author$project$ViewStructure$ViewStructure = function (blockPositions) {
 	return function (lineRouting) {
 		return function (sortedFunc) {
@@ -7319,6 +7678,7 @@ var $author$project$ViewStructure$fixMoveInfo = F3(
 					}));
 		}
 	});
+var $author$project$ViewVariables$blockHeight = 50;
 var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
 var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
 var $author$project$ViewStructure$countOutputsBefore = F2(
@@ -7477,7 +7837,7 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
-	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, true, false);
+	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
 };
 var $author$project$ViewStructure$getAllBlockPositions = F3(
 	function (maybeMoveInfo, func, currentY) {
@@ -7553,6 +7913,7 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 				A3($elm$core$Dict$insert, topCall.id, blockPos, iteration.b));
 		}
 	});
+var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
 var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
 	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
 };
@@ -8299,7 +8660,7 @@ var $author$project$LineRouting$byOutput = F2(
 				var pos = _v1.a;
 				return _Utils_Tuple2(-pos, -callPos);
 			} else {
-				return _Utils_Tuple2(99999 + callPos, 0);
+				return _Utils_Tuple2(-element.outputId, -callPos);
 			}
 		} else {
 			return _Utils_Tuple2(1, 1);
@@ -8505,13 +8866,13 @@ var $author$project$ViewStructure$mouseToSvgCoordinates = F5(
 			((((mouseState.mouseX + mouseState.scrollX) * A2($author$project$ViewVariables$viewportWidth, svgScreenWidth, svgScreenHeight)) / svgScreenWidth) | 0) - xoffset,
 			(((((mouseState.mouseY + mouseState.scrollY) - $author$project$ViewVariables$svgYpos) * $author$project$ViewVariables$viewportHeight) / svgScreenHeight) | 0) - yoffset);
 	});
-var $author$project$ViewPositions$selectedFunc = F4(
-	function (mouseState, func, svgWindowWidth, svgWindowHeight) {
+var $author$project$ViewPositions$selectedFunc = F5(
+	function (mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset) {
 		var view = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, false);
 		var oldPos = view.headerPos;
 		var mouseCoordinates = A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgWindowWidth, svgWindowHeight, 0, 0);
-		var xpos = mouseCoordinates.a - ((view.funcWidth / 2) | 0);
-		var ypos = mouseCoordinates.b - (($author$project$ViewVariables$functionHeaderHeight / 2) | 0);
+		var xpos = mouseCoordinates.a - mouseOffset.a;
+		var ypos = mouseCoordinates.b - mouseOffset.b;
 		var newPos = _Utils_update(
 			oldPos,
 			{xpos: xpos, ypos: ypos});
@@ -8524,8 +8885,9 @@ var $author$project$ViewPositions$getSelected = F3(
 		var _v0 = mouseState.mouseSelection;
 		if (_v0.$ === 'FunctionSelected') {
 			var func = _v0.a;
+			var mouseOffset = _v0.b;
 			return $elm$core$Maybe$Just(
-				A4($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight));
+				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
@@ -8540,11 +8902,12 @@ var $author$project$ViewStructure$maybeMovedInfo = F3(
 		if (_v0.$ === 'BlockSelected') {
 			var funcId = _v0.a;
 			var call = _v0.b;
+			var mouseOffset = _v0.c;
 			return $elm$core$Maybe$Just(
 				A2(
 					$author$project$ViewStructure$MovedBlockInfo,
 					call,
-					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, 0, 0)));
+					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
@@ -8654,42 +9017,50 @@ var $author$project$Update$programDropped = function (model) {
 		},
 		viewStructures);
 };
-var $author$project$Update$modelBlockDropped = function (model) {
-	var oldMouse = model.mouseState;
-	var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
-		$author$project$Update$programDropped(model));
-	var newMouse = _Utils_update(
-		oldMouse,
-		{mouseSelection: $author$project$Model$NoneSelected});
-	return _Utils_Tuple2(
-		_Utils_update(
-			model,
-			{mouseState: newMouse, program: newProgram}),
-		$elm$core$Platform$Cmd$none);
-};
-var $author$project$Update$modelFunctionDropped = F2(
-	function (model, id) {
+var $author$project$Update$modelBlockDropped = F2(
+	function (model, call) {
 		var oldMouse = model.mouseState;
-		var newProgram = $author$project$Update$programDropped(model);
+		var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
+			$author$project$Update$programDropped(model));
 		var newMouse = _Utils_update(
 			oldMouse,
-			{mouseSelection: $author$project$Model$NoneSelected});
+			{
+				mouseSelection: $author$project$Model$NameSelected(call.id)
+			});
 		return _Utils_Tuple2(
 			_Utils_update(
 				model,
 				{mouseState: newMouse, program: newProgram}),
-			$elm$core$Platform$Cmd$none);
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$nodeNameId(call.id)));
+	});
+var $author$project$Update$modelFunctionDropped = F2(
+	function (model, func) {
+		var oldMouse = model.mouseState;
+		var newProgram = $author$project$Update$programDropped(model);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$FunctionNameSelected(func.id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$headerNameId(func.id)));
 	});
 var $author$project$Update$modelMouseRelease = function (model) {
 	var _v0 = model.mouseState.mouseSelection;
 	switch (_v0.$) {
 		case 'BlockSelected':
-			var call = _v0.a;
-			var funcId = _v0.b;
-			return $author$project$Update$modelBlockDropped(model);
+			var funcId = _v0.a;
+			var call = _v0.b;
+			return A2($author$project$Update$modelBlockDropped, model, call);
 		case 'FunctionSelected':
-			var id = _v0.a;
-			return A2($author$project$Update$modelFunctionDropped, model, id);
+			var func = _v0.a;
+			var mouseOffset = _v0.b;
+			return A2($author$project$Update$modelFunctionDropped, model, func);
 		default:
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	}
@@ -8755,6 +9126,13 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Compiler$CompModel$Begin = function (a) {
+	return {$: 'Begin', a: a};
+};
+var $author$project$Compiler$CompModel$VarDeclaration = F2(
+	function (a, b) {
+		return {$: 'VarDeclaration', a: a, b: b};
+	});
 var $author$project$Utils$splitLast = function (func) {
 	if (!func.b) {
 		return $elm$core$Maybe$Nothing;
@@ -8785,15 +9163,35 @@ var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgu
 	switch (astArgument.$) {
 		case 'Empty':
 			return '';
-		case 'Literal':
+		case 'Lit':
 			var str = astArgument.a;
 			return str;
+		case 'Object':
+			var fields = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptObject(fields);
+		case 'CopySet':
+			var object = astArgument.a;
+			var fields = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptCopySet, object, fields);
+		case 'Get':
+			var object = astArgument.a;
+			var field = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptGet, object, field);
+		case 'Set':
+			var object = astArgument.a;
+			var field = astArgument.b;
+			var value = astArgument.c;
+			return A3($author$project$Compiler$ASTToJavascript$javascriptSet, object, field, value);
+		case 'Array':
+			var elements = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptArray(elements);
 		case 'Begin':
 			var commands = astArgument.a;
 			return $author$project$Compiler$ASTToJavascript$javascriptBegin(commands);
-		case 'BeginThunk':
-			var commands = astArgument.a;
-			return $author$project$Compiler$ASTToJavascript$javascriptBeginThunk(commands);
+		case 'Let':
+			var vars = astArgument.a;
+			var body = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptLet, vars, body);
 		case 'CallFunction':
 			var funcName = astArgument.a;
 			var args = astArgument.b;
@@ -8842,8 +9240,6 @@ var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgu
 						'=',
 						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
 					]));
-		case 'CachePushNull':
-			return 'cache.push(null)';
 		case 'CachePush':
 			var ast = astArgument.a;
 			return 'cache.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
@@ -8861,26 +9257,9 @@ var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgu
 						' = ',
 						$author$project$Compiler$ASTToJavascript$aSTToJavascript(ast)
 					]));
-		case 'NotesPush':
-			var frequency = astArgument.a;
-			return A2(
-				$elm$core$String$join,
-				'',
-				_List_fromArray(
-					[
-						'notes.push({frequency:',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(frequency),
-						'})'
-					]));
-		case 'FunctionsPush':
-			var ast = astArgument.a;
-			return 'functions.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
 		case 'CacheRef':
 			var index = astArgument.a;
 			return 'cache[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
-		case 'FunctionRef':
-			var index = astArgument.a;
-			return 'functions[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
 		case 'If':
 			var cond = astArgument.a;
 			var thenCase = astArgument.b;
@@ -8898,6 +9277,12 @@ var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgu
 			var arg = astArgument.b;
 			return '(' + (op + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(arg) + ')'));
 	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptArray = function (elements) {
+	return '[' + (A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, elements)) + ']');
 };
 var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (commands) {
 	var _v1 = $author$project$Utils$splitLast(commands);
@@ -8917,10 +9302,13 @@ var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (command
 					A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, beforeFinal)),
 					';',
 					function () {
-					if (_final.$ === 'VarSet') {
-						return '';
-					} else {
-						return 'return ';
+					switch (_final.$) {
+						case 'VarSet':
+							return '';
+						case 'VarDeclaration':
+							return '';
+						default:
+							return 'return ';
 					}
 				}(),
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_final),
@@ -8930,26 +9318,37 @@ var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (command
 		return '';
 	}
 };
-var $author$project$Compiler$ASTToJavascript$javascriptBeginThunk = function (commands) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		_List_fromArray(
-			[
-				'(function(){',
-				A2(
-				$elm$core$String$join,
-				';',
-				A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, commands)),
-				'}())'
-			]));
-};
 var $author$project$Compiler$ASTToJavascript$javascriptCommas = function (args) {
 	return A2(
 		$elm$core$String$join,
 		',',
 		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args));
 };
+var $author$project$Compiler$ASTToJavascript$javascriptCopyObject = function (objectAst) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			[
+				'Object.assign({},',
+				$author$project$Compiler$ASTToJavascript$aSTToJavascript(objectAst),
+				')'
+			]));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptCopySet = F2(
+	function (object, fields) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'Object.assign(',
+					$author$project$Compiler$ASTToJavascript$javascriptCopyObject(object),
+					',',
+					$author$project$Compiler$ASTToJavascript$javascriptObject(fields),
+					')'
+				]));
+	});
 var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase) {
 	var _v0 = $author$project$Compiler$ASTToJavascript$aSTToJavascript(elseCase);
 	if (_v0 === '') {
@@ -8958,6 +9357,16 @@ var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase
 		var str = _v0;
 		return 'else { return ' + (str + '}');
 	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptField = function (field) {
+	return A2(
+		$elm$core$String$join,
+		':',
+		_List_fromArray(
+			[
+				field.a,
+				$author$project$Compiler$ASTToJavascript$aSTToJavascript(field.b)
+			]));
 };
 var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
 	function (_var, check, increment, body) {
@@ -8992,6 +9401,17 @@ var $author$project$Compiler$ASTToJavascript$javascriptFunction = F2(
 					'}'
 				]));
 	});
+var $author$project$Compiler$ASTToJavascript$javascriptGet = F2(
+	function (object, field) {
+		return A2(
+			$elm$core$String$join,
+			'.',
+			_List_fromArray(
+				[
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field)
+				]));
+	});
 var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
 	function (bool, thenCase, elseCase) {
 		return A2(
@@ -9009,133 +9429,116 @@ var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
 					'}())'
 				]));
 	});
+var $author$project$Compiler$ASTToJavascript$javascriptLet = F2(
+	function (vars, body) {
+		return $author$project$Compiler$ASTToJavascript$aSTToJavascript(
+			$author$project$Compiler$CompModel$Begin(
+				_Utils_ap(
+					A2(
+						$elm$core$List$map,
+						function (_var) {
+							return A2(
+								$author$project$Compiler$CompModel$VarDeclaration,
+								$author$project$Compiler$CompModel$Lit(_var.a),
+								_var.b);
+						},
+						vars),
+					_List_fromArray(
+						[body]))));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptObject = function (fields) {
+	return '{' + (A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$javascriptField, fields)) + '}');
+};
+var $author$project$Compiler$ASTToJavascript$javascriptSet = F3(
+	function (object, field, value) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
+					'.',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field),
+					' = ',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(value)
+				]));
+	});
 var $author$project$Compiler$CompModel$CacheRef = function (a) {
 	return {$: 'CacheRef', a: a};
-};
-var $author$project$Compiler$CompModel$Function = F2(
-	function (a, b) {
-		return {$: 'Function', a: a, b: b};
-	});
-var $author$project$Compiler$CompModel$VarDeclaration = F2(
-	function (a, b) {
-		return {$: 'VarDeclaration', a: a, b: b};
-	});
-var $author$project$Compiler$CompModel$VarSet = F2(
-	function (a, b) {
-		return {$: 'VarSet', a: a, b: b};
-	});
-var $author$project$Compiler$CompileToAST$cacheIsNull = function (ast) {
-	return A2(
-		$author$project$Compiler$CompModel$Unary,
-		'==',
-		_List_fromArray(
-			[
-				$author$project$Compiler$CompModel$Literal('null'),
-				$author$project$Compiler$CompModel$CacheRef(ast)
-			]));
 };
 var $author$project$Compiler$CompModel$CacheUpdate = F2(
 	function (a, b) {
 		return {$: 'CacheUpdate', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$FunctionRef = function (a) {
-	return {$: 'FunctionRef', a: a};
-};
-var $author$project$Compiler$CompileToAST$updateCache = F2(
-	function (cacheIndex, localIndex) {
-		return A2(
-			$author$project$Compiler$CompModel$CacheUpdate,
-			cacheIndex,
-			A2(
-				$author$project$Compiler$CompModel$CallFunction,
-				$author$project$Compiler$CompModel$FunctionRef(localIndex),
-				_List_Nil));
+var $author$project$Compiler$CompModel$Function = F2(
+	function (a, b) {
+		return {$: 'Function', a: a, b: b};
 	});
-var $author$project$Compiler$CompileToAST$getValueFunctionAST = A2(
+var $author$project$Compiler$CompileFunction$getValueFunctionAST = A2(
 	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Literal('getValueAt'),
+	$author$project$Compiler$CompModel$Lit('getValueAt'),
 	A2(
 		$author$project$Compiler$CompModel$Function,
 		_List_fromArray(
-			['cacheILocal', 'PC']),
-		$author$project$Compiler$CompModel$Begin(
+			['cache', 'cacheI']),
+		A2(
+			$author$project$Compiler$CompModel$Let,
 			_List_fromArray(
 				[
+					_Utils_Tuple2(
+					'val',
 					A2(
-					$author$project$Compiler$CompModel$VarDeclaration,
-					$author$project$Compiler$CompModel$Literal('res'),
-					$author$project$Compiler$CompModel$Literal('null')),
-					A2(
-					$author$project$Compiler$CompModel$VarDeclaration,
-					$author$project$Compiler$CompModel$Literal('cacheI'),
-					A2(
-						$author$project$Compiler$CompModel$Unary,
-						'+',
-						_List_fromArray(
-							[
-								$author$project$Compiler$CompModel$Literal('cacheILocal'),
-								$author$project$Compiler$CompModel$Literal('PC')
-							]))),
-					A3(
-					$author$project$Compiler$CompModel$If,
-					$author$project$Compiler$CompileToAST$cacheIsNull(
-						$author$project$Compiler$CompModel$Literal('cacheI')),
-					$author$project$Compiler$CompModel$Begin(
-						_List_fromArray(
-							[
-								A2(
-								$author$project$Compiler$CompileToAST$updateCache,
-								$author$project$Compiler$CompModel$Literal('cacheI'),
-								$author$project$Compiler$CompModel$Literal('cacheILocal')),
-								A2(
-								$author$project$Compiler$CompModel$VarSet,
-								$author$project$Compiler$CompModel$Literal('res'),
-								$author$project$Compiler$CompModel$CacheRef(
-									$author$project$Compiler$CompModel$Literal('cacheI')))
-							])),
-					A2(
-						$author$project$Compiler$CompModel$VarSet,
-						$author$project$Compiler$CompModel$Literal('res'),
+						$author$project$Compiler$CompModel$CallFunction,
 						$author$project$Compiler$CompModel$CacheRef(
-							$author$project$Compiler$CompModel$Literal('cacheI')))),
-					$author$project$Compiler$CompModel$Literal('res')
-				]))));
+							$author$project$Compiler$CompModel$Lit('cacheI')),
+						_List_Nil))
+				]),
+			$author$project$Compiler$CompModel$Begin(
+				_List_fromArray(
+					[
+						A2(
+						$author$project$Compiler$CompModel$CacheUpdate,
+						$author$project$Compiler$CompModel$Lit('cacheI'),
+						A2(
+							$author$project$Compiler$CompModel$Function,
+							_List_Nil,
+							$author$project$Compiler$CompModel$Lit('val'))),
+						$author$project$Compiler$CompModel$Lit('val')
+					])))));
+var $author$project$Compiler$CompModel$Object = function (a) {
+	return {$: 'Object', a: a};
+};
 var $author$project$Compiler$CompileToAST$globals = _List_fromArray(
 	[
 		A2(
 		$author$project$Compiler$CompModel$VarDeclaration,
-		$author$project$Compiler$CompModel$Literal('startTime'),
-		$author$project$Compiler$CompModel$Literal('getTime()')),
+		$author$project$Compiler$CompModel$Lit('startTime'),
+		$author$project$Compiler$CompModel$Lit('getTime()')),
 		A2(
 		$author$project$Compiler$CompModel$VarDeclaration,
-		$author$project$Compiler$CompModel$Literal('functions'),
-		$author$project$Compiler$CompModel$Literal('[]'))
+		$author$project$Compiler$CompModel$Lit('functions'),
+		$author$project$Compiler$CompModel$Object(_List_Nil))
 	]);
+var $author$project$Compiler$CompModel$VarSet = F2(
+	function (a, b) {
+		return {$: 'VarSet', a: a, b: b};
+	});
 var $author$project$Compiler$CompileToAST$initialVariables = _List_fromArray(
 	[
 		A2(
 		$author$project$Compiler$CompModel$VarSet,
-		$author$project$Compiler$CompModel$Literal('cache'),
-		$author$project$Compiler$CompModel$Literal('[]')),
-		A2(
-		$author$project$Compiler$CompModel$VarSet,
-		$author$project$Compiler$CompModel$Literal('notes'),
-		$author$project$Compiler$CompModel$Literal('[]')),
-		A2(
-		$author$project$Compiler$CompModel$VarSet,
-		$author$project$Compiler$CompModel$Literal('time'),
+		$author$project$Compiler$CompModel$Lit('time'),
 		A2(
 			$author$project$Compiler$CompModel$Unary,
 			'-',
 			_List_fromArray(
 				[
-					$author$project$Compiler$CompModel$Literal('getTime()'),
-					$author$project$Compiler$CompModel$Literal('startTime')
-				]))),
-		A2(
-		$author$project$Compiler$CompModel$VarSet,
-		$author$project$Compiler$CompModel$Literal('PC'),
-		$author$project$Compiler$CompModel$Literal('0'))
+					$author$project$Compiler$CompModel$Lit('getTime()'),
+					$author$project$Compiler$CompModel$Lit('startTime')
+				])))
 	]);
 var $author$project$Compiler$CompileToAST$varSetToVarDec = function (ast) {
 	if (ast.$ === 'VarSet') {
@@ -9145,80 +9548,191 @@ var $author$project$Compiler$CompileToAST$varSetToVarDec = function (ast) {
 	} else {
 		return A2(
 			$author$project$Compiler$CompModel$VarDeclaration,
-			$author$project$Compiler$CompModel$Literal('bad'),
-			$author$project$Compiler$CompModel$Literal('shouldnothappen'));
+			$author$project$Compiler$CompModel$Lit('bad'),
+			$author$project$Compiler$CompModel$Lit('shouldnothappen'));
 	}
 };
 var $author$project$Compiler$CompileToAST$initialVariablesDeclaration = A2($elm$core$List$map, $author$project$Compiler$CompileToAST$varSetToVarDec, $author$project$Compiler$CompileToAST$initialVariables);
+var $author$project$Compiler$CompModel$Array = function (a) {
+	return {$: 'Array', a: a};
+};
+var $author$project$Compiler$Song$litFunc = function (lit) {
+	return A2($author$project$Compiler$CompModel$Function, _List_Nil, lit);
+};
+var $author$project$Compiler$CompModel$maximum = function (args) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		$author$project$Compiler$CompModel$Lit('Math.max'),
+		args);
+};
+var $author$project$Compiler$Song$songType = $author$project$Compiler$CompModel$Lit('\'song\'');
+var $author$project$Compiler$CompModel$sum = function (args) {
+	return A2($author$project$Compiler$CompModel$Unary, '+', args);
+};
+var $author$project$Compiler$Song$joinFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('join'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['song1', 'song2']),
+		$author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
+					_Utils_Tuple2(
+					'children',
+					$author$project$Compiler$CompModel$Array(
+						_List_fromArray(
+							[
+								$author$project$Compiler$Song$litFunc(
+								$author$project$Compiler$CompModel$Lit('song1')),
+								$author$project$Compiler$Song$litFunc(
+								A2(
+									$author$project$Compiler$CompModel$CopySet,
+									$author$project$Compiler$CompModel$Lit('song2'),
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'time',
+											$author$project$Compiler$CompModel$sum(
+												_List_fromArray(
+													[
+														A2(
+														$author$project$Compiler$CompModel$getLit,
+														$author$project$Compiler$CompModel$Lit('song2'),
+														'time'),
+														A2(
+														$author$project$Compiler$CompModel$getLit,
+														$author$project$Compiler$CompModel$Lit('song1'),
+														'anchor')
+													])))
+										])))
+							]))),
+					_Utils_Tuple2(
+					'time',
+					$author$project$Compiler$CompModel$litInt(0)),
+					_Utils_Tuple2(
+					'anchor',
+					$author$project$Compiler$CompModel$sum(
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song1'),
+								'anchor'),
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song2'),
+								'anchor')
+							]))),
+					_Utils_Tuple2(
+					'duration',
+					$author$project$Compiler$CompModel$maximum(
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song1'),
+								'duration'),
+								$author$project$Compiler$CompModel$sum(
+								_List_fromArray(
+									[
+										A2(
+										$author$project$Compiler$CompModel$getLit,
+										$author$project$Compiler$CompModel$Lit('song2'),
+										'duration'),
+										A2(
+										$author$project$Compiler$CompModel$getLit,
+										$author$project$Compiler$CompModel$Lit('song2'),
+										'time')
+									]))
+							])))
+				]))));
+var $author$project$Compiler$Note$noteType = $author$project$Compiler$CompModel$Lit('\'note\'');
+var $author$project$Compiler$Note$makeNote = F2(
+	function (frequency, volume) {
+		return $author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Note$noteType),
+					_Utils_Tuple2('frequency', frequency),
+					_Utils_Tuple2('volume', volume)
+				]));
+	});
+var $author$project$Compiler$Song$noteSongFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('noteSong'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['time', 'frequency', 'duration']),
+		$author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
+					_Utils_Tuple2(
+					'children',
+					$author$project$Compiler$CompModel$Array(
+						_List_fromArray(
+							[
+								$author$project$Compiler$Song$litFunc(
+								A2(
+									$author$project$Compiler$Note$makeNote,
+									$author$project$Compiler$CompModel$Lit('frequency'),
+									$author$project$Compiler$CompModel$litFloat(1)))
+							]))),
+					_Utils_Tuple2(
+					'time',
+					$author$project$Compiler$CompModel$Lit('time')),
+					_Utils_Tuple2(
+					'anchor',
+					$author$project$Compiler$CompModel$Lit('duration')),
+					_Utils_Tuple2(
+					'duration',
+					$author$project$Compiler$CompModel$Lit('duration'))
+				]))));
+var $author$project$Compiler$Song$javascriptFuncs = _List_fromArray(
+	[$author$project$Compiler$Song$joinFunc, $author$project$Compiler$Song$noteSongFunc]);
 var $author$project$Compiler$CompileToAST$astHead = A2(
 	$elm$core$List$cons,
-	$author$project$Compiler$CompileToAST$getValueFunctionAST,
-	_Utils_ap($author$project$Compiler$CompileToAST$globals, $author$project$Compiler$CompileToAST$initialVariablesDeclaration));
-var $author$project$Compiler$CompModel$BeginThunk = function (a) {
-	return {$: 'BeginThunk', a: a};
-};
-var $author$project$Compiler$CompModel$FunctionsPush = function (a) {
-	return {$: 'FunctionsPush', a: a};
-};
-var $author$project$Compiler$CompileToAST$functionEnd = function (method) {
-	return $author$project$Compiler$CompModel$Empty;
-};
-var $author$project$Compiler$CompModel$CachePushNull = {$: 'CachePushNull'};
-var $author$project$Compiler$CompModel$For = F4(
-	function (a, b, c, d) {
-		return {$: 'For', a: a, b: b, c: c, d: d};
+	$author$project$Compiler$CompileFunction$getValueFunctionAST,
+	_Utils_ap(
+		$author$project$Compiler$CompileToAST$globals,
+		_Utils_ap($author$project$Compiler$CompileToAST$initialVariablesDeclaration, $author$project$Compiler$Song$javascriptFuncs)));
+var $author$project$Compiler$CompModel$Set = F3(
+	function (a, b, c) {
+		return {$: 'Set', a: a, b: b, c: c};
 	});
-var $author$project$Compiler$CompModel$forRange = F4(
-	function (varName, beginAST, endAST, bodyAST) {
-		return A4(
-			$author$project$Compiler$CompModel$For,
-			A2(
-				$author$project$Compiler$CompModel$VarDeclaration,
-				$author$project$Compiler$CompModel$Literal(varName),
-				beginAST),
-			A2(
-				$author$project$Compiler$CompModel$Unary,
-				'<',
-				_List_fromArray(
-					[
-						$author$project$Compiler$CompModel$Literal(varName),
-						endAST
-					])),
-			$author$project$Compiler$CompModel$Literal(varName + '++'),
-			bodyAST);
-	});
-var $author$project$Compiler$CompileToAST$functionStart = function (method) {
-	return A4(
-		$author$project$Compiler$CompModel$forRange,
-		'i',
-		$author$project$Compiler$CompModel$Literal('0'),
-		$author$project$Compiler$CompModel$Literal(
-			$elm$core$String$fromInt(
-				$elm$core$List$length(method))),
-		$author$project$Compiler$CompModel$CachePushNull);
+var $author$project$Compiler$CompileFunction$buildArgs = function (method) {
+	return A2(
+		$elm$core$List$map,
+		function (index) {
+			return $author$project$Compiler$CompModel$argName(index);
+		},
+		A2($elm$core$List$range, 0, method.argCount - 1));
 };
-var $author$project$Compiler$CompileToAST$compileExpr = F3(
-	function (expr, isReturnFunction, entireMethod) {
-		return $author$project$Compiler$CompModel$FunctionsPush(
+var $author$project$Compiler$CompModel$CachePush = function (a) {
+	return {$: 'CachePush', a: a};
+};
+var $author$project$Compiler$CompileFunction$compileExpr = F2(
+	function (expr, entireMethod) {
+		return $author$project$Compiler$CompModel$CachePush(
 			A2(
 				$author$project$Compiler$CompModel$Function,
 				_List_Nil,
 				function () {
-					var compiledExpr = function () {
-						var _v0 = expr.compileExprFunction;
-						var func = _v0.a;
-						return func(expr);
-					}();
-					return isReturnFunction ? $author$project$Compiler$CompModel$Begin(
-						_List_fromArray(
-							[
-								$author$project$Compiler$CompileToAST$functionStart(entireMethod),
-								compiledExpr,
-								$author$project$Compiler$CompileToAST$functionEnd(entireMethod)
-							])) : compiledExpr;
+					var _v0 = expr.compileExprFunction;
+					var func = _v0.a;
+					return func(expr);
 				}()));
 	});
-var $author$project$Compiler$CompileToAST$compileExprs = F2(
+var $author$project$Compiler$CompileFunction$functionEnd = function (method) {
+	return $author$project$Compiler$CompileFunction$getCacheValue(
+		$author$project$Compiler$CompModel$litInt(
+			$elm$core$List$length(method.exprs) - 1));
+};
+var $author$project$Compiler$CompileFunction$compileExprs = F2(
 	function (method, entireMethod) {
 		if (!method.b) {
 			return _List_Nil;
@@ -9227,76 +9741,89 @@ var $author$project$Compiler$CompileToAST$compileExprs = F2(
 				var expr = method.a;
 				return _List_fromArray(
 					[
-						A3($author$project$Compiler$CompileToAST$compileExpr, expr, true, entireMethod)
+						A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
+						$author$project$Compiler$CompileFunction$functionEnd(entireMethod)
 					]);
 			} else {
 				var expr = method.a;
 				var exprs = method.b;
 				return A2(
 					$elm$core$List$cons,
-					A3($author$project$Compiler$CompileToAST$compileExpr, expr, false, entireMethod),
-					A2($author$project$Compiler$CompileToAST$compileExprs, exprs, entireMethod));
+					A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
+					A2($author$project$Compiler$CompileFunction$compileExprs, exprs, entireMethod));
 			}
 		}
 	});
-var $author$project$Compiler$CompileToAST$compileMethod = function (method) {
-	return $author$project$Compiler$CompModel$BeginThunk(
-		A2($author$project$Compiler$CompileToAST$compileExprs, method, method));
+var $author$project$Compiler$CompileFunction$functionStart = function (method) {
+	return A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Lit('cache'),
+		$author$project$Compiler$CompModel$Array(_List_Nil));
+};
+var $author$project$Compiler$CompileFunction$compileFunction = function (method) {
+	return A2(
+		$author$project$Compiler$CompModel$Function,
+		$author$project$Compiler$CompileFunction$buildArgs(method),
+		$author$project$Compiler$CompModel$Begin(
+			A2(
+				$elm$core$List$cons,
+				$author$project$Compiler$CompileFunction$functionStart(method),
+				A2($author$project$Compiler$CompileFunction$compileExprs, method.exprs, method))));
+};
+var $author$project$Compiler$CompileToAST$compileOneFunction = function (funcTuple) {
+	return A3(
+		$author$project$Compiler$CompModel$Set,
+		$author$project$Compiler$CompModel$Lit('functions'),
+		$author$project$Compiler$CompModel$Lit(funcTuple.a),
+		$author$project$Compiler$CompileFunction$compileFunction(funcTuple.b));
 };
 var $author$project$Compiler$CompileToAST$compileFunctions = function (compModel) {
-	if (compModel.b && (!compModel.b.b)) {
-		var method = compModel.a;
-		return $author$project$Compiler$CompileToAST$compileMethod(method);
-	} else {
-		return $author$project$Compiler$CompModel$Empty;
-	}
+	return A2(
+		$elm$core$List$map,
+		$author$project$Compiler$CompileToAST$compileOneFunction,
+		$elm$core$Dict$toList(compModel));
 };
 var $author$project$Compiler$CompileToAST$recur = A2(
 	$author$project$Compiler$CompModel$CallFunction,
-	$author$project$Compiler$CompModel$Literal('setTimeout'),
+	$author$project$Compiler$CompModel$Lit('setTimeout'),
 	_List_fromArray(
 		[
-			$author$project$Compiler$CompModel$Literal('recur'),
-			$author$project$Compiler$CompModel$Literal('4')
+			$author$project$Compiler$CompModel$Lit('recur'),
+			$author$project$Compiler$CompModel$Lit('4')
 		]));
-var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$BeginThunk(
+var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$Begin(
 	_Utils_ap(
 		$author$project$Compiler$CompileToAST$initialVariables,
 		_List_fromArray(
 			[
 				A2(
 				$author$project$Compiler$CompModel$CallFunction,
-				$author$project$Compiler$CompModel$FunctionRef(
-					A2(
-						$author$project$Compiler$CompModel$Unary,
-						'-',
-						_List_fromArray(
-							[
-								$author$project$Compiler$CompModel$Literal('functions.length'),
-								$author$project$Compiler$CompModel$Literal('1')
-							]))),
-				_List_Nil),
-				A2(
-				$author$project$Compiler$CompModel$CallFunction,
-				$author$project$Compiler$CompModel$Literal('update'),
+				$author$project$Compiler$CompModel$Lit('update'),
 				_List_fromArray(
 					[
-						$author$project$Compiler$CompModel$Literal('state'),
-						$author$project$Compiler$CompModel$Literal('notes')
+						$author$project$Compiler$CompModel$Lit('state'),
+						A2(
+						$author$project$Compiler$CompModel$CallFunction,
+						A2(
+							$author$project$Compiler$CompModel$Get,
+							$author$project$Compiler$CompModel$Lit('functions'),
+							$author$project$Compiler$CompModel$Lit('main')),
+						_List_Nil),
+						$author$project$Compiler$CompModel$Lit('time')
 					])),
 				$author$project$Compiler$CompileToAST$recur
 			])));
 var $author$project$Compiler$CompileToAST$loopFunctionAST = A2(
 	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Literal('recur'),
+	$author$project$Compiler$CompModel$Lit('recur'),
 	A2($author$project$Compiler$CompModel$Function, _List_Nil, $author$project$Compiler$CompileToAST$loopFunctionBody));
-var $author$project$Compiler$CompileToAST$loopAST = $author$project$Compiler$CompModel$BeginThunk(
+var $author$project$Compiler$CompileToAST$loopAST = $author$project$Compiler$CompModel$Begin(
 	_List_fromArray(
 		[
 			A2(
 			$author$project$Compiler$CompModel$VarDeclaration,
-			$author$project$Compiler$CompModel$Literal('state'),
-			$author$project$Compiler$CompModel$Literal('makeInitialState()')),
+			$author$project$Compiler$CompModel$Lit('state'),
+			$author$project$Compiler$CompModel$Lit('makeInitialState()')),
 			$author$project$Compiler$CompileToAST$loopFunctionAST,
 			$author$project$Compiler$CompileToAST$recur
 		]));
@@ -9304,11 +9831,10 @@ var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
 	return $author$project$Compiler$CompModel$Begin(
 		_Utils_ap(
 			$author$project$Compiler$CompileToAST$astHead,
-			_List_fromArray(
-				[
-					$author$project$Compiler$CompileToAST$compileFunctions(compModel),
-					$author$project$Compiler$CompileToAST$loopAST
-				])));
+			_Utils_ap(
+				$author$project$Compiler$CompileToAST$compileFunctions(compModel),
+				_List_fromArray(
+					[$author$project$Compiler$CompileToAST$loopAST]))));
 };
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$Compiler$Compile$compile = function (compModel) {
@@ -9317,6 +9843,29 @@ var $author$project$Compiler$Compile$compile = function (compModel) {
 		'Running Program',
 		$author$project$Compiler$ASTToJavascript$aSTToJavascript(
 			$author$project$Compiler$CompileToAST$compileToAST(compModel)));
+};
+var $elm$core$Result$andThen = F2(
+	function (callback, result) {
+		if (result.$ === 'Ok') {
+			var value = result.a;
+			return callback(value);
+		} else {
+			var msg = result.a;
+			return $elm$core$Result$Err(msg);
+		}
+	});
+var $author$project$Compiler$CompModel$Method = F2(
+	function (argCount, exprs) {
+		return {argCount: argCount, exprs: exprs};
+	});
+var $author$project$Compiler$CompileBuiltIn$buildFuncCall = function (expr) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		A2(
+			$author$project$Compiler$CompModel$getLit,
+			$author$project$Compiler$CompModel$Lit('functions'),
+			expr.functionName),
+		A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children));
 };
 var $author$project$Compiler$CompModel$Expr = F4(
 	function (functionName, id, children, compileExprFunction) {
@@ -9344,28 +9893,26 @@ var $author$project$Compiler$OnionToExpr$dropFinalHole = function (argList) {
 	}
 };
 var $author$project$Compiler$OnionToExpr$argumentSubset = F2(
-	function (builtIn, inputs) {
-		var _v0 = builtIn.argList;
-		if (_v0.$ === 'Finite') {
-			var args = _v0.a;
+	function (argList, inputs) {
+		if (argList.$ === 'Finite') {
+			var args = argList.a;
 			return inputs;
 		} else {
-			var args = _v0.a;
-			var othername = _v0.b;
+			var args = argList.a;
+			var othername = argList.b;
 			return $author$project$Compiler$OnionToExpr$dropFinalHole(inputs);
 		}
 	});
 var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
-	function (builtIn, inputs) {
-		var _v0 = builtIn.argList;
-		if (_v0.$ === 'Finite') {
-			var args = _v0.a;
+	function (argList, inputs) {
+		if (argList.$ === 'Finite') {
+			var args = argList.a;
 			return _Utils_cmp(
 				$elm$core$List$length(inputs),
 				$elm$core$List$length(args)) > -1;
 		} else {
-			var args = _v0.a;
-			var othername = _v0.b;
+			var args = argList.a;
+			var othername = argList.b;
 			return _Utils_cmp(
 				$elm$core$List$length(inputs),
 				$elm$core$List$length(args)) > -1;
@@ -9373,6 +9920,9 @@ var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
 	});
 var $author$project$Compiler$CompModel$ConstV = function (a) {
 	return {$: 'ConstV', a: a};
+};
+var $author$project$Compiler$CompModel$FArg = function (a) {
+	return {$: 'FArg', a: a};
 };
 var $author$project$Compiler$CompModel$ScriptVariable = function (a) {
 	return {$: 'ScriptVariable', a: a};
@@ -9596,6 +10146,10 @@ var $author$project$Compiler$OnionToExpr$inputToValue = F2(
 								$author$project$Compiler$CompModel$ScriptVariable(varName));
 					}
 				}
+			case 'FunctionArg':
+				var index = input.a;
+				return $elm$core$Result$Ok(
+					$author$project$Compiler$CompModel$FArg(index));
 			default:
 				return $elm$core$Result$Err('No argument supplied to a function call');
 		}
@@ -9631,15 +10185,15 @@ var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
 				A2($author$project$Compiler$OnionToExpr$inputsToValues, rest, idToIndex));
 		}
 	});
-var $author$project$Compiler$OnionToExpr$callToExprBuiltIn = F3(
-	function (builtIn, call, idToIndex) {
-		var filteredInputs = A2($author$project$Compiler$OnionToExpr$argumentSubset, builtIn, call.inputs);
-		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, builtIn, filteredInputs)) {
+var $author$project$Compiler$OnionToExpr$callToExprWith = F4(
+	function (call, idToIndex, argList, compileExprFunction) {
+		var filteredInputs = A2($author$project$Compiler$OnionToExpr$argumentSubset, argList, call.inputs);
+		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, argList, filteredInputs)) {
 			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, filteredInputs, idToIndex);
 			if (_v0.$ === 'Ok') {
 				var children = _v0.a;
 				return $elm$core$Result$Ok(
-					A4($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children, builtIn.compileExprFunction));
+					A4($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children, compileExprFunction));
 			} else {
 				var e = _v0.a;
 				return $elm$core$Result$Err(e);
@@ -9648,29 +10202,49 @@ var $author$project$Compiler$OnionToExpr$callToExprBuiltIn = F3(
 			return $elm$core$Result$Err('Wrong number of arguments');
 		}
 	});
-var $author$project$Compiler$OnionToExpr$callToExpr = F2(
-	function (call, idToIndex) {
+var $author$project$Compiler$OnionToExpr$callToExpr = F3(
+	function (call, idToIndex, onionMap) {
 		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
 		if (_v0.$ === 'Just') {
 			var builtIn = _v0.a;
-			return A3($author$project$Compiler$OnionToExpr$callToExprBuiltIn, builtIn, call, idToIndex);
+			return A4($author$project$Compiler$OnionToExpr$callToExprWith, call, idToIndex, builtIn.argList, builtIn.compileExprFunction);
 		} else {
-			return $elm$core$Result$Err('Not a built in function');
+			var _v1 = A2($elm$core$Dict$get, call.functionName, onionMap);
+			if (_v1.$ === 'Just') {
+				var func = _v1.a;
+				return A4(
+					$author$project$Compiler$OnionToExpr$callToExprWith,
+					call,
+					idToIndex,
+					$author$project$ModelHelpers$funcToArgList(func),
+					$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildFuncCall));
+			} else {
+				return $elm$core$Result$Err('Not a function name');
+			}
 		}
 	});
-var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
-	function (_function, idToIndex) {
-		if (!_function.b) {
+var $author$project$Utils$resultMap = F2(
+	function (func, list) {
+		if (!list.b) {
 			return $elm$core$Result$Ok(_List_Nil);
 		} else {
-			var call = _function.a;
-			var calls = _function.b;
+			var first = list.a;
+			var rest = list.b;
 			return A3(
 				$elm$core$Result$map2,
 				$elm$core$List$cons,
-				A2($author$project$Compiler$OnionToExpr$callToExpr, call, idToIndex),
-				A2($author$project$Compiler$OnionToExpr$functionToMethod, calls, idToIndex));
+				func(first),
+				A2($author$project$Utils$resultMap, func, rest));
 		}
+	});
+var $author$project$Compiler$OnionToExpr$callsToExprs = F3(
+	function (calls, onionMap, idToIndex) {
+		return A2(
+			$author$project$Utils$resultMap,
+			function (call) {
+				return A3($author$project$Compiler$OnionToExpr$callToExpr, call, idToIndex, onionMap);
+			},
+			calls);
 	});
 var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
 	function (func, dict, index) {
@@ -9691,32 +10265,69 @@ var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
 			}
 		}
 	});
-var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
-	if (!onion.b) {
-		return $elm$core$Result$Ok(_List_Nil);
-	} else {
-		var f = onion.a;
-		var fs = onion.b;
-		var _v1 = A2(
-			$author$project$Compiler$OnionToExpr$functionToMethod,
-			f.calls,
-			A3($author$project$Compiler$OnionToExpr$makeIdToIndex, f.calls, $elm$core$Dict$empty, 0));
-		if (_v1.$ === 'Ok') {
-			var method = _v1.a;
-			var _v2 = $author$project$Compiler$OnionToExpr$onionToCompModel(fs);
-			if (_v2.$ === 'Ok') {
-				var rest = _v2.a;
-				return $elm$core$Result$Ok(
-					A2($elm$core$List$cons, method, rest));
-			} else {
-				var e = _v2.a;
-				return $elm$core$Result$Err(e);
-			}
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
 		} else {
-			var e = _v1.a;
+			var e = ra.a;
 			return $elm$core$Result$Err(e);
 		}
+	});
+var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
+	function (onionMap, func) {
+		var idToPos = A3($author$project$Compiler$OnionToExpr$makeIdToIndex, func.calls, $elm$core$Dict$empty, 0);
+		return A2(
+			$elm$core$Result$map,
+			function (exprs) {
+				return _Utils_Tuple2(
+					func.name,
+					A2(
+						$author$project$Compiler$CompModel$Method,
+						$elm$core$List$length(func.args),
+						exprs));
+			},
+			A3($author$project$Compiler$OnionToExpr$callsToExprs, func.calls, onionMap, idToPos));
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $author$project$ModelHelpers$makeOnionMap = function (onion) {
+	if (!onion.b) {
+		return $elm$core$Result$Ok($elm$core$Dict$empty);
+	} else {
+		var func = onion.a;
+		var funcs = onion.b;
+		return A2(
+			$elm$core$Result$andThen,
+			function (currentMap) {
+				return A2($elm$core$Dict$member, func.name, currentMap) ? $elm$core$Result$Err('Cannot define two functions with the name ' + func.name) : $elm$core$Result$Ok(
+					A3($elm$core$Dict$insert, func.name, func, currentMap));
+			},
+			$author$project$ModelHelpers$makeOnionMap(funcs));
 	}
+};
+var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
+	return A2(
+		$elm$core$Result$andThen,
+		function (onionMap) {
+			return A2(
+				$elm$core$Result$map,
+				$elm$core$Dict$fromList,
+				A2(
+					$author$project$Utils$resultMap,
+					$author$project$Compiler$OnionToExpr$functionToMethod(onionMap),
+					onion));
+		},
+		$author$project$ModelHelpers$makeOnionMap(onion));
 };
 var $author$project$Compiler$Compile$compileOnion = function (onion) {
 	var _v0 = $author$project$Compiler$OnionToExpr$onionToCompModel(onion);
@@ -9745,27 +10356,6 @@ var $author$project$Update$playSoundResult = function (model) {
 			$author$project$Update$evalJavascript(s));
 	}
 };
-var $elm$core$List$repeatHelp = F3(
-	function (result, n, value) {
-		repeatHelp:
-		while (true) {
-			if (n <= 0) {
-				return result;
-			} else {
-				var $temp$result = A2($elm$core$List$cons, value, result),
-					$temp$n = n - 1,
-					$temp$value = value;
-				result = $temp$result;
-				n = $temp$n;
-				value = $temp$value;
-				continue repeatHelp;
-			}
-		}
-	});
-var $elm$core$List$repeat = F2(
-	function (n, value) {
-		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
-	});
 var $author$project$BuiltIn$callWithHoles = F3(
 	function (id, name, numHoles) {
 		return A4(
@@ -9818,8 +10408,8 @@ var $author$project$Update$firstOrSpawn = function (onion) {
 		return _Utils_Tuple2(func.id, onion);
 	}
 };
-var $author$project$Update$spawnBlockModel = F2(
-	function (model, name) {
+var $author$project$Update$spawnBlockModel = F3(
+	function (model, name, mouseOffset) {
 		var oldMouse = model.mouseState;
 		var newCall = A2($author$project$BuiltIn$constructCall, model.idCounter, name);
 		var funcTuple = $author$project$Update$firstOrSpawn(model.program);
@@ -9828,7 +10418,7 @@ var $author$project$Update$spawnBlockModel = F2(
 		var newMouse = _Utils_update(
 			oldMouse,
 			{
-				mouseSelection: A2($author$project$Model$BlockSelected, funcId, newCall)
+				mouseSelection: A3($author$project$Model$BlockSelected, funcId, newCall, mouseOffset)
 			});
 		return _Utils_Tuple2(
 			_Utils_update(
@@ -9836,14 +10426,14 @@ var $author$project$Update$spawnBlockModel = F2(
 				{idCounter: newCall.id + 1, mouseState: newMouse, program: newProgram}),
 			$elm$core$Platform$Cmd$none);
 	});
-var $author$project$Update$spawnFuncModel = F2(
-	function (model, name) {
+var $author$project$Update$spawnFuncModel = F3(
+	function (model, name, mouseOffset) {
 		var oldMouse = model.mouseState;
 		var newFunc = A3($author$project$Model$constructFunction, model.idCounter, name, _List_Nil);
 		var newMouse = _Utils_update(
 			oldMouse,
 			{
-				mouseSelection: $author$project$Model$FunctionSelected(newFunc)
+				mouseSelection: A2($author$project$Model$FunctionSelected, newFunc, mouseOffset)
 			});
 		return _Utils_Tuple2(
 			_Utils_update(
@@ -9894,7 +10484,13 @@ var $author$project$Update$update = F2(
 			case 'BlockClick':
 				var call = msg.a;
 				var funcId = msg.b;
-				return A3($author$project$Update$blockClickModel, model, call, funcId);
+				var mouseOffset = msg.c;
+				return A4($author$project$Update$blockClickModel, model, call, funcId, mouseOffset);
+			case 'BlockNameClick':
+				var call = msg.a;
+				var funcId = msg.b;
+				var mouseOffset = msg.c;
+				return A4($author$project$Update$blockNameClickModel, model, call, funcId, mouseOffset);
 			case 'HeaderOutputHighlight':
 				var id = msg.a;
 				var index = msg.b;
@@ -9914,10 +10510,12 @@ var $author$project$Update$update = F2(
 				return A3($author$project$Update$headerOutputRightClickModel, model, id, index);
 			case 'HeaderNameClick':
 				var id = msg.a;
-				return A2($author$project$Update$headerNameHighlightModel, model, id);
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$headerNameClickModel, model, id, mouseOffset);
 			case 'HeaderClick':
 				var func = msg.a;
-				return A2($author$project$Update$headerClickModel, model, func);
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$headerClickModel, model, func, mouseOffset);
 			case 'HeaderNameHighlight':
 				var id = msg.a;
 				return A2($author$project$Update$headerNameHighlightModel, model, id);
@@ -9959,9 +10557,6 @@ var $author$project$Update$update = F2(
 			case 'OutputRightClick':
 				var id = msg.a;
 				return A2($author$project$Update$outputRightClickModel, model, id);
-			case 'BlockNameClick':
-				var id = msg.a;
-				return A2($author$project$Update$blockNameClickModel, model, id);
 			case 'BlockNameHighlight':
 				var id = msg.a;
 				return A2($author$project$Update$blockNameHighlightModel, model, id);
@@ -9971,10 +10566,12 @@ var $author$project$Update$update = F2(
 				return A3($author$project$Update$blockNameUpdateModel, model, id, str);
 			case 'SpawnBlock':
 				var name = msg.a;
-				return A2($author$project$Update$spawnBlockModel, model, name);
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$spawnBlockModel, model, name, mouseOffset);
 			case 'SpawnFunction':
 				var name = msg.a;
-				return A2($author$project$Update$spawnFuncModel, model, name);
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$spawnFuncModel, model, name, mouseOffset);
 			case 'PlaySound':
 				return $author$project$Update$playSoundResult(model);
 			case 'WindowResize':
@@ -11149,132 +11746,6 @@ var $elm$core$List$tail = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
 var $rtfeldman$elm_css$Css$Preprocess$Resolve$toDocumentRule = F5(
 	function (str1, str2, str3, str4, declaration) {
 		if (declaration.$ === 'StyleBlockDeclaration') {
@@ -12235,14 +12706,29 @@ var $author$project$View$drawErrorBox = function (errorBox) {
 			]));
 };
 var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
-var $author$project$Model$BlockClick = F2(
-	function (a, b) {
-		return {$: 'BlockClick', a: a, b: b};
+var $author$project$Model$BlockClick = F3(
+	function (a, b, c) {
+		return {$: 'BlockClick', a: a, b: b, c: c};
 	});
-var $author$project$Model$SpawnBlock = function (a) {
-	return {$: 'SpawnBlock', a: a};
-};
+var $author$project$Model$SpawnBlock = F2(
+	function (a, b) {
+		return {$: 'SpawnBlock', a: a, b: b};
+	});
 var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
+var $author$project$SvgDraw$viewStructureToMouse = function (viewStructure) {
+	return A5($author$project$ViewStructure$mouseToSvgCoordinates, viewStructure.mouseState, viewStructure.svgWidth, viewStructure.svgHeight, 0, 0);
+};
+var $author$project$SvgDraw$blockMouseOffset = F2(
+	function (call, viewStructure) {
+		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			return _Utils_Tuple2((coordinates.a - blockPos.xpos) - viewStructure.headerPos.xpos, (coordinates.b - blockPos.ypos) - viewStructure.headerPos.ypos);
+		} else {
+			return _Utils_Tuple2(0, 0);
+		}
+	});
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
@@ -12370,11 +12856,25 @@ var $author$project$SvgDraw$drawBlock = F2(
 				_Utils_ap(
 					viewStructure.isToolbar ? A2(
 						$author$project$SvgDraw$svgClickEvents,
-						$author$project$Model$SpawnBlock(call.functionName),
-						$author$project$Model$SpawnBlock(call.functionName)) : A2(
+						A2(
+							$author$project$Model$SpawnBlock,
+							call.functionName,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
+						A2(
+							$author$project$Model$SpawnBlock,
+							call.functionName,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
 						$author$project$SvgDraw$svgClickEvents,
-						A2($author$project$Model$BlockClick, call, viewStructure.id),
-						A2($author$project$Model$BlockClick, call, viewStructure.id)),
+						A3(
+							$author$project$Model$BlockClick,
+							call,
+							viewStructure.id,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
+						A3(
+							$author$project$Model$BlockClick,
+							call,
+							viewStructure.id,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))),
 					_List_fromArray(
 						[
 							A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
@@ -12423,21 +12923,40 @@ var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$ellipse = $elm$svg$Svg$trustedNode('ellipse');
 var $author$project$ViewVariables$functionHeaderSquareY = ($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$blockHeight) + $author$project$ViewVariables$nodeRadius;
 var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $author$project$Model$HeaderClick = function (a) {
-	return {$: 'HeaderClick', a: a};
-};
-var $author$project$Model$SpawnFunction = function (a) {
-	return {$: 'SpawnFunction', a: a};
-};
+var $author$project$Model$HeaderClick = F2(
+	function (a, b) {
+		return {$: 'HeaderClick', a: a, b: b};
+	});
+var $author$project$Model$SpawnFunction = F2(
+	function (a, b) {
+		return {$: 'SpawnFunction', a: a, b: b};
+	});
+var $author$project$SvgDraw$functionMouseOffset = F2(
+	function (_function, viewStructure) {
+		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
+		return _Utils_Tuple2(coordinates.a - viewStructure.headerPos.xpos, coordinates.b - viewStructure.headerPos.ypos);
+	});
 var $author$project$SvgDraw$headerBlockEvents = F2(
 	function (_function, viewStructure) {
 		return viewStructure.isToolbar ? A2(
 			$author$project$SvgDraw$svgClickEvents,
-			$author$project$Model$SpawnFunction(_function.name),
-			$author$project$Model$SpawnFunction(_function.name)) : A2(
+			A2(
+				$author$project$Model$SpawnFunction,
+				_function.name,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$SpawnFunction,
+				_function.name,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
 			$author$project$SvgDraw$svgClickEvents,
-			$author$project$Model$HeaderClick(_function),
-			$author$project$Model$HeaderClick(_function));
+			A2(
+				$author$project$Model$HeaderClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$HeaderClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)));
 	});
 var $author$project$SvgDraw$drawFuncHeader = F2(
 	function (_function, viewStructure) {
@@ -12562,8 +13081,14 @@ var $author$project$DrawFunc$drawCallEnding = F2(
 			}();
 			var events = viewStructure.isToolbar ? A2(
 				$author$project$SvgDraw$svgClickEvents,
-				$author$project$Model$SpawnBlock(call.functionName),
-				$author$project$Model$SpawnBlock(call.functionName)) : A2(
+				A2(
+					$author$project$Model$SpawnBlock,
+					call.functionName,
+					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
+				A2(
+					$author$project$Model$SpawnBlock,
+					call.functionName,
+					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
 				$author$project$SvgDraw$svgClickEvents,
 				$author$project$Model$OutputClick(call.id),
 				$author$project$Model$OutputRightClick(call.id));
@@ -12602,9 +13127,10 @@ var $author$project$Model$BlockNameUpdate = F2(
 	function (a, b) {
 		return {$: 'BlockNameUpdate', a: a, b: b};
 	});
-var $author$project$Model$BlockNameClick = function (a) {
-	return {$: 'BlockNameClick', a: a};
-};
+var $author$project$Model$BlockNameClick = F3(
+	function (a, b, c) {
+		return {$: 'BlockNameClick', a: a, b: b, c: c};
+	});
 var $elm$html$Html$Events$on = F2(
 	function (event, decoder) {
 		return A2(
@@ -12632,13 +13158,14 @@ var $author$project$SvgDraw$svgClickWithDefault = F2(
 	});
 var $author$project$SvgDraw$blockNameEvents = F2(
 	function (call, viewStructure) {
+		var coordinates = A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure);
 		return viewStructure.isToolbar ? A2(
 			$author$project$SvgDraw$svgClickEvents,
-			$author$project$Model$SpawnBlock(call.functionName),
-			$author$project$Model$SpawnBlock(call.functionName)) : A2(
+			A2($author$project$Model$SpawnBlock, call.functionName, coordinates),
+			A2($author$project$Model$SpawnBlock, call.functionName, coordinates)) : A2(
 			$author$project$SvgDraw$svgClickWithDefault,
-			$author$project$Model$BlockNameClick(call.id),
-			A2($author$project$Model$BlockClick, call, viewStructure.id));
+			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates),
+			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates));
 	});
 var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
 var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
@@ -13271,8 +13798,8 @@ var $author$project$Model$InputHighlight = F2(
 	function (a, b) {
 		return {$: 'InputHighlight', a: a, b: b};
 	});
-var $author$project$SvgDraw$nodeEvent = F6(
-	function (xpos, inputPos, ypos, event, domId, viewStructure) {
+var $author$project$SvgDraw$nodeEvent = F7(
+	function (xpos, inputPos, ypos, event, domId, viewStructure, isTabable) {
 		return A2(
 			$elm$svg$Svg$foreignObject,
 			_List_fromArray(
@@ -13294,7 +13821,7 @@ var $author$project$SvgDraw$nodeEvent = F6(
 						_List_fromArray(
 							[
 								$rtfeldman$elm_css$Html$Styled$Attributes$tabindex(
-								viewStructure.isToolbar ? (-1) : 0),
+								(viewStructure.isToolbar || (!isTabable)) ? (-1) : 0),
 								$rtfeldman$elm_css$Html$Styled$Attributes$id(domId),
 								$rtfeldman$elm_css$Html$Styled$Events$onFocus(event)
 							]),
@@ -13308,7 +13835,7 @@ var $author$project$SvgDraw$drawNodeWithEvent = F9(
 			_List_Nil,
 			_List_fromArray(
 				[
-					A6($author$project$SvgDraw$nodeEvent, xpos, inputPos, ypos, highlightevent, eventId, viewStructure),
+					A7($author$project$SvgDraw$nodeEvent, xpos, inputPos, ypos, highlightevent, eventId, viewStructure, !isHollow),
 					A6($author$project$SvgDraw$drawNode, xpos, inputPos, ypos, events, isHighlighted, isHollow)
 				]));
 	});
@@ -13623,14 +14150,15 @@ var $author$project$DrawFunc$drawInputLines = F5(
 			return _List_fromArray(
 				[
 					A3($author$project$SvgDraw$drawBlockNameInput, call, viewStructure, blockPos),
-					A6(
+					A7(
 					$author$project$SvgDraw$nodeEvent,
-					0,
+					blockPos.xpos,
 					_Utils_Tuple2(0, 0),
-					0,
+					blockPos.ypos + $author$project$ViewVariables$outputNodeY,
 					$author$project$Model$OutputHighlight(call.id),
 					$author$project$Update$nodeOutputId(call.id),
-					viewStructure)
+					viewStructure,
+					true)
 				]);
 		} else {
 			var input = inputs.a;
@@ -13696,18 +14224,31 @@ var $author$project$Model$HeaderNameUpdate = F2(
 	function (a, b) {
 		return {$: 'HeaderNameUpdate', a: a, b: b};
 	});
-var $author$project$Model$HeaderNameClick = function (a) {
-	return {$: 'HeaderNameClick', a: a};
-};
+var $author$project$Model$HeaderNameClick = F2(
+	function (a, b) {
+		return {$: 'HeaderNameClick', a: a, b: b};
+	});
 var $author$project$SvgDraw$headerNameEvents = F2(
 	function (_function, viewStructure) {
 		return viewStructure.isToolbar ? A2(
 			$author$project$SvgDraw$svgClickEvents,
-			$author$project$Model$SpawnFunction(_function.name),
-			$author$project$Model$SpawnFunction(_function.name)) : A2(
+			A2(
+				$author$project$Model$SpawnFunction,
+				_function.name,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$SpawnFunction,
+				_function.name,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
 			$author$project$SvgDraw$svgClickWithDefault,
-			$author$project$Model$HeaderNameClick(viewStructure.id),
-			$author$project$Model$HeaderClick(_function));
+			A2(
+				$author$project$Model$HeaderNameClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$HeaderClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)));
 	});
 var $author$project$SvgDraw$drawHeaderNameInput = F2(
 	function (_function, viewStructure) {
