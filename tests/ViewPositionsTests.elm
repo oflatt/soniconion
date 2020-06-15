@@ -38,7 +38,7 @@ secondToLastMouse = (MouseState (ViewVariables.funcInitialX + 20)
                               +(ViewVariables.blockHeight//2))
                          0
                          0
-                         (BlockSelected 0 TestModel.complex3))
+                         (BlockSelected 0 TestModel.complex3 (0, 0)))
 
 maybeSecond = (ViewStructure.maybeMovedInfo secondToLastMouse ViewVariables.viewportHeight
                    (ViewVariables.viewportWidth ViewVariables.viewportHeight ViewVariables.viewportHeight))
@@ -70,7 +70,7 @@ blockPositionsTest =
                   (Ok [0
                       ,blockSpace*2 + (1+2)*lineSpaceBeforeBlock
                       ,blockSpace*3 + (1+2+1)*lineSpaceBeforeBlock
-                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing-ViewVariables.blockHeight//2
+                      ,secondToLastMouse.mouseY-ViewVariables.svgYpos-functionHeaderHeight-blockSpacing
                       ,blockSpace*4 + (1+1+2+2)*lineSpaceBeforeBlock]))]
 
 
