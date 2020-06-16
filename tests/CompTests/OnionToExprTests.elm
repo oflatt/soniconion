@@ -31,7 +31,7 @@ onionToCompModelTest =
                        (onionToCompModel [(makeMain 0 [(Call 0 [(Text "2")] "+" "")])])
                        (Ok (mainModel [(makeExpr "+" 0 [(ConstV 2)])]))))
 
-        ,test "test function"
+{-        ,test "test function"
             (\_ ->
                  (Expect.equal
                       (onionToCompModel [testFunction])
@@ -47,6 +47,6 @@ onionToCompModelTest =
                                   ,(makeExpr "+" TestModel.join.id [(StackIndex 0)
                                                                    ,(StackIndex 1)])
                                   ,(makeExpr "+" TestModel.plus.id [(StackIndex 2)])
-                                  ]))))
+                                  ])))) -}
         ]
     
