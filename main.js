@@ -5211,9 +5211,13 @@ var $author$project$Model$constructFunction = F3(
 	function (id, name, calls) {
 		return A4($author$project$Model$Function, name, id, _List_Nil, calls);
 	});
+var $author$project$Model$makeFunc = F3(
+	function (id, calls, name) {
+		return A3($author$project$Model$constructFunction, id, name, calls);
+	});
 var $author$project$Model$makeMain = F2(
 	function (id, calls) {
-		return A3($author$project$Model$constructFunction, id, 'main', calls);
+		return A3($author$project$Model$makeFunc, id, calls, 'main');
 	});
 var $author$project$Model$initialProgram = _List_fromArray(
 	[
@@ -6126,21 +6130,31 @@ var $author$project$Compiler$CompModel$CompileExprFunction = function (a) {
 var $author$project$BuiltIn$Finite = function (a) {
 	return {$: 'Finite', a: a};
 };
-var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
-var $author$project$Compiler$CompModel$If = F3(
-	function (a, b, c) {
-		return {$: 'If', a: a, b: b, c: c};
+var $author$project$BuiltIn$Infinite = F2(
+	function (a, b) {
+		return {$: 'Infinite', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$Lit = function (a) {
-	return {$: 'Lit', a: a};
-};
-var $author$project$Compiler$CompModel$argName = function (index) {
-	return 'arg' + $elm$core$String$fromInt(index);
-};
 var $author$project$Compiler$CompModel$CallFunction = F2(
 	function (a, b) {
 		return {$: 'CallFunction', a: a, b: b};
 	});
+var $author$project$Compiler$CompModel$Lit = function (a) {
+	return {$: 'Lit', a: a};
+};
+var $author$project$Compiler$Song$append = F2(
+	function (song1, song2) {
+		return A2(
+			$author$project$Compiler$CompModel$CallFunction,
+			$author$project$Compiler$CompModel$Lit('append'),
+			_List_fromArray(
+				[song1, song2]));
+	});
+var $author$project$Compiler$CompModel$ConstV = function (a) {
+	return {$: 'ConstV', a: a};
+};
+var $author$project$Compiler$CompModel$argName = function (index) {
+	return 'arg' + $elm$core$String$fromInt(index);
+};
 var $author$project$Compiler$CompileFunction$getCacheValue = function (ast) {
 	return A2(
 		$author$project$Compiler$CompModel$CallFunction,
@@ -6191,6 +6205,36 @@ var $author$project$Compiler$CompileBuiltIn$buildValue = function (val) {
 				$author$project$Compiler$CompModel$Lit(str));
 	}
 };
+var $author$project$Compiler$CompileBuiltIn$appendAll = F2(
+	function (songs, func) {
+		if (!songs.b) {
+			return $author$project$Compiler$CompileBuiltIn$buildValue(
+				$author$project$Compiler$CompModel$ConstV(0));
+		} else {
+			if (!songs.b.b) {
+				var song = songs.a;
+				return song;
+			} else {
+				var song = songs.a;
+				var rest = songs.b;
+				return A2(
+					func,
+					song,
+					A2($author$project$Compiler$CompileBuiltIn$appendAll, rest, func));
+			}
+		}
+	});
+var $author$project$Compiler$CompileBuiltIn$buildAppend = function (expr) {
+	return A2(
+		$author$project$Compiler$CompileBuiltIn$appendAll,
+		A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children),
+		$author$project$Compiler$Song$append);
+};
+var $author$project$Compiler$CompModel$Empty = {$: 'Empty'};
+var $author$project$Compiler$CompModel$If = F3(
+	function (a, b, c) {
+		return {$: 'If', a: a, b: b, c: c};
+	});
 var $author$project$Compiler$CompModel$Get = F2(
 	function (a, b) {
 		return {$: 'Get', a: a, b: b};
@@ -6222,12 +6266,6 @@ var $author$project$Compiler$CompileBuiltIn$buildIf = function (expr) {
 		return $author$project$Compiler$CompModel$Empty;
 	}
 };
-var $author$project$Compiler$Song$getAnchor = function (val) {
-	return A2(
-		$author$project$Compiler$CompModel$Get,
-		val,
-		$author$project$Compiler$CompModel$Lit('anchor'));
-};
 var $author$project$Compiler$Song$join = F2(
 	function (song1, song2) {
 		return A2(
@@ -6236,10 +6274,22 @@ var $author$project$Compiler$Song$join = F2(
 			_List_fromArray(
 				[song1, song2]));
 	});
+var $author$project$Compiler$CompileBuiltIn$buildJoin = function (expr) {
+	return A2(
+		$author$project$Compiler$CompileBuiltIn$appendAll,
+		A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children),
+		$author$project$Compiler$Song$join);
+};
+var $author$project$Compiler$Song$getAnchor = function (val) {
+	return A2(
+		$author$project$Compiler$CompModel$Get,
+		val,
+		$author$project$Compiler$CompModel$Lit('anchor'));
+};
 var $author$project$Compiler$Song$addSine = F3(
 	function (song, frequency, duration) {
 		return A2(
-			$author$project$Compiler$Song$join,
+			$author$project$Compiler$Song$append,
 			song,
 			A2(
 				$author$project$Compiler$CompModel$CallFunction,
@@ -6272,11 +6322,21 @@ var $author$project$BuiltIn$generalList = _List_fromArray(
 	[
 		A3(
 		$author$project$BuiltIn$BuiltInSpec,
-		'sine',
+		'note',
 		$author$project$BuiltIn$Finite(
 			_List_fromArray(
 				['time', 'frequency', 'duration'])),
 		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildWave)),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'append',
+		A2($author$project$BuiltIn$Infinite, _List_Nil, 'songs'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildAppend)),
+		A3(
+		$author$project$BuiltIn$BuiltInSpec,
+		'join',
+		A2($author$project$BuiltIn$Infinite, _List_Nil, 'songs'),
+		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildJoin)),
 		A3(
 		$author$project$BuiltIn$BuiltInSpec,
 		'if',
@@ -6310,10 +6370,6 @@ var $author$project$BuiltIn$javascriptFunctionList = _List_fromArray(
 		$author$project$Compiler$CompModel$CompileExprFunction(
 			$author$project$Compiler$CompileBuiltIn$buildJavascriptCall('mathMod')))
 	]);
-var $author$project$BuiltIn$Infinite = F2(
-	function (a, b) {
-		return {$: 'Infinite', a: a, b: b};
-	});
 var $author$project$Compiler$CompModel$CopySet = F2(
 	function (a, b) {
 		return {$: 'CopySet', a: a, b: b};
@@ -9569,9 +9625,9 @@ var $author$project$Compiler$Song$songType = $author$project$Compiler$CompModel$
 var $author$project$Compiler$CompModel$sum = function (args) {
 	return A2($author$project$Compiler$CompModel$Unary, '+', args);
 };
-var $author$project$Compiler$Song$joinFunc = A2(
+var $author$project$Compiler$Song$appendFunc = A2(
 	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('join'),
+	$author$project$Compiler$CompModel$Lit('append'),
 	A2(
 		$author$project$Compiler$CompModel$Function,
 		_List_fromArray(
@@ -9649,6 +9705,49 @@ var $author$project$Compiler$Song$joinFunc = A2(
 									]))
 							])))
 				]))));
+var $author$project$Compiler$Song$joinFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('join'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['song1', 'song2']),
+		A3(
+			$author$project$Compiler$CompModel$If,
+			A2(
+				$author$project$Compiler$CompModel$Unary,
+				'>',
+				_List_fromArray(
+					[
+						$author$project$Compiler$Song$getAnchor(
+						$author$project$Compiler$CompModel$Lit('song1')),
+						$author$project$Compiler$Song$getAnchor(
+						$author$project$Compiler$CompModel$Lit('song2'))
+					])),
+			A2(
+				$author$project$Compiler$Song$append,
+				A2(
+					$author$project$Compiler$CompModel$CopySet,
+					$author$project$Compiler$CompModel$Lit('song2'),
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'anchor',
+							$author$project$Compiler$CompModel$litInt(0))
+						])),
+				$author$project$Compiler$CompModel$Lit('song1')),
+			A2(
+				$author$project$Compiler$Song$append,
+				A2(
+					$author$project$Compiler$CompModel$CopySet,
+					$author$project$Compiler$CompModel$Lit('song1'),
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'anchor',
+							$author$project$Compiler$CompModel$litInt(0))
+						])),
+				$author$project$Compiler$CompModel$Lit('song2')))));
 var $author$project$Compiler$Note$noteType = $author$project$Compiler$CompModel$Lit('\'note\'');
 var $author$project$Compiler$Note$makeNote = F2(
 	function (frequency, volume) {
@@ -9693,7 +9792,7 @@ var $author$project$Compiler$Song$noteSongFunc = A2(
 					$author$project$Compiler$CompModel$Lit('duration'))
 				]))));
 var $author$project$Compiler$Song$javascriptFuncs = _List_fromArray(
-	[$author$project$Compiler$Song$joinFunc, $author$project$Compiler$Song$noteSongFunc]);
+	[$author$project$Compiler$Song$appendFunc, $author$project$Compiler$Song$noteSongFunc, $author$project$Compiler$Song$joinFunc]);
 var $author$project$Compiler$CompileToAST$astHead = A2(
 	$elm$core$List$cons,
 	$author$project$Compiler$CompileFunction$getValueFunctionAST,
@@ -9918,9 +10017,6 @@ var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
 				$elm$core$List$length(args)) > -1;
 		}
 	});
-var $author$project$Compiler$CompModel$ConstV = function (a) {
-	return {$: 'ConstV', a: a};
-};
 var $author$project$Compiler$CompModel$FArg = function (a) {
 	return {$: 'FArg', a: a};
 };
@@ -10246,6 +10342,9 @@ var $author$project$Compiler$OnionToExpr$callsToExprs = F3(
 			},
 			calls);
 	});
+var $author$project$Compiler$OnionToExpr$checkName = function (func) {
+	return $elm$core$String$isEmpty(func.name) ? $elm$core$Result$Err('Empty function name') : (A2($elm$core$String$contains, ' ', func.name) ? $elm$core$Result$Err('No whitespace allowed in function name') : $elm$core$Result$Ok(func.name));
+};
 var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
 	function (func, dict, index) {
 		makeIdToIndex:
@@ -10265,31 +10364,23 @@ var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
 			}
 		}
 	});
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
 var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
 	function (onionMap, func) {
 		var idToPos = A3($author$project$Compiler$OnionToExpr$makeIdToIndex, func.calls, $elm$core$Dict$empty, 0);
-		return A2(
-			$elm$core$Result$map,
-			function (exprs) {
-				return _Utils_Tuple2(
-					func.name,
-					A2(
-						$author$project$Compiler$CompModel$Method,
-						$elm$core$List$length(func.args),
-						exprs));
-			},
-			A3($author$project$Compiler$OnionToExpr$callsToExprs, func.calls, onionMap, idToPos));
+		var funcName = $author$project$Compiler$OnionToExpr$checkName(func);
+		return A3(
+			$elm$core$Result$map2,
+			F2(
+				function (exprs, name) {
+					return _Utils_Tuple2(
+						name,
+						A2(
+							$author$project$Compiler$CompModel$Method,
+							$elm$core$List$length(func.args),
+							exprs));
+				}),
+			A3($author$project$Compiler$OnionToExpr$callsToExprs, func.calls, onionMap, idToPos),
+			funcName);
 	});
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
@@ -10315,6 +10406,17 @@ var $author$project$ModelHelpers$makeOnionMap = function (onion) {
 			$author$project$ModelHelpers$makeOnionMap(funcs));
 	}
 };
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
 var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
 	return A2(
 		$elm$core$Result$andThen,
@@ -12942,11 +13044,11 @@ var $author$project$SvgDraw$headerBlockEvents = F2(
 			$author$project$SvgDraw$svgClickEvents,
 			A2(
 				$author$project$Model$SpawnFunction,
-				_function.name,
+				'',
 				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
 			A2(
 				$author$project$Model$SpawnFunction,
-				_function.name,
+				'',
 				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
 			$author$project$SvgDraw$svgClickEvents,
 			A2(
@@ -14234,11 +14336,11 @@ var $author$project$SvgDraw$headerNameEvents = F2(
 			$author$project$SvgDraw$svgClickEvents,
 			A2(
 				$author$project$Model$SpawnFunction,
-				_function.name,
+				'',
 				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
 			A2(
 				$author$project$Model$SpawnFunction,
-				_function.name,
+				'',
 				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
 			$author$project$SvgDraw$svgClickWithDefault,
 			A2(
@@ -14446,10 +14548,11 @@ var $author$project$BuiltIn$makeAllFunction = F2(
 				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
 		}
 	});
-var $author$project$BuiltIn$allBuiltInAsFunction = A2(
-	$author$project$Model$makeMain,
+var $author$project$BuiltIn$allBuiltInAsFunction = A3(
+	$author$project$Model$makeFunc,
 	-1,
-	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100));
+	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100),
+	'function');
 var $author$project$DrawToolbar$drawToolbar = F4(
 	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
 		var viewStructure = A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, true);
