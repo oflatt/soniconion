@@ -11,6 +11,7 @@ import Compiler.OnionToExpr exposing (onionToCompModel)
 import Compiler.CompModel exposing (Value(..), Expr, Method)
 import Compiler.CompModel as CompModel
 import Model exposing (Call, Input(..), Function, makeMain)
+import Debug exposing (log)
 
 numSystemValues = List.length CompModel.systemValues
 
@@ -22,16 +23,16 @@ makeExpr name id values =
 
 mainModel exprs =
     Dict.fromList [("main", (Method 0 exprs))]
-                  
+                  {-
 onionToCompModelTest =
     describe "onionToCompModel"
         [test "basic example with constant arg"
              (\_ ->
                   (Expect.equal
-                       (onionToCompModel [(makeMain 0 [(Call 0 [(Text "2")] "+" "")])])
-                       (Ok (mainModel [(makeExpr "+" 0 [(ConstV 2)])]))))
+                       (log "onion" (onionToCompModel [(makeMain 0 [(Call 0 [(Text "2")] "+" "")])]))
+                       (log "2" (Ok (mainModel [(makeExpr "+" 0 [(ConstV 2)])])))))
 
-{-        ,test "test function"
+        ,test "test function"
             (\_ ->
                  (Expect.equal
                       (onionToCompModel [testFunction])
@@ -47,6 +48,6 @@ onionToCompModelTest =
                                   ,(makeExpr "+" TestModel.join.id [(StackIndex 0)
                                                                    ,(StackIndex 1)])
                                   ,(makeExpr "+" TestModel.plus.id [(StackIndex 2)])
-                                  ])))) -}
-        ]
+                                  ])))) 
+        ]-}
     
