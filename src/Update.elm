@@ -1,4 +1,5 @@
-port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId, headerNameId)
+port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId,
+                                 headerNameId, fpsChange)
 import Debug exposing (log)
 
 import Task
@@ -31,8 +32,9 @@ port evalJavascript : String -> Cmd msg
 
                       
 port scrollChange : (Decode.Value ->  msg) -> Sub msg
-                      
-                      
+
+                    
+port fpsChange : (Decode.Value -> msg) -> Sub msg                   
 
 -- UPDATE
 
@@ -403,6 +405,9 @@ update msg model =
                 ({model |
                       mouseState = newMouse}
                 ,Cmd.none)
+
+        FpsChange newFps ->
+            ({model | fps = newFps}, Cmd.none)
             
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent

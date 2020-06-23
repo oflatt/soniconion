@@ -27,10 +27,11 @@ recur =
         
 loopFunctionBody =
     (Begin (initialVariables ++
-                [CallFunction (Lit "update")
-                     [(Lit "state")
-                     ,(CallFunction (Get (Lit "functions") (Lit "main")) [])
-                     ,(Lit "time")]
+                [CallFunction (Lit "onTick") [(Lit "state")]
+                ,CallFunction (Lit "update")
+                    [(Lit "state")
+                    ,(CallFunction (Get (Lit "functions") (Lit "main")) [])
+                    ,(Lit "time")]
                 ,recur]))
 
 loopFunctionAST =

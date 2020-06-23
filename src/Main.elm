@@ -3,7 +3,7 @@ module Main exposing (main)
 
 import Model exposing (..)
 import View exposing (view)
-import Update exposing (update, scrollChange)
+import Update exposing (update, scrollChange, fpsChange)
 
 import Task
 import Browser
@@ -49,6 +49,7 @@ subscriptions model =
     , Browser.Events.onMouseMove (Decode.map MouseMoved mouseDecoder)
     , Browser.Events.onMouseUp (Decode.succeed MouseRelease)
     , Browser.Events.onKeyDown (Decode.map KeyboardInput decodeKeyboardEvent)
-    , scrollChange scrollChangeDecoder]
+    , scrollChange scrollChangeDecoder
+    , fpsChange fpsChangeDecoder]
 
     -- mouse down handled by svg objects and buttons

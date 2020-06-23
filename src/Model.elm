@@ -35,7 +35,16 @@ scrollChangeDecoder =
         (Decode.map2 Pos
              (Decode.field "xpos" Decode.int)
              (Decode.field "ypos" Decode.int))) >> handelScrollResult
-            
+
+handelFpsResult res =
+    case res of
+        Ok num -> FpsChange num
+        Err err -> NoOp
+
+fpsChangeDecoder =
+    (Decode.decodeValue
+             (Decode.field "fps" Decode.int)) >> handelFpsResult
+
 
 type Msg = MouseOver PageName
          | MouseLeave PageName
@@ -44,6 +53,7 @@ type Msg = MouseOver PageName
          | PageChange String
          | UrlChanged Url.Url
          | ScrollChange Pos
+         | FpsChange Int
          | WindowResize Int Int
          | PlaySound
          | MouseMoved MousePos
@@ -154,6 +164,7 @@ type alias MouseState = {mouseX : Int
 type alias ErrorBox = {error : String}
 
 type alias Model = {currentPage: PageName
+                   ,fps: Int
                    ,highlightedButton: PageName
                    ,urlkey : Nav.Key
                    ,url : Url.Url
@@ -183,6 +194,7 @@ initialProgram = [makeMain 0 []]
 initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model
                                    (urlToPageName url)
+                                   0
                                    "none"
                                    key url
                                    (getindexurl url)
