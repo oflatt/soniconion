@@ -1,9 +1,9 @@
 module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault
                                         ,buildUnaryWithSingleLead, buildIf, buildFuncCall, buildJoin
-                                        ,buildAppend, handleContinuations)
+                                        ,buildAppend, handleContinuations, buildTailFuncCall)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
-                                   ,getLit, getAnchor, CompileExprFunction, argName, while)
+                                   ,getLit, getAnchor, CompileExprFunction, argName, while, true, false)
 import Compiler.CompileFunction exposing (getCacheValue)
 import Compiler.Song exposing (makeLit, append, addSine, join)
 
@@ -66,15 +66,18 @@ buildGeneralUnary defaultValue singleArgumentLead expr =
 handleContinuations ast =
     Begin
         [VarDeclaration (Lit "cont") ast
-        ,while (ArrayRef (Lit "cont") (litInt 0))
-            (VarSet (Lit "cont") (CallFunction (ArrayRef (Lit "cont") (litInt 1)) []))
-        ,(ArrayRef (Lit "cont") (litInt 1))]
+        ,while (ArrRef (Lit "cont") (litInt 0))
+            (VarSet (Lit "cont") (CallFunction (ArrRef (Lit "cont") (litInt 1)) []))
+        ,(ArrRef (Lit "cont") (litInt 1))]
         
 buildFuncCall : Expr -> AST
 buildFuncCall expr =
-    handleContinuations (buildTailFuncCall expr)
+    handleContinuations (buildLiteralFuncCall expr)
 
 buildTailFuncCall expr =
+    Arr [true, Function [] (buildLiteralFuncCall expr)]
+        
+buildLiteralFuncCall expr =
     CallFunction (getLit (Lit "functions") expr.functionName) (List.map buildValue expr.children)
              
 buildUnary expr =

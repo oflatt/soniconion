@@ -18,7 +18,7 @@ noteSongFunc =
     VarDeclaration (Lit "noteSong")
         (Function ["time", "frequency", "duration"]
              (Object [("type", songType)
-                     ,("children", Array [litFunc (makeNote (Lit "frequency") (litFloat 1))])
+                     ,("children", Arr [litFunc (makeNote (Lit "frequency") (litFloat 1))])
                      ,("time", Lit "time")
                      ,("anchor", Lit "duration")
                      ,("duration", Lit "duration")]))
@@ -36,7 +36,7 @@ appendFunc =
         (Function ["song1", "song2"]
              (Object [("type", songType)
                      ,("children"
-                      ,(Array [litFunc (Lit "song1")
+                      ,(Arr [litFunc (Lit "song1")
                               ,litFunc (CopySet (Lit "song2")
                                             [("time", sum [(getLit (Lit "song2") "time")
                                                           ,(getLit (Lit "song1") "anchor")])])]))

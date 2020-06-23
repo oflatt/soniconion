@@ -19,11 +19,11 @@ getCacheValue ast =
 
         
 functionStart method =
-    VarDeclaration (Lit "cache") (Array [])
+    VarDeclaration (Lit "cache") (Arr [])
 
         
 functionEnd method =
-    Array [false, getCacheValue (litInt ((List.length method.exprs)-1))]
+    getCacheValue (litInt ((List.length method.exprs)-1))
 
             
 compileExpr expr entireMethod =

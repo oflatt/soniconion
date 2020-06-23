@@ -38,8 +38,8 @@ type AST = Empty
          | Get AST AST
          | Set AST AST AST
          
-         | Array (List AST)
-         | ArrayRef AST AST
+         | Arr (List AST)
+         | ArrRef AST AST
            
          | Begin (List AST)
          | Let (List (String, AST)) AST

@@ -117,8 +117,8 @@ aSTToJavascript astArgument =
         Get object field -> javascriptGet object field
         Set object field value -> javascriptSet object field value
 
-        Array elements -> javascriptArray elements
-        ArrayRef array pos -> javascriptArrayRef array pos
+        Arr elements -> javascriptArray elements
+        ArrRef array pos -> javascriptArrayRef array pos
 
         Begin commands ->
             javascriptBegin commands

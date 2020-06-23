@@ -5,6 +5,7 @@ import BuiltIn exposing (builtInFunctions, BuiltInVariableValue(..), ArgList(..)
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel, CompileExprFunction(..))
 import Compiler.CompModel as CompModel
 import Compiler.CompileBuiltIn exposing (buildFuncCall)
+import Compiler.HandleTailRecursion exposing (returnContinuation)
 import Utils exposing (resultMap)
 
 import Debug exposing (log)
@@ -102,7 +103,7 @@ callToExpr call idToIndex onionMap =
 
 callsToExprs : List Call -> OnionMap -> IdToIndex -> Result Error (List Expr)
 callsToExprs calls onionMap idToIndex =
-    resultMap (\call -> (callToExpr call idToIndex onionMap)) calls
+    Result.map (returnContinuation onionMap) (resultMap (\call -> (callToExpr call idToIndex onionMap)) calls)
 
 checkName func =
     if String.isEmpty func.name
