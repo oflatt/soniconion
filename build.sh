@@ -1,22 +1,22 @@
 #!/bin/bash
 
-mkdir -p ./docs/
+mkdir -p ./dist/
 
-# clear the docs folder
-echo "--------- clearing docs"
-rm -rf ./docs/*
-
-
-
-echo "--------- elm make and output main.js in docs folder"
-elm make src/Main.elm --output=./docs/main.js
+# clear the dist folder
+echo "--------- clearing dist"
+rm -rf ./dist/*
 
 
-# copy all html files to the docs directory from source
+echo "--------- elm make and output main.js in dist folder"
+elm make src/Main.elm --output=./dist/elmmain.js
+
+
+# copy all html files to the dist directory from source
 echo "--------- copying html files"
-find src -maxdepth 1 -name '*.html' -exec cp {} ./docs/ \;
+find src -maxdepth 1 -name '*.html' -exec cp {} ./dist/ \;
 
-echo "--------- copying js files"
-find src -maxdepth 1 -name '*.js' -exec cp {} ./docs/ \;
 
-cp src/CNAME docs/CNAME
+cp src/CNAME dist/CNAME
+
+# run webpack
+npm run "$@"

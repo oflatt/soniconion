@@ -1,0 +1,33 @@
+{
+  "name": "sonic-onion",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://travis-ci.com/oflatt/soniconion.svg?branch=master)](https://travis-ci.com/oflatt/soniconion)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/oflatt/sonic-onion.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oflatt/sonic-onion/issues"
+  },
+  "homepage": "https://github.com/oflatt/sonic-onion#readme",
+  "devDependencies": {
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "elm-webpack-loader": "^6.0.1",
+    "webpack-dev-server": "^3.11.0"
+  }
+}
