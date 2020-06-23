@@ -27,7 +27,7 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "elm-webpack-loader": "^6.0.1",
+    "tone": "^13.8.25",
     "webpack-dev-server": "^3.11.0"
   }
 }
