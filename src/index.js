@@ -1,3 +1,5 @@
+import Tone from 'Tone';
+
 var app = Elm.Main.init({
     node: document.getElementById('elm'),
     flags: {innerWindowWidth : window.innerWidth,
