@@ -1,9 +1,9 @@
 module Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault
                                         ,buildUnaryWithSingleLead, buildIf, buildFuncCall, buildJoin
-                                        ,buildAppend)
+                                        ,buildAppend, handleContinuations)
     
 import Compiler.CompModel exposing (Expr, Method, CompModel, Value(..), AST(..), litInt, litFloat
-                                   ,getLit, getAnchor, CompileExprFunction, argName)
+                                   ,getLit, getAnchor, CompileExprFunction, argName, while)
 import Compiler.CompileFunction exposing (getCacheValue)
 import Compiler.Song exposing (makeLit, append, addSine, join)
 
@@ -63,8 +63,18 @@ buildGeneralUnary defaultValue singleArgumentLead expr =
                               [(getLit (Lit "tmp") "anchor")
                               ,(buildUnaryRest args expr.functionName)]))])))
 
+handleContinuations ast =
+    Begin
+        [VarDeclaration (Lit "cont") ast
+        ,while (ArrayRef (Lit "cont") (litInt 0))
+            (VarSet (Lit "cont") (CallFunction (ArrayRef (Lit "cont") (litInt 1)) []))
+        ,(ArrayRef (Lit "cont") (litInt 1))]
+        
 buildFuncCall : Expr -> AST
 buildFuncCall expr =
+    handleContinuations (buildTailFuncCall expr)
+
+buildTailFuncCall expr =
     CallFunction (getLit (Lit "functions") expr.functionName) (List.map buildValue expr.children)
              
 buildUnary expr =

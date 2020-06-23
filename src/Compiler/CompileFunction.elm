@@ -1,6 +1,6 @@
 module Compiler.CompileFunction exposing (compileFunction, getValueFunctionAST, getCacheValue)
 import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..),
-                                   forRange, litInt, argName)
+                                   forRange, litInt, argName, false, true)
 import Utils
 import Dict exposing (Dict)
 cacheIsNull ast =
@@ -23,7 +23,7 @@ functionStart method =
 
         
 functionEnd method =
-    getCacheValue (litInt ((List.length method.exprs)-1))
+    Array [false, getCacheValue (litInt ((List.length method.exprs)-1))]
 
             
 compileExpr expr entireMethod =

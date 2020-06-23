@@ -39,6 +39,7 @@ type AST = Empty
          | Set AST AST AST
          
          | Array (List AST)
+         | ArrayRef AST AST
            
          | Begin (List AST)
          | Let (List (String, AST)) AST
@@ -69,6 +70,9 @@ forRange varName beginAST endAST bodyAST =
         (Unary "<" [(Lit varName), endAST])
         (Lit (varName ++ "++"))
         bodyAST
+
+while condition body =
+    For Empty condition Empty body
 
 litFloat float = (Lit (String.fromFloat float))
 litInt int = (Lit (String.fromInt int))

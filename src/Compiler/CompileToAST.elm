@@ -1,6 +1,7 @@
 module Compiler.CompileToAST exposing (compileToAST)
 import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), forRange)
 import Compiler.CompileFunction exposing (compileFunction, getValueFunctionAST)
+import Compiler.CompileBuiltIn exposing (handleContinuations)
 import Compiler.Song
 import Utils
 import Dict exposing (Dict)
@@ -30,7 +31,7 @@ loopFunctionBody =
                 [CallFunction (Lit "onTick") [(Lit "state")]
                 ,CallFunction (Lit "update")
                     [(Lit "state")
-                    ,(CallFunction (Get (Lit "functions") (Lit "main")) [])
+                    ,handleContinuations (CallFunction (Get (Lit "functions") (Lit "main")) [])
                     ,(Lit "time")]
                 ,recur]))
 

@@ -87,6 +87,13 @@ javascriptGet object field =
 javascriptArray elements =
     "[" ++ (String.join "," (List.map aSTToJavascript elements)) ++ "]"
 
+javascriptArrayRef array pos =
+    String.join ""
+        [aSTToJavascript array
+        ,"["
+        ,aSTToJavascript pos
+        ,"]"]
+
 javascriptLet vars body =
     aSTToJavascript (Begin
                          ((List.map (\var -> (VarDeclaration (Lit (Tuple.first var)) (Tuple.second var)))
@@ -111,6 +118,7 @@ aSTToJavascript astArgument =
         Set object field value -> javascriptSet object field value
 
         Array elements -> javascriptArray elements
+        ArrayRef array pos -> javascriptArrayRef array pos
 
         Begin commands ->
             javascriptBegin commands
