@@ -17,7 +17,7 @@ function onMouseMove(event) {
 
 // a synth array is an array of currently playing synths- play indefinately without intervention
 function makeInitialState(stackIn) {
-    return  {synths : []};
+    return  {synths : [], tickCounter : 0, lastFpsUpdate : 0};
 }
 
 function getTime() {
@@ -76,13 +76,22 @@ function update(state, song, time) {
     }
 }
 
-
+function onTick(state) {
+    state.tickCounter += 1;
+    if (getTime() > 1 + state.lastFpsUpdate) {
+	app.ports.fpsChange.send({'fps' : state.tickCounter});
+	state.lastFpsUpdate = getTime();
+	state.tickCounter = 0;
+    }
+}
 
 app.ports.evalJavascript.subscribe(function(javascriptCode) {
-    return Function('update', 'getTime', 'makeInitialState', 'mathMod', '"use strict";' + javascriptCode)(
-        update, getTime, makeInitialState, mathMod
+    return Function('onTick', 'update', 'getTime', 'makeInitialState', 'mathMod', '"use strict";' + javascriptCode)(
+        onTick, update, getTime, makeInitialState, mathMod
     );
 });
+
+
 
 window.onscroll = function() {
     app.ports.scrollChange.send({xpos: document.documentElement.scrollLeft,

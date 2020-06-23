@@ -5124,17 +5124,19 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Model$Model = function (currentPage) {
-	return function (highlightedButton) {
-		return function (urlkey) {
-			return function (url) {
-				return function (indexurl) {
-					return function (windowWidth) {
-						return function (windowHeight) {
-							return function (program) {
-								return function (mouseState) {
-									return function (errorBoxMaybe) {
-										return function (idCounter) {
-											return {currentPage: currentPage, errorBoxMaybe: errorBoxMaybe, highlightedButton: highlightedButton, idCounter: idCounter, indexurl: indexurl, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
+	return function (fps) {
+		return function (highlightedButton) {
+			return function (urlkey) {
+				return function (url) {
+					return function (indexurl) {
+						return function (windowWidth) {
+							return function (windowHeight) {
+								return function (program) {
+									return function (mouseState) {
+										return function (errorBoxMaybe) {
+											return function (idCounter) {
+												return {currentPage: currentPage, errorBoxMaybe: errorBoxMaybe, fps: fps, highlightedButton: highlightedButton, idCounter: idCounter, indexurl: indexurl, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
+											};
 										};
 									};
 								};
@@ -5273,7 +5275,7 @@ var $author$project$Model$initialModel = F3(
 	function (flags, url, key) {
 		return _Utils_Tuple2(
 			$author$project$Model$Model(
-				$author$project$Model$urlToPageName(url))('none')(key)(url)(
+				$author$project$Model$urlToPageName(url))(0)('none')(key)(url)(
 				$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)(
 				A5($author$project$Model$MouseState, 0, 0, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing)(1),
 			$elm$core$Platform$Cmd$none);
@@ -5620,6 +5622,32 @@ var $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent = A8(
 	A2($elm$json$Json$Decode$field, 'metaKey', $elm$json$Json$Decode$bool),
 	A2($elm$json$Json$Decode$field, 'repeat', $elm$json$Json$Decode$bool),
 	A2($elm$json$Json$Decode$field, 'shiftKey', $elm$json$Json$Decode$bool));
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Update$fpsChange = _Platform_incomingPort('fpsChange', $elm$json$Json$Decode$value);
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Model$FpsChange = function (a) {
+	return {$: 'FpsChange', a: a};
+};
+var $author$project$Model$NoOp = {$: 'NoOp'};
+var $author$project$Model$handelFpsResult = function (res) {
+	if (res.$ === 'Ok') {
+		var num = res.a;
+		return $author$project$Model$FpsChange(num);
+	} else {
+		var err = res.a;
+		return $author$project$Model$NoOp;
+	}
+};
+var $author$project$Model$fpsChangeDecoder = A2(
+	$elm$core$Basics$composeR,
+	$elm$json$Json$Decode$decodeValue(
+		A2($elm$json$Json$Decode$field, 'fps', $elm$json$Json$Decode$int)),
+	$author$project$Model$handelFpsResult);
 var $author$project$Model$MousePos = F2(
 	function (x, y) {
 		return {x: x, y: y};
@@ -6047,19 +6075,11 @@ var $elm$browser$Browser$Events$onResize = function (func) {
 				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
 				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
 };
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Update$scrollChange = _Platform_incomingPort('scrollChange', $elm$json$Json$Decode$value);
 var $author$project$Model$Pos = F2(
 	function (xpos, ypos) {
 		return {xpos: xpos, ypos: ypos};
 	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Model$NoOp = {$: 'NoOp'};
 var $author$project$Model$ScrollChange = function (a) {
 	return {$: 'ScrollChange', a: a};
 };
@@ -6092,7 +6112,8 @@ var $author$project$Main$subscriptions = function (model) {
 				$elm$json$Json$Decode$succeed($author$project$Model$MouseRelease)),
 				$elm$browser$Browser$Events$onKeyDown(
 				A2($elm$json$Json$Decode$map, $author$project$Model$KeyboardInput, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent)),
-				$author$project$Update$scrollChange($author$project$Model$scrollChangeDecoder)
+				$author$project$Update$scrollChange($author$project$Model$scrollChangeDecoder),
+				$author$project$Update$fpsChange($author$project$Model$fpsChangeDecoder)
 			]));
 };
 var $author$project$Model$BlockSelected = F3(
@@ -9897,6 +9918,13 @@ var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Com
 			[
 				A2(
 				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit('onTick'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Lit('state')
+					])),
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
 				$author$project$Compiler$CompModel$Lit('update'),
 				_List_fromArray(
 					[
@@ -10579,6 +10607,13 @@ var $author$project$Update$update = F2(
 					_Utils_update(
 						model,
 						{mouseState: newMouse}),
+					$elm$core$Platform$Cmd$none);
+			case 'FpsChange':
+				var newFps = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fps: newFps}),
 					$elm$core$Platform$Cmd$none);
 			case 'KeyboardInput':
 				var keyevent = msg.a;
