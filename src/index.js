@@ -19,17 +19,14 @@ function onMouseMove(event) {
 
 // a synth array is an array of currently playing synths- play indefinately without intervention
 function makeInitialState(stackIn) {
-    console.log("initial");
     return  {synths : [], tickCounter : 0, lastFpsUpdate : 0};
 }
 
 function getTime() {
-    console.log("time");
     return (new Date()).getTime()/1000;
 }
 
 function mathMod(a, b) {
-    console.log("math");
     var res = a%b;
     if (res < 0) {
 	return res + abs(b);
@@ -39,7 +36,6 @@ function mathMod(a, b) {
 }
 
 function songToNotes(song, currentTime) {
-    console.log("song");
     var stack = [[song, 0, 0]];
     var notes = [];
     while(stack.length > 0) {
@@ -64,7 +60,6 @@ function songToNotes(song, currentTime) {
 }
 
 function update(state, song, time) {
-    console.log("update");
     var notes = songToNotes(song, time);
     
     for(var i = 0; i < notes.length; i++) {
@@ -85,7 +80,6 @@ function update(state, song, time) {
 }
 
 function onTick(state) {
-    console.log("tick");
     state.tickCounter += 1;
     if (getTime() > 1 + state.lastFpsUpdate) {
 	app.ports.fpsChange.send({'fps' : state.tickCounter});
@@ -94,13 +88,20 @@ function onTick(state) {
     }
 }
 
-
-app.ports.evalJavascript.subscribe(function(javascriptCode) {    
+window.asyncRun = false;
+app.ports.evalJavascript.subscribe(function(javascriptCode) {
+    if(window.asyncRun) {
+	try {
+	    window.asyncRun.pauseImmediate(() => {});
+	} catch (e) {
+	    console.log("pausing failed");
+	}
+    }
     
-    const asyncRun = stopify.stopifyLocally('"use strict";console.log("ran");' + javascriptCode);
-    asyncRun.g = {console, window, Tone, onTick, update, getTime, makeInitialState, mathMod, document, window, app
+    window.asyncRun = stopify.stopifyLocally('' + javascriptCode);
+    window.asyncRun.g = {console, window, Tone, onTick, update, getTime, makeInitialState, mathMod, document, window, app
 		  ,Object, Math, Date, songToNotes, setTimeout};
-    asyncRun.run(() => {});
+    window.asyncRun.run(() => {});
 });
 
 
