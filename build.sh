@@ -18,5 +18,7 @@ find src -maxdepth 1 -name '*.html' -exec cp {} ./dist/ \;
 
 cp src/CNAME dist/CNAME
 
+cp node_modules/stopify/dist/stopify-full.bundle.js dist
+
 # run webpack
 npm run "$@"
