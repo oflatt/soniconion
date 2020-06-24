@@ -28,7 +28,6 @@
   },
   "dependencies": {
     "stopify": "^0.5.4-elementaryJS",
-    "tone": "^13.8.25",
-    "webpack-dev-server": "^3.11.0"
+    "tone": "^13.8.25"
   }
 }
