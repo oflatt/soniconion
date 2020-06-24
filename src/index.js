@@ -1,4 +1,4 @@
-import Tone from 'Tone';
+import Tone from '../node_modules/tone/Tone/index.js';
 
 var app = Elm.Main.init({
     node: document.getElementById('elm'),
