@@ -1,5 +1,5 @@
 module Compiler.CompileToAST exposing (compileToAST)
-import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), forRange)
+import Compiler.CompModel exposing (CompModel, Method, Expr, AST(..), CompileExprFunction(..), forRange, while)
 import Compiler.CompileFunction exposing (compileFunction, getValueFunctionAST)
 import Compiler.CompileBuiltIn exposing (handleContinuations)
 import Compiler.Song
@@ -32,19 +32,12 @@ loopFunctionBody =
                 ,CallFunction (Lit "update")
                     [(Lit "state")
                     ,handleContinuations (CallFunction (Get (Lit "functions") (Lit "main")) [])
-                    ,(Lit "time")]
-                ,recur]))
+                    ,(Lit "time")]]))
 
-loopFunctionAST =
-    (VarDeclaration (Lit "recur")
-         (Function []
-              loopFunctionBody))
-            
+        
 loopAST =
-    (Begin
-         [(VarDeclaration (Lit "state") (Lit "makeInitialState()"))
-         ,loopFunctionAST
-         ,recur])
+    (while (Lit "true")
+         loopFunctionBody)
        
 
 astHead =

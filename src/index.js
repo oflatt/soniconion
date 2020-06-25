@@ -88,20 +88,44 @@ function onTick(state) {
     }
 }
 
+function cleanup(state) {
+    for(var i = 0; i < state.synths.length; i++) {
+	state.synths[i].dispose();
+    }
+}
+
+function runNew(javascriptCode) {
+    const state = makeInitialState();
+    window.runningState = state;
+    
+    window.asyncRun = stopify.stopifyLocally(javascriptCode,
+					     {}, {
+						 estimator: "exact",
+						 yieldInterval: 50});
+    window.asyncRun.g = {console, window, Tone, onTick, update, getTime, state, mathMod, document, window, app
+			 ,Object, Math, Date, songToNotes, setTimeout};
+    window.asyncRun.run(() => {});
+    window.runLock = false;
+}
+
 window.asyncRun = false;
+window.runLock = false;
+window.runningState = false;
 app.ports.evalJavascript.subscribe(function(javascriptCode) {
-    if(window.asyncRun) {
-	try {
-	    window.asyncRun.pauseImmediate(() => {});
-	} catch (e) {
-	    console.log("pausing failed");
-	}
+    if(window.runLock) {
+	return;
     }
     
-    window.asyncRun = stopify.stopifyLocally('' + javascriptCode);
-    window.asyncRun.g = {console, window, Tone, onTick, update, getTime, makeInitialState, mathMod, document, window, app
-		  ,Object, Math, Date, songToNotes, setTimeout};
-    window.asyncRun.run(() => {});
+    const oldState = window.runningState;
+    if(window.asyncRun) {
+	window.runLock = true;
+	window.asyncRun.pause(() => {
+	    cleanup(oldState);
+	    runNew(javascriptCode);
+	});
+    } else {
+	runNew(javascriptCode);
+    }
 });
 
 

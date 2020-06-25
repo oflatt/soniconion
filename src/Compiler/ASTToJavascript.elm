@@ -33,7 +33,7 @@ javascriptIf bool thenCase elseCase =
 
 javascriptFor var check increment body =
     String.join ""
-        ["for("
+        ["(function() { for("
         ,aSTToJavascript var
         ,";"
         ,aSTToJavascript check
@@ -41,7 +41,7 @@ javascriptFor var check increment body =
         ,aSTToJavascript increment
         ,") {"
         ,aSTToJavascript body
-        ,"}"]
+        ,"}}())"]
         
 javascriptBegin commands =
     case Utils.splitLast commands of
