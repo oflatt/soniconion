@@ -9469,7 +9469,7 @@ var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
 			'',
 			_List_fromArray(
 				[
-					'for(',
+					'(function() { for(',
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_var),
 					';',
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(check),
@@ -9477,7 +9477,7 @@ var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(increment),
 					') {',
 					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
-					'}'
+					'}}())'
 				]));
 	});
 var $author$project$Compiler$ASTToJavascript$javascriptFunction = F2(
@@ -9962,14 +9962,6 @@ var $author$project$Compiler$CompileBuiltIn$handleContinuations = function (ast)
 				$author$project$Compiler$CompModel$litInt(1))
 			]));
 };
-var $author$project$Compiler$CompileToAST$recur = A2(
-	$author$project$Compiler$CompModel$CallFunction,
-	$author$project$Compiler$CompModel$Lit('setTimeout'),
-	_List_fromArray(
-		[
-			$author$project$Compiler$CompModel$Lit('recur'),
-			$author$project$Compiler$CompModel$Lit('4')
-		]));
 var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$Begin(
 	_Utils_ap(
 		$author$project$Compiler$CompileToAST$initialVariables,
@@ -9997,23 +9989,12 @@ var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Com
 								$author$project$Compiler$CompModel$Lit('main')),
 							_List_Nil)),
 						$author$project$Compiler$CompModel$Lit('time')
-					])),
-				$author$project$Compiler$CompileToAST$recur
+					]))
 			])));
-var $author$project$Compiler$CompileToAST$loopFunctionAST = A2(
-	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('recur'),
-	A2($author$project$Compiler$CompModel$Function, _List_Nil, $author$project$Compiler$CompileToAST$loopFunctionBody));
-var $author$project$Compiler$CompileToAST$loopAST = $author$project$Compiler$CompModel$Begin(
-	_List_fromArray(
-		[
-			A2(
-			$author$project$Compiler$CompModel$VarDeclaration,
-			$author$project$Compiler$CompModel$Lit('state'),
-			$author$project$Compiler$CompModel$Lit('makeInitialState()')),
-			$author$project$Compiler$CompileToAST$loopFunctionAST,
-			$author$project$Compiler$CompileToAST$recur
-		]));
+var $author$project$Compiler$CompileToAST$loopAST = A2(
+	$author$project$Compiler$CompModel$while,
+	$author$project$Compiler$CompModel$Lit('true'),
+	$author$project$Compiler$CompileToAST$loopFunctionBody);
 var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
 	return $author$project$Compiler$CompModel$Begin(
 		_Utils_ap(
