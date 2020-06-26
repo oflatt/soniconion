@@ -5125,17 +5125,19 @@ var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Model$Model = function (currentPage) {
 	return function (fps) {
-		return function (highlightedButton) {
-			return function (urlkey) {
-				return function (url) {
-					return function (indexurl) {
-						return function (windowWidth) {
-							return function (windowHeight) {
-								return function (program) {
-									return function (mouseState) {
-										return function (errorBoxMaybe) {
-											return function (idCounter) {
-												return {currentPage: currentPage, errorBoxMaybe: errorBoxMaybe, fps: fps, highlightedButton: highlightedButton, idCounter: idCounter, indexurl: indexurl, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
+		return function (isRunning) {
+			return function (highlightedButton) {
+				return function (urlkey) {
+					return function (url) {
+						return function (indexurl) {
+							return function (windowWidth) {
+								return function (windowHeight) {
+									return function (program) {
+										return function (mouseState) {
+											return function (errorBoxMaybe) {
+												return function (idCounter) {
+													return {currentPage: currentPage, errorBoxMaybe: errorBoxMaybe, fps: fps, highlightedButton: highlightedButton, idCounter: idCounter, indexurl: indexurl, isRunning: isRunning, mouseState: mouseState, program: program, url: url, urlkey: urlkey, windowHeight: windowHeight, windowWidth: windowWidth};
+												};
 											};
 										};
 									};
@@ -5275,7 +5277,7 @@ var $author$project$Model$initialModel = F3(
 	function (flags, url, key) {
 		return _Utils_Tuple2(
 			$author$project$Model$Model(
-				$author$project$Model$urlToPageName(url))(0)('none')(key)(url)(
+				$author$project$Model$urlToPageName(url))(0)(false)('none')(key)(url)(
 				$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)(
 				A5($author$project$Model$MouseState, 0, 0, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing)(1),
 			$elm$core$Platform$Cmd$none);
@@ -6075,6 +6077,24 @@ var $elm$browser$Browser$Events$onResize = function (func) {
 				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
 				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
 };
+var $author$project$Update$runningChange = _Platform_incomingPort('runningChange', $elm$json$Json$Decode$value);
+var $author$project$Model$RunningChange = function (a) {
+	return {$: 'RunningChange', a: a};
+};
+var $author$project$Model$handelRunningResult = function (res) {
+	if (res.$ === 'Ok') {
+		var num = res.a;
+		return $author$project$Model$RunningChange(num);
+	} else {
+		var err = res.a;
+		return $author$project$Model$NoOp;
+	}
+};
+var $author$project$Model$runningChangeDecoder = A2(
+	$elm$core$Basics$composeR,
+	$elm$json$Json$Decode$decodeValue(
+		A2($elm$json$Json$Decode$field, 'running', $elm$json$Json$Decode$bool)),
+	$author$project$Model$handelRunningResult);
 var $author$project$Update$scrollChange = _Platform_incomingPort('scrollChange', $elm$json$Json$Decode$value);
 var $author$project$Model$Pos = F2(
 	function (xpos, ypos) {
@@ -6113,7 +6133,8 @@ var $author$project$Main$subscriptions = function (model) {
 				$elm$browser$Browser$Events$onKeyDown(
 				A2($elm$json$Json$Decode$map, $author$project$Model$KeyboardInput, $Gizra$elm_keyboard_event$Keyboard$Event$decodeKeyboardEvent)),
 				$author$project$Update$scrollChange($author$project$Model$scrollChangeDecoder),
-				$author$project$Update$fpsChange($author$project$Model$fpsChangeDecoder)
+				$author$project$Update$fpsChange($author$project$Model$fpsChangeDecoder),
+				$author$project$Update$runningChange($author$project$Model$runningChangeDecoder)
 			]));
 };
 var $author$project$Model$BlockSelected = F3(
@@ -10816,6 +10837,17 @@ var $author$project$Update$spawnFuncModel = F3(
 				{idCounter: newFunc.id + 1, mouseState: newMouse}),
 			$elm$core$Platform$Cmd$none);
 	});
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Update$stopJavascript = _Platform_outgoingPort(
+	'stopJavascript',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
+var $author$project$Update$stopSoundResult = function (model) {
+	return _Utils_Tuple2(
+		model,
+		$author$project$Update$stopJavascript(_Utils_Tuple0));
+};
 var $author$project$Update$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -10859,6 +10891,13 @@ var $author$project$Update$update = F2(
 					_Utils_update(
 						model,
 						{fps: newFps}),
+					$elm$core$Platform$Cmd$none);
+			case 'RunningChange':
+				var isRunning = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{isRunning: isRunning}),
 					$elm$core$Platform$Cmd$none);
 			case 'KeyboardInput':
 				var keyevent = msg.a;
@@ -10956,6 +10995,8 @@ var $author$project$Update$update = F2(
 				return A3($author$project$Update$spawnFuncModel, model, name, mouseOffset);
 			case 'PlaySound':
 				return $author$project$Update$playSoundResult(model);
+			case 'StopSound':
+				return $author$project$Update$stopSoundResult(model);
 			case 'WindowResize':
 				var newWidth = msg.a;
 				var newHeight = msg.b;
@@ -12731,8 +12772,9 @@ var $author$project$View$makePage = F3(
 				[content])) : $rtfeldman$elm_css$Html$Styled$text('');
 	});
 var $author$project$Model$PlaySound = {$: 'PlaySound'};
-var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
+var $author$project$Model$StopSound = {$: 'StopSound'};
 var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
+var $author$project$ViewVariables$disabledGrey = A3($rtfeldman$elm_css$Css$rgb, 220, 220, 220);
 var $rtfeldman$elm_css$Css$stringsToValue = function (list) {
 	return $elm$core$List$isEmpty(list) ? {value: 'none'} : {
 		value: A2(
@@ -12752,32 +12794,12 @@ var $rtfeldman$elm_css$Css$fontFamilies = A2(
 	$rtfeldman$elm_css$Css$stringsToValue);
 var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
 var $rtfeldman$elm_css$Css$inlineBlock = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-block'};
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
+var $author$project$Model$MouseLeave = function (a) {
+	return {$: 'MouseLeave', a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $rtfeldman$elm_css$VirtualDom$Styled$on = F2(
-	function (eventName, handler) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$on, eventName, handler),
-			_List_Nil,
-			'');
-	});
-var $rtfeldman$elm_css$Html$Styled$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$rtfeldman$elm_css$VirtualDom$Styled$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
+var $author$project$Model$MouseOver = function (a) {
+	return {$: 'MouseOver', a: a};
 };
-var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
 var $rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
 	return {$: 'ApplyStyles', a: a};
 };
@@ -12843,112 +12865,43 @@ var $rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
 	});
 var $rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
 var $rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$Internal$IncompatibleUnits, '', 0);
-var $rtfeldman$elm_css$Css$textAlign = function (fn) {
+var $rtfeldman$elm_css$Css$alignItems = function (fn) {
 	return A3(
 		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'textAlign',
-		'text-align',
+		'alignItems',
+		'align-items',
 		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
 };
-var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
-var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
-var $author$project$View$makeTitle = A2(
-	$rtfeldman$elm_css$Html$Styled$div,
-	_List_fromArray(
-		[
-			$rtfeldman$elm_css$Html$Styled$Attributes$css(
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Css$height(
-					$rtfeldman$elm_css$Css$px($author$project$ViewVariables$titleHeight)),
-					$rtfeldman$elm_css$Css$width(
-					$rtfeldman$elm_css$Css$pct(100))
-				]))
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
-							$rtfeldman$elm_css$Css$padding(
-							$rtfeldman$elm_css$Css$px(20))
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$rtfeldman$elm_css$Html$Styled$div,
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$css(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$fontFamilies(
-									_List_fromArray(
-										['Raleway'])),
-									$rtfeldman$elm_css$Css$fontSize(
-									$rtfeldman$elm_css$Css$px(32)),
-									$rtfeldman$elm_css$Css$top(
-									$rtfeldman$elm_css$Css$px(10)),
-									$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock)
-								]))
-						]),
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$text('Title')
-						])),
-					A2(
-					$rtfeldman$elm_css$Html$Styled$div,
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$css(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock)
-								]))
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$rtfeldman$elm_css$Html$Styled$button,
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$Events$onClick($author$project$Model$PlaySound)
-								]),
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Html$Styled$text('Play')
-								]))
-						]))
-				]))
-		]));
-var $author$project$Model$MouseLeave = function (a) {
-	return {$: 'MouseLeave', a: a};
-};
-var $author$project$Model$MouseOver = function (a) {
-	return {$: 'MouseOver', a: a};
-};
-var $author$project$Model$PageChange = function (a) {
-	return {$: 'PageChange', a: a};
-};
 var $rtfeldman$elm_css$Css$border = $rtfeldman$elm_css$Css$prop1('border');
-var $rtfeldman$elm_css$Css$borderBottomColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'border-bottom-color', c.value);
+var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
+var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
+var $rtfeldman$elm_css$Css$inlineFlex = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-flex'};
+var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
 };
-var $rtfeldman$elm_css$Css$borderColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'border-color', c.value);
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $rtfeldman$elm_css$VirtualDom$Styled$on = F2(
+	function (eventName, handler) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$on, eventName, handler),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
 };
-var $rtfeldman$elm_css$Css$borderStyle = $rtfeldman$elm_css$Css$prop1('border-style');
-var $rtfeldman$elm_css$Css$borderTopLeftRadius = $rtfeldman$elm_css$Css$prop1('border-top-left-radius');
-var $rtfeldman$elm_css$Css$borderTopRightRadius = $rtfeldman$elm_css$Css$prop1('border-top-right-radius');
-var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
-var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
-var $rtfeldman$elm_css$Css$none = {backgroundImage: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, display: $rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, outline: $rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, resize: $rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, textTransform: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, transform: $rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
 var $rtfeldman$elm_css$Html$Styled$Events$onMouseLeave = function (msg) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$Events$on,
@@ -12961,6 +12914,228 @@ var $rtfeldman$elm_css$Html$Styled$Events$onMouseOver = function (msg) {
 		'mouseover',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
+var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
+var $rtfeldman$elm_css$Css$paddingRight = $rtfeldman$elm_css$Css$prop1('padding-right');
+var $author$project$TitleBar$makeIconButton = F4(
+	function (icon, textString, event, color) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$button,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Events$onClick(event),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseOver(
+					$author$project$Model$MouseOver(textString)),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseLeave(
+					$author$project$Model$MouseLeave(textString)),
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontFamilies(
+							_List_fromArray(
+								['monospace'])),
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$px(24)),
+							$rtfeldman$elm_css$Css$padding(
+							$rtfeldman$elm_css$Css$px(10)),
+							$rtfeldman$elm_css$Css$paddingLeft(
+							$rtfeldman$elm_css$Css$px(20)),
+							$rtfeldman$elm_css$Css$paddingRight(
+							$rtfeldman$elm_css$Css$px(20)),
+							$rtfeldman$elm_css$Css$marginLeft(
+							$rtfeldman$elm_css$Css$px(100)),
+							$rtfeldman$elm_css$Css$border(
+							$rtfeldman$elm_css$Css$px(0)),
+							$rtfeldman$elm_css$Css$borderRadius(
+							$rtfeldman$elm_css$Css$px(5)),
+							$rtfeldman$elm_css$Css$alignItems($rtfeldman$elm_css$Css$center),
+							$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+							$rtfeldman$elm_css$Css$backgroundColor(color)
+						]))
+				]),
+			_List_fromArray(
+				[
+					icon,
+					$rtfeldman$elm_css$Html$Styled$text(textString)
+				]));
+	});
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
+var $rtfeldman$elm_css$Html$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $author$project$TitleBar$playIcon = $rtfeldman$elm_css$Html$Styled$fromUnstyled(
+	A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$width('40px'),
+				$elm$svg$Svg$Attributes$height('24px')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$polygon,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$points('0,0 0,24 24,12'),
+						$elm$svg$Svg$Attributes$fill('rgb(67, 194, 60)')
+					]),
+				_List_Nil)
+			])));
+var $author$project$ViewVariables$holeGrey = 'rgb(200, 200, 200)';
+var $author$project$TitleBar$stopIcon = function (isRunning) {
+	return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
+		A2(
+			$elm$svg$Svg$svg,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$width('40px'),
+					$elm$svg$Svg$Attributes$height('24px')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$polygon,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$points('0,0 0,24 24,24, 24,0'),
+							$elm$svg$Svg$Attributes$fill(
+							isRunning ? 'rgb(214, 36, 36)' : $author$project$ViewVariables$holeGrey)
+						]),
+					_List_Nil)
+				])));
+};
+var $rtfeldman$elm_css$Css$textAlign = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'textAlign',
+		'text-align',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
+var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
+var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
+var $author$project$TitleBar$makeTitle = function (model) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$height(
+						$rtfeldman$elm_css$Css$px($author$project$ViewVariables$titleHeight)),
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$pct(100))
+					]))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center),
+								$rtfeldman$elm_css$Css$padding(
+								$rtfeldman$elm_css$Css$px(20)),
+								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock)
+							]))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$rtfeldman$elm_css$Html$Styled$div,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$fontFamilies(
+										_List_fromArray(
+											['monospace'])),
+										$rtfeldman$elm_css$Css$fontSize(
+										$rtfeldman$elm_css$Css$px(32)),
+										$rtfeldman$elm_css$Css$top(
+										$rtfeldman$elm_css$Css$px(10))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$text('Sonic Onion')
+							]))
+					])),
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
+								$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
+							]))
+					]),
+				_List_fromArray(
+					[
+						A4(
+						$author$project$TitleBar$makeIconButton,
+						$author$project$TitleBar$playIcon,
+						'Play',
+						$author$project$Model$PlaySound,
+						(!(model.highlightedButton === 'Play')) ? A3($rtfeldman$elm_css$Css$rgb, 199, 255, 201) : A3($rtfeldman$elm_css$Css$rgb, 168, 255, 163)),
+						A4(
+						$author$project$TitleBar$makeIconButton,
+						$author$project$TitleBar$stopIcon(model.isRunning),
+						'Stop',
+						$author$project$Model$StopSound,
+						model.isRunning ? ((!(model.highlightedButton === 'Stop')) ? A3($rtfeldman$elm_css$Css$rgb, 252, 144, 144) : A3($rtfeldman$elm_css$Css$rgb, 232, 93, 93)) : $author$project$ViewVariables$disabledGrey),
+						A2(
+						$rtfeldman$elm_css$Html$Styled$div,
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$Attributes$css(
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Css$fontFamilies(
+										_List_fromArray(
+											['monospace'])),
+										$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
+										$rtfeldman$elm_css$Css$fontSize(
+										$rtfeldman$elm_css$Css$px(24)),
+										$rtfeldman$elm_css$Css$marginLeft(
+										$rtfeldman$elm_css$Css$px(100))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Html$Styled$text(
+								'fps: ' + ((!model.isRunning) ? '' : $elm$core$String$fromInt(model.fps)))
+							]))
+					]))
+			]));
+};
+var $author$project$Model$PageChange = function (a) {
+	return {$: 'PageChange', a: a};
+};
+var $rtfeldman$elm_css$Css$borderBottomColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'border-bottom-color', c.value);
+};
+var $rtfeldman$elm_css$Css$borderColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'border-color', c.value);
+};
+var $rtfeldman$elm_css$Css$borderStyle = $rtfeldman$elm_css$Css$prop1('border-style');
+var $rtfeldman$elm_css$Css$borderTopLeftRadius = $rtfeldman$elm_css$Css$prop1('border-top-left-radius');
+var $rtfeldman$elm_css$Css$borderTopRightRadius = $rtfeldman$elm_css$Css$prop1('border-top-right-radius');
+var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
+var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
+var $rtfeldman$elm_css$Css$none = {backgroundImage: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, display: $rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, outline: $rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, resize: $rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, textTransform: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, transform: $rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
 var $rtfeldman$elm_css$Css$outline = $rtfeldman$elm_css$Css$prop1('outline');
 var $author$project$ViewVariables$pageBackgroundColor = A3($rtfeldman$elm_css$Css$rgb, 229, 229, 208);
 var $rtfeldman$elm_css$Css$solid = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationStyle: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'solid'};
@@ -13013,7 +13188,6 @@ var $author$project$View$pagebutton = F2(
 					$rtfeldman$elm_css$Html$Styled$text(pageName)
 				]));
 	});
-var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
 var $author$project$ViewVariables$errorColor = A3($rtfeldman$elm_css$Css$rgb, 255, 150, 150);
 var $rtfeldman$elm_css$Css$fixed = {backgroundAttachment: $rtfeldman$elm_css$Css$Structure$Compatible, position: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'fixed'};
 var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
@@ -13112,20 +13286,16 @@ var $author$project$SvgDraw$blockMouseOffset = F2(
 		}
 	});
 var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
 	return _VirtualDom_nodeNS(
 		_VirtualDom_noScript(tag));
 };
 var $elm$svg$Svg$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$Attributes$pointerEvents = _VirtualDom_attribute('pointer-events');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
 var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
@@ -13398,7 +13568,6 @@ var $author$project$Model$OutputRightClick = function (a) {
 	return {$: 'OutputRightClick', a: a};
 };
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $author$project$ViewVariables$holeGrey = 'rgb(200, 200, 200)';
 var $author$project$ViewVariables$hollowNodeOutlineProportion = 0.25;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $author$project$SvgDraw$drawNode = F6(
@@ -14242,7 +14411,6 @@ var $author$project$Utils$listToStringList = function (l) {
 			$author$project$Utils$listToStringListRest(is));
 	}
 };
-var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
 var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
 var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
 var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
@@ -14840,9 +15008,6 @@ var $author$project$DrawToolbar$drawToolbar = F4(
 			viewStructure.funcHeight,
 			$author$project$DrawFunc$drawFuncWithConnections(viewStructure));
 	});
-var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
-var $rtfeldman$elm_css$Html$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $author$project$DrawProgram$drawProgram = F4(
 	function (program, mouseState, svgWindowWidth, svgWindowHeight) {
@@ -14927,7 +15092,7 @@ var $author$project$View$view = function (model) {
 									$rtfeldman$elm_css$Html$Styled$Attributes$href('https://fonts.googleapis.com/css?family=Raleway')
 								]),
 							_List_Nil),
-							$author$project$View$makeTitle,
+							$author$project$TitleBar$makeTitle(model),
 							A2($author$project$View$pagebutton, 'Home', model),
 							A2($author$project$View$pagebutton, 'Unused', model),
 							A3(
