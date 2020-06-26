@@ -46,8 +46,8 @@ fpsChangeDecoder =
              (Decode.field "fps" Decode.int)) >> handelFpsResult
 
 
-type Msg = MouseOver PageName
-         | MouseLeave PageName
+type Msg = MouseOver String
+         | MouseLeave String
          | KeyboardInput KeyboardEvent
          | LinkClicked Browser.UrlRequest
          | PageChange String
@@ -165,7 +165,7 @@ type alias ErrorBox = {error : String}
 
 type alias Model = {currentPage: PageName
                    ,fps: Int
-                   ,highlightedButton: PageName
+                   ,highlightedButton: String
                    ,urlkey : Nav.Key
                    ,url : Url.Url
                    ,indexurl : String

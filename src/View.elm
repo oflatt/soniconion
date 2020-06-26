@@ -3,6 +3,7 @@ module View exposing (view)
 import Model exposing (..)
 import ViewVariables
 import DrawProgram exposing (drawProgram)
+import TitleBar exposing (makeTitle)
 
 
 import Browser
@@ -31,7 +32,7 @@ view model =
                                 ,href "https://fonts.googleapis.com/css?family=Raleway"][]
                       
                   
-                  ,(makeTitle)
+                  ,(makeTitle model)
                   
                   ,(pagebutton "Home" model)
                   ,(pagebutton "Unused" model)
@@ -54,35 +55,7 @@ makePage pageName content model =
             [content]
     else
         text ""
-      
-makeTitle = div
-            [css [
-             height (px ViewVariables.titleHeight)
-             ,width (pct 100)
-                ]
-               ]
-            [div[css[
-                  textAlign (center)
-                 ,padding (px 20)
-                 ]
-                ]
-                 [div[css[
-                       fontFamilies ["Raleway"]
-                      ,fontSize (px 32)
-                      ,top (px 10)
-                      ,display (inlineBlock)
-                      ]]
-                      [text "Title"]
-                 ,div[css[
-                       display (inlineBlock)
-                      ]
-                     ]
-                     [
-                      button [onClick (PlaySound)]
-                      [text "Play"]
-                          ]
-                 ]]
-                
+                  
 
 pagebutton : PageName -> Model -> Html Msg
 pagebutton pageName model =
