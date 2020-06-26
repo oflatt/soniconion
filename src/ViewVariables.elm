@@ -71,6 +71,7 @@ textInputColor = (rgb 186 232 188)
 textInputColorVariable = (rgb 108 230 113)
 errorColor = (rgb 255 150 150)
 holeGrey = "rgb(200, 200, 200)"
+disabledGrey = rgb 220 220 220
 
 
 functionHeaderSquareY = functionHeaderHeight-blockHeight+nodeRadius

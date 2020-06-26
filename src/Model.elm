@@ -40,10 +40,18 @@ handelFpsResult res =
     case res of
         Ok num -> FpsChange num
         Err err -> NoOp
-
+handelRunningResult res =
+    case res of
+        Ok num -> RunningChange num
+        Err err -> NoOp
+                   
 fpsChangeDecoder =
     (Decode.decodeValue
              (Decode.field "fps" Decode.int)) >> handelFpsResult
+
+runningChangeDecoder =
+    (Decode.decodeValue
+         (Decode.field "running" Decode.bool)) >> handelRunningResult
 
 
 type Msg = MouseOver String
@@ -54,8 +62,10 @@ type Msg = MouseOver String
          | UrlChanged Url.Url
          | ScrollChange Pos
          | FpsChange Int
+         | RunningChange Bool
          | WindowResize Int Int
          | PlaySound
+         | StopSound
          | MouseMoved MousePos
          | MouseRelease
 
@@ -165,6 +175,7 @@ type alias ErrorBox = {error : String}
 
 type alias Model = {currentPage: PageName
                    ,fps: Int
+                   ,isRunning : Bool
                    ,highlightedButton: String
                    ,urlkey : Nav.Key
                    ,url : Url.Url
@@ -195,6 +206,7 @@ initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 initialModel flags url key = ((Model
                                    (urlToPageName url)
                                    0
+                                   False
                                    "none"
                                    key url
                                    (getindexurl url)

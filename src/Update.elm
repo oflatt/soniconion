@@ -1,5 +1,5 @@
 port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId,
-                                 headerNameId, fpsChange)
+                                 headerNameId, fpsChange, runningChange)
 import Debug exposing (log)
 
 import Task
@@ -29,12 +29,15 @@ import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updat
 
 
 port evalJavascript : String -> Cmd msg
+port stopJavascript : (() -> Cmd msg)
 
                       
 port scrollChange : (Decode.Value ->  msg) -> Sub msg
 
                     
-port fpsChange : (Decode.Value -> msg) -> Sub msg                   
+port fpsChange : (Decode.Value -> msg) -> Sub msg
+
+port runningChange : (Decode.Value -> msg) -> Sub msg
 
 -- UPDATE
 
@@ -310,6 +313,9 @@ playSoundResult model =
             ((modelWithError model e), Cmd.none)
         Ok s -> (model, (evalJavascript s))
 
+stopSoundResult : Model -> (Model, Cmd Msg)
+stopSoundResult model = (model, (stopJavascript ()))
+
 
 updateWithChar: Char -> Input -> Input
 updateWithChar char input =
@@ -408,6 +414,9 @@ update msg model =
 
         FpsChange newFps ->
             ({model | fps = newFps}, Cmd.none)
+
+        RunningChange isRunning ->
+            ({model | isRunning = isRunning}, Cmd.none)
             
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
@@ -485,6 +494,8 @@ update msg model =
                 
         PlaySound ->
             playSoundResult model
+        StopSound -> stopSoundResult model
+                
         WindowResize newWidth newHeight ->
             ({model |
                   windowWidth = newWidth,

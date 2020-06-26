@@ -106,6 +106,7 @@ function runNew(javascriptCode) {
 			 ,Object, Math, Date, songToNotes, setTimeout};
     window.asyncRun.run(() => {});
     window.runLock = false;
+    app.ports.runningChange.send({'running' : true});
 }
 
 window.asyncRun = false;
@@ -125,6 +126,23 @@ app.ports.evalJavascript.subscribe(function(javascriptCode) {
 	});
     } else {
 	runNew(javascriptCode);
+    }
+});
+
+app.ports.stopJavascript.subscribe(function() {
+    if(window.runLock) {
+	return;
+    }
+
+    const oldState = window.runningState;
+    if(window.asyncRun) {
+	window.runLock = true;
+	window.asyncRun.pause(() => {
+	    cleanup(oldState);
+	    window.asyncRun = false;
+	    app.ports.runningChange.send({'running' : false});
+	    window.runLock = false;
+	});
     }
 });
 
