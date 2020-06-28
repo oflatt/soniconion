@@ -102,8 +102,8 @@ type Msg = MouseOver String
 
 
 pageNames : List String
-pageNames = ["Home", "Unused"]
-           
+pageNames = ["Home", "Unused", "Tutorial"]
+
 urlToPageName url =
     if (String.length url.path) > 1
     then

@@ -26,7 +26,7 @@ import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updat
                              ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
                              ,getFunc)
 
-
+import Debug exposing (log)
 
 port evalJavascript : String -> Cmd msg
 port stopJavascript : (() -> Cmd msg)
@@ -510,8 +510,7 @@ update msg model =
                     ( model, Nav.load href )
 
         PageChange pageName ->
-            let result = (changeByName model pageName)
-            in result
+            (changeByName model pageName)
 
 
         UrlChanged url ->

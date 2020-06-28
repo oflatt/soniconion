@@ -18,6 +18,7 @@ import Html.Attributes exposing (id)
 import Svg
 import Svg.Attributes
 
+import Debug exposing (log)
 
 
                
@@ -27,7 +28,7 @@ view model =
     {title = "Sonic Onion"
     , body =
          [toUnstyled
-              (case model.currentPage of
+              (case (log "page " model.currentPage) of
                    "Home" -> (makeHomePage model)
                    "Unused" -> (makeUnusedPage model)
                    "Docs" -> (makeDocsPage model)
