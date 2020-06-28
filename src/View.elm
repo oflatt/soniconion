@@ -6,6 +6,8 @@ import DrawProgram exposing (drawProgram)
 import TitleBar exposing (makeTitle)
 
 
+import Docs.Tutorial exposing (makeTutorialPage)
+
 import Browser
 import Css exposing (..)
 
@@ -24,39 +26,42 @@ view : Model -> Browser.Document Msg
 view model =
     {title = "Sonic Onion"
     , body =
-        [toUnstyled
-             (div [ ]
-                  [ node "link" [rel "stylesheet"
-                                ,href "https://fonts.googleapis.com/css?family=Tangerine"][]
-                  , node "link" [rel "stylesheet"
-                                ,href "https://fonts.googleapis.com/css?family=Raleway"][]
-                      
-                  
-                  ,(makeTitle model)
-                  
-                  ,(pagebutton "Home" model)
-                  ,(pagebutton "Unused" model)
-                      
-                  
-                  ,(makePage "Home" (programPage model) model)
-                      
-                  
-                  , (makePage "Unused" (listing "./assets/placeholder.png"
-                                              "Listing title" model)
-                         model)
-                  ])]
+         [toUnstyled
+              (case model.currentPage of
+                   "Home" -> (makeHomePage model)
+                   "Unused" -> (makeUnusedPage model)
+                   "Docs" -> (makeDocsPage model)
+                   "Tutorial" -> (makeTutorialPage model)
+                   _ -> text "error: not a page")
+         ]
     }
-      
-            
-makePage pageName content model =
-                if pageName == model.currentPage then
-                    div [css[display block
-                ,backgroundColor ViewVariables.pageColor]]
-            [content]
-    else
-        text ""
-                  
 
+makeDocsPage model = text "hello"
+
+
+pageWrapper page model =
+    (div [ ]
+         [ node "link" [rel "stylesheet"
+                       ,href "https://fonts.googleapis.com/css?family=Tangerine"][]
+         , node "link" [rel "stylesheet"
+                       ,href "https://fonts.googleapis.com/css?family=Raleway"][]
+             
+             
+         ,(makeTitle model)
+             
+         ,(pagebutton "Home" model)
+         ,(pagebutton "Unused" model)
+             
+         ,div [css[display block
+                ,backgroundColor ViewVariables.pageColor]]
+             [page]
+         ])
+
+makeHomePage model = pageWrapper (programPage model) model
+        
+makeUnusedPage model =
+    pageWrapper (text "") model
+                     
 pagebutton : PageName -> Model -> Html Msg
 pagebutton pageName model =
     let buttonPageColor =
@@ -92,17 +97,6 @@ pagebutton pageName model =
 pagedisplay pagename model = if model.currentPage == pagename then display block else display none
                                      
                                      
-                                     
-listing imgName title model =
-    div []
-        [img [src imgName
-             , css [
-                   left (pct 10)
-                  ,bottom (px 10)
-                  ,height (pct 50)
-                  ]][]
-         ,text title]
-
 
 drawErrorBox errorBox =
     div [css [zIndex (int 2)
