@@ -12,6 +12,7 @@ elm make src/Main.elm --output=./dist/elmmain.js
 
 # copy all html files to the dist directory from source
 find src -maxdepth 1 -name '*.html' -exec cp {} ./dist/ \;
+find src -maxdepth 1 -name '*.css' -exec cp {} ./dist/ \;
 
 
 cp src/CNAME dist/CNAME
