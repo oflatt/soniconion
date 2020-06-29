@@ -383,6 +383,11 @@ spawnFuncModel model name mouseOffset =
         
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
+    if List.member model.currentPage docpages then
+        (model, Cmd.none)
+    else updateProgram msg model
+
+updateProgram msg model =
     case msg of
         NoOp -> (model, Cmd.none)
         SilentDomError dom_error->

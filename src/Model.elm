@@ -101,8 +101,11 @@ type Msg = MouseOver String
          | NoOp
 
 
+
+docpages : List String
+docpages = ["Tutorial"]
 pageNames : List String
-pageNames = ["Home", "Unused", "Tutorial"]
+pageNames = ["Home", "Unused"] ++ docpages
 
 urlToPageName url =
     if (String.length url.path) > 1
@@ -198,27 +201,31 @@ type alias Flags = {innerWindowWidth : Int,
                    outerWindowWidth : Int,
                    outerWindowHeight : Int}
 
-       
+
+emptyMouseState = (MouseState
+                       0
+                       0
+                       0
+                       0
+                       NoneSelected)
+                      
 initialProgram : Onion
 initialProgram = [makeMain 0 []]
 
-initialModel : Flags -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
-initialModel flags url key = ((Model
-                                   (urlToPageName url)
-                                   0
-                                   False
-                                   "none"
-                                   key url
-                                   (getindexurl url)
-                                   flags.innerWindowWidth
-                                   flags.innerWindowHeight
-                                   initialProgram
-                                   (MouseState
-                                        0
-                                        0
-                                        0
-                                        0
-                                        NoneSelected)
-                                   Nothing
-                                   1), -- id for inital main used
-                                   Cmd.none)
+initialCommand flags url key = ((initialModel flags url key), Cmd.none)
+                 
+initialModel : Flags -> Url.Url -> Nav.Key -> Model
+initialModel flags url key = (Model
+                                  (urlToPageName url)
+                                  0
+                                  False
+                                  "none"
+                                  key url
+                                  (getindexurl url)
+                                  flags.innerWindowWidth
+                                  flags.innerWindowHeight
+                                  initialProgram
+                                  emptyMouseState
+                                  Nothing
+                                  1)
+                             

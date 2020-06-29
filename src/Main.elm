@@ -32,7 +32,7 @@ main =
         { view = view
         , subscriptions = subscriptions
         , update = update
-        , init = initialModel
+        , init = initialCommand
         , onUrlChange = UrlChanged
         , onUrlRequest = LinkClicked
         }

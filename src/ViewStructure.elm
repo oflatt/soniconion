@@ -217,8 +217,7 @@ fixLeftForMoveInfo withoutLeft maybeMove leftW =
                     in
                         Dict.insert moveInfo.movedCall.id {blockPos | xpos = newx} withoutLeft
                 Nothing -> withoutLeft
-    
-                    
+             
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =
     let blockTuple = (getBlockPositions func mouseState xoffset yoffset maybeMoveInfo)
         sortedFunc = Tuple.first blockTuple
