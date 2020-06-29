@@ -1,6 +1,13 @@
 module Utils exposing (..)
 
 import Dict exposing (Dict)
+import Css exposing (rgba)
+
+darkenInt amount int =
+    min (max 0 (int-amount)) 255
+
+darken amount color =
+    (rgba (darkenInt amount color.red) (darkenInt amount color.green) (darkenInt amount color.blue) color.alpha)
 
 splitLast : List t -> Maybe (List t, t)
 splitLast func =

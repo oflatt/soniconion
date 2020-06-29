@@ -64,7 +64,7 @@ type Msg = MouseOver String
          | FpsChange Int
          | RunningChange Bool
          | WindowResize Int Int
-         | PlaySound
+         | PlayOnion Onion
          | StopSound
          | MouseMoved MousePos
          | MouseRelease

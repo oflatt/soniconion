@@ -1,4 +1,4 @@
-module DrawToolbar exposing (drawToolbar)
+module DrawToolbar exposing (drawToolbar, ToolResult)
 
 import BuiltIn exposing (allBuiltInAsFunction)
 import Model exposing (..)
@@ -18,12 +18,18 @@ import Html.Attributes exposing (id)
 import Svg exposing (Svg)
 import Svg.Attributes
 
+type alias ToolResult =
+    {width : Int
+    ,height : Int
+    ,svg: Svg Msg}
         
-drawToolbar : Onion -> MouseState -> Int -> Int -> (Int, Svg Msg)
+drawToolbar : Onion -> MouseState -> Int -> Int -> ToolResult
 drawToolbar onion mouseState svgWindowWidth svgWindowHeight =
     let viewStructure = (getViewStructure allBuiltInAsFunction mouseState
                              svgWindowWidth svgWindowHeight 0 0 Nothing True)
     in
-        (viewStructure.funcHeight,
-             (DrawFunc.drawFuncWithConnections
-                  viewStructure))
+        (ToolResult
+             viewStructure.funcWidth
+             viewStructure.funcHeight
+             (DrawFunc.drawFuncWithConnections 
+                  viewStructure)) 

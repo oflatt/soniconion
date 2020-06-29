@@ -266,7 +266,7 @@ finishBlockAtPos func blockId =
 programDropped model =
     let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
         svgH = ViewVariables.toSvgWindowHeight model.windowHeight
-        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH
+        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH 0 0
     in
         List.map .sortedFunc viewStructures
         
@@ -306,9 +306,9 @@ modelMouseRelease model =
                             
         
 
-playSoundResult : Model -> (Model, Cmd Msg)
-playSoundResult model =
-    case (compileOnion model.program) of
+playOnionResult : Model -> Onion -> (Model, Cmd Msg)
+playOnionResult model onion =
+    case (compileOnion onion) of
         Err e ->
             ((modelWithError model e), Cmd.none)
         Ok s -> (model, (evalJavascript s))
@@ -379,15 +379,15 @@ spawnFuncModel model name mouseOffset =
               idCounter = newFunc.id+1
               ,mouseState = newMouse}
         ,Cmd.none)
-                    
+
         
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     if List.member model.currentPage docpages then
-        (model, Cmd.none)
+        updateWindow msg model
     else updateProgram msg model
 
-updateProgram msg model =
+updateWindow msg model =
     case msg of
         NoOp -> (model, Cmd.none)
         SilentDomError dom_error->
@@ -426,7 +426,38 @@ updateProgram msg model =
         KeyboardInput keyevent ->
             keyboardUpdate model keyevent
 
-                
+        WindowResize newWidth newHeight ->
+            ({model |
+                  windowWidth = newWidth,
+                  windowHeight = newHeight},
+                 Cmd.none)
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    (changeByName model (urlToPageName url))
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        PageChange pageName ->
+            (changeByName model pageName)
+
+
+        UrlChanged url ->
+            ((Tuple.first (changeByName model (urlToPageName url))),
+            Cmd.none)
+
+        MouseOver pageName ->
+            ({model | highlightedButton = pageName},
+                 Cmd.none)
+        MouseLeave pageName -> if pageName == model.highlightedButton
+                               then ({model | highlightedButton = "none"}, Cmd.none)
+                               else (model, Cmd.none)
+                                   
+        _ -> (model, Cmd.none)
+        
+updateProgram msg model =
+    case msg of
         BlockClick call funcId mouseOffset ->
             blockClickModel model call funcId mouseOffset
 
@@ -497,37 +528,12 @@ updateProgram msg model =
         SpawnFunction name mouseOffset ->
             spawnFuncModel model name mouseOffset
                 
-        PlaySound ->
-            playSoundResult model
+        PlayOnion onion ->
+            playOnionResult model onion
         StopSound -> stopSoundResult model
                 
-        WindowResize newWidth newHeight ->
-            ({model |
-                  windowWidth = newWidth,
-                  windowHeight = newHeight},
-                 Cmd.none)
-        LinkClicked urlRequest ->
-            case urlRequest of
-                Browser.Internal url ->
-                    (changeByName model (urlToPageName url))
 
-                Browser.External href ->
-                    ( model, Nav.load href )
-
-        PageChange pageName ->
-            (changeByName model pageName)
-
-
-        UrlChanged url ->
-            ((Tuple.first (changeByName model (urlToPageName url))),
-            Cmd.none)
-
-        MouseOver pageName ->
-            ({model | highlightedButton = pageName},
-                 Cmd.none)
-        MouseLeave pageName -> if pageName == model.highlightedButton
-                               then ({model | highlightedButton = "none"}, Cmd.none)
-                               else (model, Cmd.none)
+        _ -> updateWindow msg model
         
 
 

@@ -122,7 +122,8 @@ programPage model =
                             model.program
                             model.mouseState
                             programWidth
-                            programSectionHeight)
+                            programSectionHeight
+                            True)
     in
         div
         [css[display (inlineBlock)]]

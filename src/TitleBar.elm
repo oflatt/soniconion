@@ -1,17 +1,20 @@
-module TitleBar exposing (makeTitle)
+module TitleBar exposing (makeTitle, playButton, stopButton)
 
 import ViewVariables
 import Model exposing (Msg(..))
 
 
+import ViewVariables exposing (holeGrey, disabledGrey)
+import Utils exposing (darken)
+
 import Css exposing (pct, px, textAlign, padding, fontFamilies, fontSize, top, display, height, width, inlineBlock
                     ,center, alignItems, inlineFlex, paddingRight, rgb, backgroundColor, paddingLeft, border, none
                     ,borderRadius, marginLeft, paddingTop, alignSelf, top, em, relative, position
-                    ,marginRight)
+                    ,marginRight, hover)
 import Html.Styled exposing (div, text, button, fromUnstyled)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
-import ViewVariables exposing (holeGrey, disabledGrey)
+
 
 import Svg
 import Svg.Attributes
@@ -58,12 +61,23 @@ makeIconButton icon textString event color =
                ,marginLeft (px buttonSpacing)
                ,border (px 0)
                ,borderRadius (px 5)
+               ,hover [backgroundColor (darken 10 color)]
                ,backgroundColor color]]
     [
      icon
     ,text textString]
-    
-    
+
+
+playButton onion =
+    (makeIconButton playIcon "Play" (PlayOnion onion)
+         (rgb 168 255 163))
+
+stopButton model =
+    (makeIconButton (stopIcon model.isRunning) "Stop" (StopSound)
+         (if model.isRunning
+          then (rgb 232 93 93)
+          else disabledGrey))
+         
 makeTitle model = (div[css[
                         display (inlineBlock)
                        ,width (pct 100)
@@ -77,16 +91,8 @@ makeTitle model = (div[css[
                             ,top (px 10)
                             ]]
                             [text "Sonic Onion"]
-                       ,(makeIconButton playIcon "Play" (PlaySound)
-                             (if not (model.highlightedButton == "Play")
-                              then (rgb 199 255 201)
-                              else (rgb 168 255 163)))
-                       ,(makeIconButton (stopIcon model.isRunning) "Stop" (StopSound)
-                             (if model.isRunning
-                              then (if not (model.highlightedButton == "Stop")
-                                    then (rgb 252 144 144)
-                                    else (rgb 232 93 93))
-                              else disabledGrey))
+                       ,(playButton model.program)
+                       ,(stopButton model)
                        ,(div [css [fontFamilies ["monospace"]
                                   ,display (inlineBlock)
                                   ,fontSize (px 24)
@@ -95,9 +101,7 @@ makeTitle model = (div[css[
                                                 then ""
                                                 else (String.fromInt model.fps)))])
                        ,(makeIconButton (text "") "Tutorial" (PageChange "Tutorial")
-                             (if (model.highlightedButton == "Tutorial")
-                              then (rgb 212 214 67)
-                              else (rgb 186 180 61)))
+                             (rgb 212 214 67))
                            
                        ])
     

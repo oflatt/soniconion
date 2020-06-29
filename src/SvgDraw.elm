@@ -100,7 +100,8 @@ svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events 
                        ,Css.backgroundColor backgroundColor
                        ,Css.textAlign Css.center
                        ,Css.padding (px 0)
-                       ,Css.border (px 2)]]
+                       ,Css.border (px 2)
+                       ,Css.position Css.absolute]]
                   [])]
         
 drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String ->
