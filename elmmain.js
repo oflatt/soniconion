@@ -5254,6 +5254,7 @@ var $author$project$Model$MouseState = F5(
 		return {mouseSelection: mouseSelection, mouseX: mouseX, mouseY: mouseY, scrollX: scrollX, scrollY: scrollY};
 	});
 var $author$project$Model$NoneSelected = {$: 'NoneSelected'};
+var $author$project$Model$emptyMouseState = A5($author$project$Model$MouseState, 0, 0, 0, 0, $author$project$Model$NoneSelected);
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -5326,8 +5327,6 @@ var $author$project$Model$initialProgram = _List_fromArray(
 	[
 		A2($author$project$Model$makeMain, 0, _List_Nil)
 	]);
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -5358,8 +5357,12 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
-var $author$project$Model$pageNames = _List_fromArray(
-	['Home', 'Unused', 'Tutorial']);
+var $author$project$Model$docpages = _List_fromArray(
+	['Tutorial']);
+var $author$project$Model$pageNames = _Utils_ap(
+	_List_fromArray(
+		['Home', 'Unused']),
+	$author$project$Model$docpages);
 var $author$project$Model$urlToPageName = function (url) {
 	if ($elm$core$String$length(url.path) > 1) {
 		var potentialName = A3(
@@ -5374,11 +5377,16 @@ var $author$project$Model$urlToPageName = function (url) {
 };
 var $author$project$Model$initialModel = F3(
 	function (flags, url, key) {
+		return $author$project$Model$Model(
+			$author$project$Model$urlToPageName(url))(0)(false)('none')(key)(url)(
+			$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)($author$project$Model$emptyMouseState)($elm$core$Maybe$Nothing)(1);
+	});
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Model$initialCommand = F3(
+	function (flags, url, key) {
 		return _Utils_Tuple2(
-			$author$project$Model$Model(
-				$author$project$Model$urlToPageName(url))(0)(false)('none')(key)(url)(
-				$author$project$Model$getindexurl(url))(flags.innerWindowWidth)(flags.innerWindowHeight)($author$project$Model$initialProgram)(
-				A5($author$project$Model$MouseState, 0, 0, 0, 0, $author$project$Model$NoneSelected))($elm$core$Maybe$Nothing)(1),
+			A3($author$project$Model$initialModel, flags, url, key),
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$json$Json$Decode$int = _Json_decodeInt;
@@ -10947,7 +10955,7 @@ var $author$project$Update$stopSoundResult = function (model) {
 		model,
 		$author$project$Update$stopJavascript(_Utils_Tuple0));
 };
-var $author$project$Update$update = F2(
+var $author$project$Update$updateProgram = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NoOp':
@@ -11144,6 +11152,10 @@ var $author$project$Update$update = F2(
 						{highlightedButton: 'none'}),
 					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
+	});
+var $author$project$Update$update = F2(
+	function (msg, model) {
+		return A2($elm$core$List$member, model.currentPage, $author$project$Model$docpages) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : A2($author$project$Update$updateProgram, msg, model);
 	});
 var $rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
 	return {$: 'Unstyled', a: a};
@@ -15154,6 +15166,37 @@ var $author$project$View$makeHomePage = function (model) {
 		$author$project$View$programPage(model),
 		model);
 };
+var $author$project$Docs$Tutorial$makeSingleBlock = F2(
+	function (call, model) {
+		var viewStructure = A8(
+			$author$project$ViewStructure$getViewStructure,
+			A2(
+				$author$project$Model$makeMain,
+				-1,
+				_List_fromArray(
+					[call])),
+			model.mouseState,
+			$author$project$ViewVariables$toSvgWindowWidth(model.windowWidth),
+			$author$project$ViewVariables$toSvgWindowHeight(model.windowHeight),
+			0,
+			0,
+			$elm$core$Maybe$Nothing,
+			false);
+		return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
+			A2(
+				$elm$svg$Svg$svg,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$author$project$DrawFunc$drawFuncWithConnections(viewStructure)
+					])));
+	});
+var $author$project$Docs$Tutorial$emptyNoteBlock = function (model) {
+	return A2(
+		$author$project$Docs$Tutorial$makeSingleBlock,
+		A2($author$project$BuiltIn$constructCall, -2, 'note'),
+		model);
+};
 var $rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, textRendering: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
 var $rtfeldman$elm_css$Css$prop2 = F3(
 	function (key, argA, argB) {
@@ -15175,6 +15218,7 @@ var $author$project$Docs$Tutorial$options = {
 	sanitize: false,
 	smartypants: false
 };
+var $author$project$Docs$Tutorial$pageWidth = 600;
 var $elm$core$Maybe$isJust = function (maybe) {
 	if (maybe.$ === 'Just') {
 		return true;
@@ -15193,7 +15237,7 @@ var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
 					[
 						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$block),
 						$rtfeldman$elm_css$Css$maxWidth(
-						$rtfeldman$elm_css$Css$px(600)),
+						$rtfeldman$elm_css$Css$px($author$project$Docs$Tutorial$pageWidth)),
 						A2(
 						$rtfeldman$elm_css$Css$margin2,
 						$rtfeldman$elm_css$Css$px(0),
@@ -15206,7 +15250,20 @@ var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
 				A3($elm_explorations$markdown$Markdown$toHtmlWith, $author$project$Docs$Tutorial$options, _List_Nil, str))
 			]));
 };
-var $author$project$Docs$Tutorial$tutorialText = '\n\n### The Note Block\n\n';
+var $author$project$Docs$Tutorial$bodyList = function (model) {
+	return _List_fromArray(
+		[
+			$author$project$Docs$Tutorial$makeMarkdown('\n## The Note Block\n'),
+			$author$project$Docs$Tutorial$emptyNoteBlock(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe main function above contains a single function call to the `note` function.\nThe three dots above on the the `note` call represent the three arguments the `note` function requires.\nThe dot below represents the output of the function, which is a song with a single\n  musical note in it.\nThe arguments are the information `note` needs to create a single musical notes.\nThe three arguments to `note` are `time` (in seconds), `frequency` (in hertz), and `duration` (in seconds).\nThis function call has holes where the arguments should be, so you cannot evaluate it to get a song as\n  it is an incomplete program.\n')
+		]);
+};
+var $author$project$Docs$Tutorial$tutorialBody = function (model) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_Nil,
+		$author$project$Docs$Tutorial$bodyList(model));
+};
 var $rtfeldman$elm_css$Css$color = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'color', c.value);
 };
@@ -15284,7 +15341,7 @@ var $author$project$Docs$Tutorial$makeTutorialPage = function (model) {
 	return A2(
 		$author$project$Docs$Tutorial$wrapMarkdownPage,
 		'Tutorial',
-		$author$project$Docs$Tutorial$makeMarkdown($author$project$Docs$Tutorial$tutorialText));
+		$author$project$Docs$Tutorial$tutorialBody(model));
 };
 var $author$project$View$makeUnusedPage = function (model) {
 	return A2(
@@ -15317,7 +15374,7 @@ var $author$project$View$view = function (model) {
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$application(
-	{init: $author$project$Model$initialModel, onUrlChange: $author$project$Model$UrlChanged, onUrlRequest: $author$project$Model$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Update$update, view: $author$project$View$view});
+	{init: $author$project$Model$initialCommand, onUrlChange: $author$project$Model$UrlChanged, onUrlRequest: $author$project$Model$LinkClicked, subscriptions: $author$project$Main$subscriptions, update: $author$project$Update$update, view: $author$project$View$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
