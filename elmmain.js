@@ -7744,6 +7744,1677 @@ var $author$project$Update$outputRightClickModel = F2(
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Model$Call = F4(
+	function (id, inputs, functionName, outputText) {
+		return {functionName: functionName, id: id, inputs: inputs, outputText: outputText};
+	});
+var $author$project$BuiltIn$callWithHoles = F3(
+	function (id, name, numHoles) {
+		return A4(
+			$author$project$Model$Call,
+			id,
+			A2($elm$core$List$repeat, numHoles, $author$project$Model$Hole),
+			name,
+			'');
+	});
+var $author$project$BuiltIn$constructCall = F2(
+	function (id, functionName) {
+		var _v0 = A2($elm$core$Dict$get, functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Just') {
+			var builtIn = _v0.a;
+			var _v1 = builtIn.argList;
+			if (_v1.$ === 'Infinite') {
+				var firstArgs = _v1.a;
+				var restArgs = _v1.b;
+				return A3(
+					$author$project$BuiltIn$callWithHoles,
+					id,
+					functionName,
+					A2(
+						$elm$core$Basics$max,
+						1,
+						$elm$core$List$length(firstArgs)));
+			} else {
+				var args = _v1.a;
+				return A3(
+					$author$project$BuiltIn$callWithHoles,
+					id,
+					functionName,
+					$elm$core$List$length(args));
+			}
+		} else {
+			return A3($author$project$BuiltIn$callWithHoles, id, functionName, 0);
+		}
+	});
+var $author$project$Update$firstOrSpawn = function (onion) {
+	if (!onion.b) {
+		return _Utils_Tuple2(
+			0,
+			_List_fromArray(
+				[
+					A2($author$project$Model$makeMain, 0, _List_Nil)
+				]));
+	} else {
+		var func = onion.a;
+		var rest = onion.b;
+		return _Utils_Tuple2(func.id, onion);
+	}
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Update$spawnBlockModel = F3(
+	function (model, name, mouseOffset) {
+		var oldMouse = model.mouseState;
+		var newCall = A2($author$project$BuiltIn$constructCall, model.idCounter, name);
+		var funcTuple = $author$project$Update$firstOrSpawn(model.program);
+		var newProgram = funcTuple.b;
+		var funcId = funcTuple.a;
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: A3($author$project$Model$BlockSelected, funcId, newCall, mouseOffset)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{idCounter: newCall.id + 1, mouseState: newMouse, program: newProgram}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$spawnFuncModel = F3(
+	function (model, name, mouseOffset) {
+		var oldMouse = model.mouseState;
+		var newFunc = A3($author$project$Model$constructFunction, model.idCounter, name, _List_Nil);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: A2($author$project$Model$FunctionSelected, newFunc, mouseOffset)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{idCounter: newFunc.id + 1, mouseState: newMouse}),
+			$elm$core$Platform$Cmd$none);
+	});
+var $elm$url$Url$Builder$toQueryPair = function (_v0) {
+	var key = _v0.a;
+	var value = _v0.b;
+	return key + ('=' + value);
+};
+var $elm$url$Url$Builder$toQuery = function (parameters) {
+	if (!parameters.b) {
+		return '';
+	} else {
+		return '?' + A2(
+			$elm$core$String$join,
+			'&',
+			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
+	}
+};
+var $elm$url$Url$Builder$absolute = F2(
+	function (pathSegments, parameters) {
+		return '/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters));
+	});
+var $elm$core$String$append = _String_append;
+var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
+var $author$project$Update$changeUrl = F3(
+	function (model, newurl, newPage) {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{currentPage: newPage, url: newurl}),
+			A2(
+				$elm$browser$Browser$Navigation$pushUrl,
+				model.urlkey,
+				$elm$url$Url$toString(newurl)));
+	});
+var $author$project$Update$changeByName = F2(
+	function (model, pageName) {
+		var newurl = function () {
+			var _v0 = $elm$url$Url$fromString(
+				A2(
+					$elm$core$String$append,
+					model.indexurl,
+					A2(
+						$elm$url$Url$Builder$absolute,
+						_List_fromArray(
+							[pageName]),
+						_List_Nil)));
+			if (_v0.$ === 'Nothing') {
+				return model.url;
+			} else {
+				var url = _v0.a;
+				return url;
+			}
+		}();
+		return A3($author$project$Update$changeUrl, model, newurl, pageName);
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $author$project$Update$updateWithChar = F2(
+	function (_char, input) {
+		if (input.$ === 'Text') {
+			var str = input.a;
+			return $author$project$Model$Text(str);
+		} else {
+			return $author$project$Model$Text(
+				$elm$core$String$fromChar(_char));
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Update$keyboardUpdateInput = F4(
+	function (model, keyevent, id, index) {
+		var _v0 = $elm$core$String$uncons(
+			A2($elm$core$Maybe$withDefault, '', keyevent.key));
+		if ((_v0.$ === 'Just') && (_v0.a.b === '')) {
+			var _v1 = _v0.a;
+			var _char = _v1.a;
+			return $elm$core$Char$isAlphaNum(_char) ? _Utils_Tuple2(
+				A4(
+					$author$project$ModelHelpers$updateInput,
+					model,
+					id,
+					index,
+					$author$project$Update$updateWithChar(_char)),
+				$author$project$Update$focusInputCommand(
+					A2($author$project$Update$nodeInputId, id, index))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Update$keyboardUpdateOutput = F3(
+	function (model, keyevent, id) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $author$project$Update$keyboardUpdate = F2(
+	function (model, keyevent) {
+		var _v0 = model.mouseState.mouseSelection;
+		switch (_v0.$) {
+			case 'InputSelected':
+				var id = _v0.a;
+				var index = _v0.b;
+				return A4($author$project$Update$keyboardUpdateInput, model, keyevent, id, index);
+			case 'OutputSelected':
+				var id = _v0.a;
+				return A3($author$project$Update$keyboardUpdateOutput, model, keyevent, id);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $elm$browser$Browser$Navigation$load = _Browser_load;
+var $author$project$ViewVariables$functionXSpacing = 25;
+var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$functionXSpacing;
+var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
+var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
+var $author$project$ViewStructure$ViewStructure = function (blockPositions) {
+	return function (lineRouting) {
+		return function (sortedFunc) {
+			return function (id) {
+				return function (headerPos) {
+					return function (funcBlockMaxWidth) {
+						return function (funcWidth) {
+							return function (funcHeight) {
+								return function (mouseState) {
+									return function (svgWidth) {
+										return function (svgHeight) {
+											return function (isToolbar) {
+												return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcHeight: funcHeight, funcWidth: funcWidth, headerPos: headerPos, id: id, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc, svgHeight: svgHeight, svgWidth: svgWidth};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$ViewStructure$fixLeftForMoveInfo = F3(
+	function (withoutLeft, maybeMove, leftW) {
+		if (maybeMove.$ === 'Nothing') {
+			return withoutLeft;
+		} else {
+			var moveInfo = maybeMove.a;
+			var _v1 = A2($elm$core$Dict$get, moveInfo.movedCall.id, withoutLeft);
+			if (_v1.$ === 'Just') {
+				var blockPos = _v1.a;
+				var newx = blockPos.xpos - leftW;
+				return A3(
+					$elm$core$Dict$insert,
+					moveInfo.movedCall.id,
+					_Utils_update(
+						blockPos,
+						{xpos: newx}),
+					withoutLeft);
+			} else {
+				return withoutLeft;
+			}
+		}
+	});
+var $author$project$ViewStructure$fixMoveInfo = F3(
+	function (xoffset, yoffset, maybeMove) {
+		if (maybeMove.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var moveInfo = maybeMove.a;
+			var newy = moveInfo.movedPos.b - yoffset;
+			var newx = moveInfo.movedPos.a - xoffset;
+			return $elm$core$Maybe$Just(
+				_Utils_update(
+					moveInfo,
+					{
+						movedPos: _Utils_Tuple2(newx, newy)
+					}));
+		}
+	});
+var $author$project$ViewVariables$blockHeight = 50;
+var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
+var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
+var $author$project$ViewStructure$countOutputsBefore = F2(
+	function (inputs, threshhold) {
+		countOutputsBefore:
+		while (true) {
+			if (!threshhold) {
+				return 0;
+			} else {
+				if (!inputs.b) {
+					return 0;
+				} else {
+					var input = inputs.a;
+					var rest = inputs.b;
+					switch (input.$) {
+						case 'Output':
+							var id = input.a;
+							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
+						case 'FunctionArg':
+							var index = input.a;
+							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
+						default:
+							var $temp$inputs = rest,
+								$temp$threshhold = threshhold - 1;
+							inputs = $temp$inputs;
+							threshhold = $temp$threshhold;
+							continue countOutputsBefore;
+					}
+				}
+			}
+		}
+	});
+var $author$project$ViewStructure$countOutputs = function (inputs) {
+	return A2(
+		$author$project$ViewStructure$countOutputsBefore,
+		inputs,
+		$elm$core$List$length(inputs));
+};
+var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewVariables$blockSpacing * 3) / 2) | 0;
+var $author$project$ViewStructure$callLinesSpace = function (call) {
+	return $author$project$ViewStructure$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
+};
+var $author$project$ViewStructure$BlockPosition = F4(
+	function (xpos, ypos, width, inputPositions) {
+		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
+	});
+var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
+var $author$project$ViewVariables$blockTextInputHeight = $author$project$ViewVariables$blockHeight - (4 * $author$project$ViewVariables$nodeRadius);
+var $author$project$ViewVariables$charOverestimatePercent = 0.6;
+var $author$project$ViewVariables$inputFontSizePercent = 0.80;
+var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
+var $author$project$ViewVariables$callTextBlockSize = function (text) {
+	return $elm$core$Basics$floor(
+		$author$project$ViewVariables$blockCharacterOverestimate * $elm$core$String$length(text)) + (2 * $author$project$ViewVariables$blockTextXPadding);
+};
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $author$project$ViewStructure$inputPositionsMax = function (inputPositions) {
+	var _v0 = A2(
+		$elm$core$Dict$get,
+		$elm$core$Dict$size(inputPositions) - 1,
+		inputPositions);
+	if (_v0.$ === 'Just') {
+		var lastPos = _v0.a;
+		return (lastPos.a + lastPos.b) + $author$project$ViewVariables$blockTextXPadding;
+	} else {
+		return 0;
+	}
+};
+var $author$project$ViewStructure$getBlockWidth = F2(
+	function (call, inputPositions) {
+		return A2(
+			$elm$core$Basics$max,
+			$author$project$ViewStructure$inputPositionsMax(inputPositions),
+			$author$project$ViewVariables$callTextBlockSize(call.functionName));
+	});
+var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
+var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
+var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
+	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
+};
+var $author$project$ViewStructure$getInputWidth = function (input) {
+	if (input.$ === 'Text') {
+		var str = input.a;
+		return $author$project$ViewVariables$numCharactersToInputWidth(
+			$elm$core$String$length(str));
+	} else {
+		return $author$project$ViewVariables$nodeRadius * 2;
+	}
+};
+var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
+var $author$project$ViewStructure$inputPositionList = F4(
+	function (inputs, counter, currentX, shouldAddTail) {
+		if (!inputs.b) {
+			return shouldAddTail ? _List_fromArray(
+				[
+					_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(
+						currentX,
+						$author$project$ViewStructure$getInputWidth($author$project$Model$Hole)))
+				]) : _List_Nil;
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			var width = $author$project$ViewStructure$getInputWidth(input);
+			return A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(currentX, width)),
+				A4($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing, shouldAddTail));
+		}
+	});
+var $author$project$ViewStructure$makeInputPositions = F2(
+	function (call, shouldAddTail) {
+		return $elm$core$Dict$fromList(
+			A4($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding, shouldAddTail));
+	});
+var $author$project$ViewStructure$makeBlockPosition = F5(
+	function (xpos, ypos, call, shouldCenter, shouldAddTail) {
+		var inputPositions = A2($author$project$ViewStructure$makeInputPositions, call, shouldAddTail);
+		var blockYpos = shouldCenter ? (ypos - (($author$project$ViewVariables$blockHeight / 2) | 0)) : ypos;
+		var blockW = A2($author$project$ViewStructure$getBlockWidth, call, inputPositions);
+		var blockXpos = shouldCenter ? (xpos - ((blockW / 2) | 0)) : xpos;
+		return A4($author$project$ViewStructure$BlockPosition, blockXpos, blockYpos, blockW, inputPositions);
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
+	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
+};
+var $author$project$ViewStructure$getAllBlockPositions = F3(
+	function (maybeMoveInfo, func, currentY) {
+		if (!func.b) {
+			if (maybeMoveInfo.$ === 'Nothing') {
+				return _Utils_Tuple2(_List_Nil, $elm$core$Dict$empty);
+			} else {
+				var moveInfo = maybeMoveInfo.a;
+				return _Utils_Tuple2(
+					_List_fromArray(
+						[moveInfo.movedCall]),
+					A3(
+						$elm$core$Dict$insert,
+						moveInfo.movedCall.id,
+						$author$project$ViewStructure$movedInfoBlockPos(moveInfo),
+						$elm$core$Dict$empty));
+			}
+		} else {
+			var call = func.a;
+			var rest = func.b;
+			var isMoved = function () {
+				if (maybeMoveInfo.$ === 'Nothing') {
+					return false;
+				} else {
+					var moveInfo = maybeMoveInfo.a;
+					return _Utils_cmp(moveInfo.movedPos.b, currentY + $author$project$ViewVariables$blockHeight) < 0;
+				}
+			}();
+			var newMoveInfo = isMoved ? $elm$core$Maybe$Nothing : maybeMoveInfo;
+			var newY = function () {
+				if (isMoved) {
+					if (maybeMoveInfo.$ === 'Just') {
+						var moveInfo = maybeMoveInfo.a;
+						return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall);
+					} else {
+						return 0;
+					}
+				} else {
+					return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(call);
+				}
+			}();
+			var restCall = isMoved ? func : rest;
+			var iteration = A3($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY);
+			var topCall = isMoved ? A2(
+				$elm$core$Maybe$withDefault,
+				call,
+				A2(
+					$elm$core$Maybe$map,
+					function ($) {
+						return $.movedCall;
+					},
+					maybeMoveInfo)) : call;
+			var blockPos = function () {
+				if (isMoved) {
+					if (maybeMoveInfo.$ === 'Just') {
+						var moveInfo = maybeMoveInfo.a;
+						return $author$project$ViewStructure$movedInfoBlockPos(moveInfo);
+					} else {
+						return A5($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false, false);
+					}
+				} else {
+					return A5(
+						$author$project$ViewStructure$makeBlockPosition,
+						0,
+						currentY + $author$project$ViewStructure$callLinesSpace(call),
+						call,
+						false,
+						false);
+				}
+			}();
+			return _Utils_Tuple2(
+				A2($elm$core$List$cons, topCall, iteration.a),
+				A3($elm$core$Dict$insert, topCall.id, blockPos, iteration.b));
+		}
+	});
+var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
+var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
+	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
+};
+var $author$project$ViewStructure$getBlockPositions = F5(
+	function (func, mouseState, xoffset, yoffset, maybeMove) {
+		var fixedMoveInfo = A3($author$project$ViewStructure$fixMoveInfo, xoffset, yoffset, maybeMove);
+		var allPositions = A3(
+			$author$project$ViewStructure$getAllBlockPositions,
+			fixedMoveInfo,
+			func.calls,
+			$author$project$ViewStructure$getFuncHeaderHeight(func));
+		return _Utils_Tuple2(
+			_Utils_update(
+				func,
+				{calls: allPositions.a}),
+			allPositions.b);
+	});
+var $author$project$ViewStructure$getHeaderBlockPos = F3(
+	function (func, xoffset, yoffset) {
+		return A5(
+			$author$project$ViewStructure$makeBlockPosition,
+			xoffset,
+			yoffset,
+			A4($author$project$Model$Call, 0, func.args, func.name, ''),
+			false,
+			true);
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $author$project$LineRouting$findMaxBurden = F4(
+	function (fArray, outputBurden, currentIndex, maxIndex) {
+		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
+			return 0;
+		} else {
+			var callId = (currentIndex < 0) ? currentIndex : A2(
+				$elm$core$Maybe$withDefault,
+				-100,
+				A2(
+					$elm$core$Maybe$map,
+					function (call) {
+						return call.id;
+					},
+					A2($elm$core$Array$get, currentIndex, fArray)));
+			return A2(
+				$elm$core$Basics$max,
+				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
+				A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					A2($elm$core$Dict$get, callId, outputBurden)));
+		}
+	});
+var $author$project$LineRouting$findThisRouting = F4(
+	function (inputInfo, outputBurden, fArray, idToPos) {
+		var oIndex = function () {
+			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var outputIndex = _v1.a;
+				return outputIndex;
+			} else {
+				return inputInfo.outputId;
+			}
+		}();
+		var cIndex = function () {
+			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v0.$ === 'Just') {
+				var callIndex = _v0.a;
+				return callIndex;
+			} else {
+				return 0;
+			}
+		}();
+		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var $author$project$LineRouting$updateCallLineRoute = F3(
+	function (inputInfo, thisRouting, lineRoute) {
+		return $elm$core$Maybe$Just(
+			A3(
+				$elm$core$Array$set,
+				inputInfo.index,
+				$elm$core$Maybe$Just(thisRouting),
+				function () {
+					if (lineRoute.$ === 'Nothing') {
+						return A2(
+							$elm$core$Array$initialize,
+							$elm$core$List$length(inputInfo.call.inputs),
+							$elm$core$Basics$always($elm$core$Maybe$Nothing));
+					} else {
+						var route = lineRoute.a;
+						return route;
+					}
+				}()));
+	});
+var $author$project$LineRouting$setLineRouting = F4(
+	function (lineRouting, inputInfo, thisRouting, isLeft) {
+		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
+		return A3(
+			$elm$core$Dict$update,
+			inputInfo.call.id,
+			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
+			lineRouting);
+	});
+var $author$project$LineRouting$updateOutputBurden = F2(
+	function (burden, otherBurden) {
+		if (otherBurden.$ === 'Just') {
+			var ob = otherBurden.a;
+			return $elm$core$Maybe$Just(
+				A2($elm$core$Basics$max, burden, ob));
+		} else {
+			return $elm$core$Maybe$Just(burden);
+		}
+	});
+var $author$project$LineRouting$setOutputBurden = F3(
+	function (outputBurden, id, burden) {
+		return A3(
+			$elm$core$Dict$update,
+			id,
+			$author$project$LineRouting$updateOutputBurden(burden),
+			outputBurden);
+	});
+var $author$project$LineRouting$addLineRouting = F6(
+	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
+		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
+		return _Utils_Tuple2(
+			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
+			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
+	});
+var $author$project$LineRouting$getOutputBurden = F2(
+	function (outputBurden, id) {
+		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
+		if (_v0.$ === 'Nothing') {
+			return 0;
+		} else {
+			var burden = _v0.a;
+			return burden;
+		}
+	});
+var $author$project$LineRouting$existingBurdenOne = F4(
+	function (inputInfo, burden, lineRouting, isLeft) {
+		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
+		if (!_v0) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var value = _v0;
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
+		}
+	});
+var $author$project$LineRouting$isDirectlyAbove = F2(
+	function (inputInfo, idToPos) {
+		var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+		if (_v0.$ === 'Just') {
+			var inputPos = _v0.a;
+			if (inputInfo.outputId < 0) {
+				return !inputPos;
+			} else {
+				var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+				if (_v1.$ === 'Just') {
+					var outputPos = _v1.a;
+					return _Utils_eq(inputPos, outputPos + 1);
+				} else {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+	});
+var $author$project$LineRouting$existingBurden = F5(
+	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
+		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
+		} else {
+			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
+			if (_v0.$ === 'Just') {
+				var newRouting = _v0.a;
+				return $elm$core$Maybe$Just(newRouting);
+			} else {
+				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
+			}
+		}
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$LineRouting$buildLineRouting = F7(
+	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
+		buildLineRouting:
+		while (true) {
+			if (!ordering.b) {
+				return lineRouting;
+			} else {
+				var inputInfo = ordering.a;
+				var rest = ordering.b;
+				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
+				if (_v1.$ === 'Just') {
+					var newLineRouting = _v1.a;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = outputBurdenLeft,
+						$temp$outputBurdenRight = outputBurdenRight,
+						$temp$lineRouting = newLineRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
+				} else {
+					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
+					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
+					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
+					var newBurden = _v2.a;
+					var newRouting = _v2.b;
+					var newLeft = isLeft ? newBurden : outputBurdenLeft;
+					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = newLeft,
+						$temp$outputBurdenRight = newRight,
+						$temp$lineRouting = newRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = !isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
+				}
+			}
+		}
+	});
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $author$project$LineRouting$byOutput = F2(
+	function (idToPos, element) {
+		var _v0 = A2($elm$core$Dict$get, element.call.id, idToPos);
+		if (_v0.$ === 'Just') {
+			var callPos = _v0.a;
+			var _v1 = A2($elm$core$Dict$get, element.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var pos = _v1.a;
+				return _Utils_Tuple2(-pos, -callPos);
+			} else {
+				return _Utils_Tuple2(-element.outputId, -callPos);
+			}
+		} else {
+			return _Utils_Tuple2(1, 1);
+		}
+	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$LineRouting$InputInfo = F3(
+	function (call, index, outputId) {
+		return {call: call, index: index, outputId: outputId};
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$LineRouting$getCallOrderedInputs = F2(
+	function (funcId, call) {
+		return A2(
+			$elm$core$List$filterMap,
+			function (inputPair) {
+				var _v0 = inputPair.a;
+				switch (_v0.$) {
+					case 'Output':
+						var outputId = _v0.a;
+						return $elm$core$Maybe$Just(
+							A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
+					case 'FunctionArg':
+						var index = _v0.a;
+						return $elm$core$Maybe$Just(
+							A3($author$project$LineRouting$InputInfo, call, inputPair.b, (-index) - 1));
+					default:
+						return $elm$core$Maybe$Nothing;
+				}
+			},
+			A3(
+				$elm$core$List$map2,
+				$elm$core$Tuple$pair,
+				call.inputs,
+				A2(
+					$elm$core$List$range,
+					0,
+					$elm$core$List$length(call.inputs) - 1)));
+	});
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$LineRouting$getOutputOrdering = F2(
+	function (func, idToPos) {
+		return A2(
+			$elm$core$List$sortBy,
+			$author$project$LineRouting$byOutput(idToPos),
+			A2(
+				$elm$core$List$concatMap,
+				$author$project$LineRouting$getCallOrderedInputs(func.id),
+				func.calls));
+	});
+var $author$project$LineRouting$getLineRouting = function (func) {
+	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
+	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
+	var funcArray = $elm$core$Array$fromList(func.calls);
+	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
+};
+var $author$project$ViewStructure$getMaxBlockBottom = function (blockPositions) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, blockpos, acc) {
+				return A2($elm$core$Basics$max, blockpos.ypos + $author$project$ViewVariables$blockHeight, acc);
+			}),
+		0,
+		blockPositions);
+};
+var $author$project$ViewStructure$getMaxBlockWidth = F2(
+	function (blockPositions, topBlock) {
+		return A3(
+			$elm$core$Dict$foldr,
+			F3(
+				function (key, blockpos, acc) {
+					return A2($elm$core$Basics$max, blockpos.width, acc);
+				}),
+			topBlock.width,
+			blockPositions);
+	});
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$LineRouting$maybeMax = function (subroute) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$elm$core$List$maximum(
+			A2(
+				$elm$core$List$map,
+				$elm$core$Maybe$withDefault(0),
+				$elm$core$Array$toList(subroute))));
+};
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$LineRouting$getMaxLine = function (routing) {
+	return A2(
+		$elm$core$Basics$max,
+		0,
+		A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					$author$project$LineRouting$maybeMax,
+					$elm$core$Dict$values(routing)))));
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$LineRouting$maybeMin = function (subroute) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$elm$core$List$minimum(
+			A2(
+				$elm$core$List$map,
+				$elm$core$Maybe$withDefault(0),
+				$elm$core$Array$toList(subroute))));
+};
+var $author$project$LineRouting$getMinLine = function (routing) {
+	return A2(
+		$elm$core$Basics$min,
+		0,
+		A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2(
+					$elm$core$List$map,
+					$author$project$LineRouting$maybeMin,
+					$elm$core$Dict$values(routing)))));
+};
+var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
+var $author$project$ViewStructure$getViewStructure = F8(
+	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, maybeMoveInfo, isToolbar) {
+		var blockTuple = A5($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo);
+		var sortedFunc = blockTuple.a;
+		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
+		var leftWidth = (-$author$project$LineRouting$getMinLine(lineRouting)) * $author$project$ViewVariables$lineXSpace;
+		var topBlockPosition = A3($author$project$ViewStructure$getHeaderBlockPos, func, xoffset + leftWidth, yoffset);
+		var rightWidth = $author$project$LineRouting$getMaxLine(lineRouting) * $author$project$ViewVariables$lineXSpace;
+		var blockPositionsWithoutLeftWidth = blockTuple.b;
+		var blockPositions = A3($author$project$ViewStructure$fixLeftForMoveInfo, blockPositionsWithoutLeftWidth, maybeMoveInfo, leftWidth);
+		var funcHeight = $author$project$ViewStructure$getMaxBlockBottom(blockPositions);
+		var maxWidth = A2($author$project$ViewStructure$getMaxBlockWidth, blockPositions, topBlockPosition);
+		var totalWidth = (leftWidth + rightWidth) + maxWidth;
+		return $author$project$ViewStructure$ViewStructure(blockPositions)(lineRouting)(sortedFunc)(sortedFunc.id)(topBlockPosition)(maxWidth)(totalWidth)(funcHeight)(mouseState)(svgScreenWidth)(svgScreenHeight)(isToolbar);
+	});
+var $author$project$ViewVariables$buttonHeight = 50;
+var $author$project$ViewVariables$titleHeight = 90;
+var $author$project$ViewVariables$svgYpos = $author$project$ViewVariables$titleHeight + $author$project$ViewVariables$buttonHeight;
+var $author$project$ViewVariables$viewportHeight = 500;
+var $author$project$ViewVariables$viewportWidth = F2(
+	function (svgWindowWidth, svgWindowHeight) {
+		return $elm$core$Basics$floor((svgWindowWidth / svgWindowHeight) * $author$project$ViewVariables$viewportHeight);
+	});
+var $author$project$ViewStructure$mouseToSvgCoordinates = F5(
+	function (mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
+		return _Utils_Tuple2(
+			((((mouseState.mouseX + mouseState.scrollX) * A2($author$project$ViewVariables$viewportWidth, svgScreenWidth, svgScreenHeight)) / svgScreenWidth) | 0) - xoffset,
+			(((((mouseState.mouseY + mouseState.scrollY) - $author$project$ViewVariables$svgYpos) * $author$project$ViewVariables$viewportHeight) / svgScreenHeight) | 0) - yoffset);
+	});
+var $author$project$ViewPositions$selectedFunc = F5(
+	function (mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset) {
+		var view = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, false);
+		var oldPos = view.headerPos;
+		var mouseCoordinates = A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgWindowWidth, svgWindowHeight, 0, 0);
+		var xpos = mouseCoordinates.a - mouseOffset.a;
+		var ypos = mouseCoordinates.b - mouseOffset.b;
+		var newPos = _Utils_update(
+			oldPos,
+			{xpos: xpos, ypos: ypos});
+		return _Utils_update(
+			view,
+			{headerPos: newPos});
+	});
+var $author$project$ViewPositions$getSelected = F3(
+	function (mouseState, svgWindowWidth, svgWindowHeight) {
+		var _v0 = mouseState.mouseSelection;
+		if (_v0.$ === 'FunctionSelected') {
+			var func = _v0.a;
+			var mouseOffset = _v0.b;
+			return $elm$core$Maybe$Just(
+				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$ViewStructure$MovedBlockInfo = F2(
+	function (movedCall, movedPos) {
+		return {movedCall: movedCall, movedPos: movedPos};
+	});
+var $author$project$ViewStructure$maybeMovedInfo = F3(
+	function (mouseState, svgScreenWidth, svgScreenHeight) {
+		var _v0 = mouseState.mouseSelection;
+		if (_v0.$ === 'BlockSelected') {
+			var funcId = _v0.a;
+			var call = _v0.b;
+			var mouseOffset = _v0.c;
+			return $elm$core$Maybe$Just(
+				A2(
+					$author$project$ViewStructure$MovedBlockInfo,
+					call,
+					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$ViewPositions$getCurrentMoveInfo = F4(
+	function (maybeMoved, rest, xpos, testStructure) {
+		if (maybeMoved.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var moveI = maybeMoved.a;
+			if (!rest.b) {
+				return $elm$core$Maybe$Just(moveI);
+			} else {
+				return (_Utils_cmp(moveI.movedPos.a, xpos + testStructure.funcWidth) < 1) ? $elm$core$Maybe$Just(moveI) : $elm$core$Maybe$Nothing;
+			}
+		}
+	});
+var $author$project$ViewPositions$recursivePosition = F8(
+	function (xpos, ypos, maybeSelected, maybeMoved, mouseState, svgWindowWidth, svgWindowHeight, onion) {
+		if (!onion.b) {
+			if (maybeSelected.$ === 'Nothing') {
+				return _List_Nil;
+			} else {
+				var selected = maybeSelected.a;
+				return _List_fromArray(
+					[selected]);
+			}
+		} else {
+			var func = onion.a;
+			var rest = onion.b;
+			var testStructure = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, $elm$core$Maybe$Nothing, false);
+			var newy = ypos;
+			var currentMoveInfo = A4($author$project$ViewPositions$getCurrentMoveInfo, maybeMoved, rest, xpos, testStructure);
+			var newMoveInfo = function () {
+				if (currentMoveInfo.$ === 'Nothing') {
+					return maybeMoved;
+				} else {
+					var moveInfo = currentMoveInfo.a;
+					return $elm$core$Maybe$Nothing;
+				}
+			}();
+			var newStructure = function () {
+				if (currentMoveInfo.$ === 'Nothing') {
+					return testStructure;
+				} else {
+					var moveInfo = currentMoveInfo.a;
+					return A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, currentMoveInfo, false);
+				}
+			}();
+			var isSelected = function () {
+				if (maybeSelected.$ === 'Nothing') {
+					return false;
+				} else {
+					var selected = maybeSelected.a;
+					return _Utils_cmp(selected.headerPos.xpos, xpos + newStructure.funcWidth) < 1;
+				}
+			}();
+			var newMaybeSelected = isSelected ? $elm$core$Maybe$Nothing : maybeSelected;
+			var recurList = isSelected ? onion : rest;
+			var newW = function () {
+				if (isSelected) {
+					if (maybeSelected.$ === 'Just') {
+						var selected = maybeSelected.a;
+						return selected.funcWidth;
+					} else {
+						return 0;
+					}
+				} else {
+					return newStructure.funcWidth;
+				}
+			}();
+			var newx = (xpos + newW) + $author$project$ViewVariables$functionXSpacing;
+			var recurrance = A8($author$project$ViewPositions$recursivePosition, newx, newy, newMaybeSelected, newMoveInfo, mouseState, svgWindowWidth, svgWindowHeight, recurList);
+			if (isSelected) {
+				if (maybeSelected.$ === 'Just') {
+					var selected = maybeSelected.a;
+					return A2($elm$core$List$cons, selected, recurrance);
+				} else {
+					return recurrance;
+				}
+			} else {
+				return A2($elm$core$List$cons, newStructure, recurrance);
+			}
+		}
+	});
+var $author$project$ViewPositions$getViewStructures = F6(
+	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
+		var selected = A3($author$project$ViewPositions$getSelected, mouseState, svgWindowWidth, svgWindowHeight);
+		var moved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
+		return A8($author$project$ViewPositions$recursivePosition, $author$project$ViewVariables$funcInitialX + xoffset, $author$project$ViewVariables$funcInitialY + yoffset, selected, moved, mouseState, svgWindowWidth, svgWindowHeight, onion);
+	});
+var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
+	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$buttonHeight;
+};
+var $author$project$ViewVariables$scrollbarWidth = 40;
+var $author$project$ViewVariables$toSvgWindowWidth = function (windowWidth) {
+	return windowWidth - ($author$project$ViewVariables$scrollbarWidth + 1);
+};
+var $author$project$Update$programDropped = function (model) {
+	var svgW = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
+	var svgH = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
+	var viewStructures = A6($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, 0, 0);
+	return A2(
+		$elm$core$List$map,
+		function ($) {
+			return $.sortedFunc;
+		},
+		viewStructures);
+};
+var $author$project$Update$modelBlockDropped = F2(
+	function (model, call) {
+		var oldMouse = model.mouseState;
+		var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
+			$author$project$Update$programDropped(model));
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$NameSelected(call.id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$nodeNameId(call.id)));
+	});
+var $author$project$Update$modelFunctionDropped = F2(
+	function (model, func) {
+		var oldMouse = model.mouseState;
+		var newProgram = $author$project$Update$programDropped(model);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$FunctionNameSelected(func.id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Update$headerNameId(func.id)));
+	});
+var $author$project$Update$modelMouseRelease = function (model) {
+	var _v0 = model.mouseState.mouseSelection;
+	switch (_v0.$) {
+		case 'BlockSelected':
+			var funcId = _v0.a;
+			var call = _v0.b;
+			return A2($author$project$Update$modelBlockDropped, model, call);
+		case 'FunctionSelected':
+			var func = _v0.a;
+			var mouseOffset = _v0.b;
+			return A2($author$project$Update$modelFunctionDropped, model, func);
+		default:
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Model$ErrorBox = function (error) {
+	return {error: error};
+};
+var $author$project$Update$modelWithError = F2(
+	function (model, errorString) {
+		return _Utils_update(
+			model,
+			{
+				errorBoxMaybe: $elm$core$Maybe$Just(
+					$author$project$Model$ErrorBox(errorString))
+			});
+	});
 var $author$project$Compiler$CompModel$Begin = function (a) {
 	return {$: 'Begin', a: a};
 };
@@ -7751,10 +9422,6 @@ var $author$project$Compiler$CompModel$VarDeclaration = F2(
 	function (a, b) {
 		return {$: 'VarDeclaration', a: a, b: b};
 	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
 var $author$project$Utils$splitLast = function (func) {
 	if (!func.b) {
 		return $elm$core$Maybe$Nothing;
@@ -8660,395 +10327,6 @@ var $author$project$BuiltIn$makeJavascriptBuiltIn = function (pair) {
 		pair.a,
 		$author$project$BuiltIn$JavaScript(pair.b));
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
 var $author$project$Utils$dictAppend = F3(
 	function (dict, key, val) {
 		return A3(
@@ -9351,86 +10629,10 @@ var $author$project$Utils$resultMap = F2(
 				A2($author$project$Utils$resultMap, func, rest));
 		}
 	});
-var $elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
-			var jsArray = _v0.a;
-			var remainingItems = _v0.b;
-			if (_Utils_cmp(
-				$elm$core$Elm$JsArray$length(jsArray),
-				$elm$core$Array$branchFactor) < 0) {
-				return A2(
-					$elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					$elm$core$List$cons,
-					$elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var $elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return $elm$core$Array$empty;
-	} else {
-		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
-};
 var $elm$core$Array$length = function (_v0) {
 	var len = _v0.a;
 	return len;
 };
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
 var $author$project$Compiler$CompModel$false = $author$project$Compiler$CompModel$Lit('false');
 var $author$project$Compiler$HandleTailRecursion$buildCont = function (expr) {
 	var _v0 = expr.compileExprFunction;
@@ -9445,49 +10647,6 @@ var $author$project$Compiler$HandleTailRecursion$buildCont = function (expr) {
 					]));
 		});
 };
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
 var $author$project$Compiler$HandleTailRecursion$normalTail = F3(
 	function (exprArr, pos, expr) {
 		return A3(
@@ -9584,15 +10743,6 @@ var $author$project$Compiler$HandleTailRecursion$makeContinuations = F4(
 					}
 				}
 			}
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
 		}
 	});
 var $author$project$Compiler$HandleTailRecursion$arrayIncrement = F2(
@@ -9779,18 +10929,6 @@ var $author$project$Compiler$Compile$compileOnion = function (onion) {
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$Update$evalJavascript = _Platform_outgoingPort('evalJavascript', $elm$json$Json$Encode$string);
-var $author$project$Model$ErrorBox = function (error) {
-	return {error: error};
-};
-var $author$project$Update$modelWithError = F2(
-	function (model, errorString) {
-		return _Utils_update(
-			model,
-			{
-				errorBoxMaybe: $elm$core$Maybe$Just(
-					$author$project$Model$ErrorBox(errorString))
-			});
-	});
 var $author$project$Update$playOnionResult = F2(
 	function (model, onion) {
 		var _v0 = $author$project$Compiler$Compile$compileOnion(onion);
@@ -9806,95 +10944,6 @@ var $author$project$Update$playOnionResult = F2(
 				$author$project$Update$evalJavascript(s));
 		}
 	});
-var $author$project$Model$Call = F4(
-	function (id, inputs, functionName, outputText) {
-		return {functionName: functionName, id: id, inputs: inputs, outputText: outputText};
-	});
-var $author$project$BuiltIn$callWithHoles = F3(
-	function (id, name, numHoles) {
-		return A4(
-			$author$project$Model$Call,
-			id,
-			A2($elm$core$List$repeat, numHoles, $author$project$Model$Hole),
-			name,
-			'');
-	});
-var $author$project$BuiltIn$constructCall = F2(
-	function (id, functionName) {
-		var _v0 = A2($elm$core$Dict$get, functionName, $author$project$BuiltIn$builtInFunctions);
-		if (_v0.$ === 'Just') {
-			var builtIn = _v0.a;
-			var _v1 = builtIn.argList;
-			if (_v1.$ === 'Infinite') {
-				var firstArgs = _v1.a;
-				var restArgs = _v1.b;
-				return A3(
-					$author$project$BuiltIn$callWithHoles,
-					id,
-					functionName,
-					A2(
-						$elm$core$Basics$max,
-						1,
-						$elm$core$List$length(firstArgs)));
-			} else {
-				var args = _v1.a;
-				return A3(
-					$author$project$BuiltIn$callWithHoles,
-					id,
-					functionName,
-					$elm$core$List$length(args));
-			}
-		} else {
-			return A3($author$project$BuiltIn$callWithHoles, id, functionName, 0);
-		}
-	});
-var $author$project$Update$firstOrSpawn = function (onion) {
-	if (!onion.b) {
-		return _Utils_Tuple2(
-			0,
-			_List_fromArray(
-				[
-					A2($author$project$Model$makeMain, 0, _List_Nil)
-				]));
-	} else {
-		var func = onion.a;
-		var rest = onion.b;
-		return _Utils_Tuple2(func.id, onion);
-	}
-};
-var $author$project$Update$spawnBlockModel = F3(
-	function (model, name, mouseOffset) {
-		var oldMouse = model.mouseState;
-		var newCall = A2($author$project$BuiltIn$constructCall, model.idCounter, name);
-		var funcTuple = $author$project$Update$firstOrSpawn(model.program);
-		var newProgram = funcTuple.b;
-		var funcId = funcTuple.a;
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A3($author$project$Model$BlockSelected, funcId, newCall, mouseOffset)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{idCounter: newCall.id + 1, mouseState: newMouse, program: newProgram}),
-			$elm$core$Platform$Cmd$none);
-	});
-var $author$project$Update$spawnFuncModel = F3(
-	function (model, name, mouseOffset) {
-		var oldMouse = model.mouseState;
-		var newFunc = A3($author$project$Model$constructFunction, model.idCounter, name, _List_Nil);
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: A2($author$project$Model$FunctionSelected, newFunc, mouseOffset)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{idCounter: newFunc.id + 1, mouseState: newMouse}),
-			$elm$core$Platform$Cmd$none);
-	});
 var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $author$project$Update$stopJavascript = _Platform_outgoingPort(
 	'stopJavascript',
@@ -9905,1055 +10954,6 @@ var $author$project$Update$stopSoundResult = function (model) {
 	return _Utils_Tuple2(
 		model,
 		$author$project$Update$stopJavascript(_Utils_Tuple0));
-};
-var $elm$url$Url$Builder$toQueryPair = function (_v0) {
-	var key = _v0.a;
-	var value = _v0.b;
-	return key + ('=' + value);
-};
-var $elm$url$Url$Builder$toQuery = function (parameters) {
-	if (!parameters.b) {
-		return '';
-	} else {
-		return '?' + A2(
-			$elm$core$String$join,
-			'&',
-			A2($elm$core$List$map, $elm$url$Url$Builder$toQueryPair, parameters));
-	}
-};
-var $elm$url$Url$Builder$absolute = F2(
-	function (pathSegments, parameters) {
-		return '/' + (A2($elm$core$String$join, '/', pathSegments) + $elm$url$Url$Builder$toQuery(parameters));
-	});
-var $elm$core$String$append = _String_append;
-var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var $author$project$Update$changeUrl = F3(
-	function (model, newurl, newPage) {
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{currentPage: newPage, url: newurl}),
-			A2(
-				$elm$browser$Browser$Navigation$pushUrl,
-				model.urlkey,
-				$elm$url$Url$toString(newurl)));
-	});
-var $author$project$Update$changeByName = F2(
-	function (model, pageName) {
-		var newurl = function () {
-			var _v0 = $elm$url$Url$fromString(
-				A2(
-					$elm$core$String$append,
-					model.indexurl,
-					A2(
-						$elm$url$Url$Builder$absolute,
-						_List_fromArray(
-							[pageName]),
-						_List_Nil)));
-			if (_v0.$ === 'Nothing') {
-				return model.url;
-			} else {
-				var url = _v0.a;
-				return url;
-			}
-		}();
-		return A3($author$project$Update$changeUrl, model, newurl, pageName);
-	});
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $author$project$Update$updateWithChar = F2(
-	function (_char, input) {
-		if (input.$ === 'Text') {
-			var str = input.a;
-			return $author$project$Model$Text(str);
-		} else {
-			return $author$project$Model$Text(
-				$elm$core$String$fromChar(_char));
-		}
-	});
-var $author$project$Update$keyboardUpdateInput = F4(
-	function (model, keyevent, id, index) {
-		var _v0 = $elm$core$String$uncons(
-			A2($elm$core$Maybe$withDefault, '', keyevent.key));
-		if ((_v0.$ === 'Just') && (_v0.a.b === '')) {
-			var _v1 = _v0.a;
-			var _char = _v1.a;
-			return $elm$core$Char$isAlphaNum(_char) ? _Utils_Tuple2(
-				A4(
-					$author$project$ModelHelpers$updateInput,
-					model,
-					id,
-					index,
-					$author$project$Update$updateWithChar(_char)),
-				$author$project$Update$focusInputCommand(
-					A2($author$project$Update$nodeInputId, id, index))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
-	});
-var $author$project$Update$keyboardUpdateOutput = F3(
-	function (model, keyevent, id) {
-		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-	});
-var $author$project$Update$keyboardUpdate = F2(
-	function (model, keyevent) {
-		var _v0 = model.mouseState.mouseSelection;
-		switch (_v0.$) {
-			case 'InputSelected':
-				var id = _v0.a;
-				var index = _v0.b;
-				return A4($author$project$Update$keyboardUpdateInput, model, keyevent, id, index);
-			case 'OutputSelected':
-				var id = _v0.a;
-				return A3($author$project$Update$keyboardUpdateOutput, model, keyevent, id);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
-	});
-var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $author$project$ViewVariables$functionXSpacing = 25;
-var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$functionXSpacing;
-var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
-var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
-var $author$project$ViewStructure$ViewStructure = function (blockPositions) {
-	return function (lineRouting) {
-		return function (sortedFunc) {
-			return function (id) {
-				return function (headerPos) {
-					return function (funcBlockMaxWidth) {
-						return function (funcWidth) {
-							return function (funcHeight) {
-								return function (mouseState) {
-									return function (svgWidth) {
-										return function (svgHeight) {
-											return function (isToolbar) {
-												return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcHeight: funcHeight, funcWidth: funcWidth, headerPos: headerPos, id: id, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc, svgHeight: svgHeight, svgWidth: svgWidth};
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$ViewStructure$fixLeftForMoveInfo = F3(
-	function (withoutLeft, maybeMove, leftW) {
-		if (maybeMove.$ === 'Nothing') {
-			return withoutLeft;
-		} else {
-			var moveInfo = maybeMove.a;
-			var _v1 = A2($elm$core$Dict$get, moveInfo.movedCall.id, withoutLeft);
-			if (_v1.$ === 'Just') {
-				var blockPos = _v1.a;
-				var newx = blockPos.xpos - leftW;
-				return A3(
-					$elm$core$Dict$insert,
-					moveInfo.movedCall.id,
-					_Utils_update(
-						blockPos,
-						{xpos: newx}),
-					withoutLeft);
-			} else {
-				return withoutLeft;
-			}
-		}
-	});
-var $author$project$ViewStructure$fixMoveInfo = F3(
-	function (xoffset, yoffset, maybeMove) {
-		if (maybeMove.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var moveInfo = maybeMove.a;
-			var newy = moveInfo.movedPos.b - yoffset;
-			var newx = moveInfo.movedPos.a - xoffset;
-			return $elm$core$Maybe$Just(
-				_Utils_update(
-					moveInfo,
-					{
-						movedPos: _Utils_Tuple2(newx, newy)
-					}));
-		}
-	});
-var $author$project$ViewVariables$blockHeight = 50;
-var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
-var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
-var $author$project$ViewStructure$countOutputsBefore = F2(
-	function (inputs, threshhold) {
-		countOutputsBefore:
-		while (true) {
-			if (!threshhold) {
-				return 0;
-			} else {
-				if (!inputs.b) {
-					return 0;
-				} else {
-					var input = inputs.a;
-					var rest = inputs.b;
-					switch (input.$) {
-						case 'Output':
-							var id = input.a;
-							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
-						case 'FunctionArg':
-							var index = input.a;
-							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
-						default:
-							var $temp$inputs = rest,
-								$temp$threshhold = threshhold - 1;
-							inputs = $temp$inputs;
-							threshhold = $temp$threshhold;
-							continue countOutputsBefore;
-					}
-				}
-			}
-		}
-	});
-var $author$project$ViewStructure$countOutputs = function (inputs) {
-	return A2(
-		$author$project$ViewStructure$countOutputsBefore,
-		inputs,
-		$elm$core$List$length(inputs));
-};
-var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewVariables$blockSpacing * 3) / 2) | 0;
-var $author$project$ViewStructure$callLinesSpace = function (call) {
-	return $author$project$ViewStructure$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
-};
-var $author$project$ViewStructure$BlockPosition = F4(
-	function (xpos, ypos, width, inputPositions) {
-		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
-	});
-var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
-var $author$project$ViewVariables$blockTextInputHeight = $author$project$ViewVariables$blockHeight - (4 * $author$project$ViewVariables$nodeRadius);
-var $author$project$ViewVariables$charOverestimatePercent = 0.6;
-var $author$project$ViewVariables$inputFontSizePercent = 0.80;
-var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
-var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
-var $author$project$ViewVariables$callTextBlockSize = function (text) {
-	return $elm$core$Basics$floor(
-		$author$project$ViewVariables$blockCharacterOverestimate * $elm$core$String$length(text)) + (2 * $author$project$ViewVariables$blockTextXPadding);
-};
-var $elm$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
-					$temp$dict = left;
-				n = $temp$n;
-				dict = $temp$dict;
-				continue sizeHelp;
-			}
-		}
-	});
-var $elm$core$Dict$size = function (dict) {
-	return A2($elm$core$Dict$sizeHelp, 0, dict);
-};
-var $author$project$ViewStructure$inputPositionsMax = function (inputPositions) {
-	var _v0 = A2(
-		$elm$core$Dict$get,
-		$elm$core$Dict$size(inputPositions) - 1,
-		inputPositions);
-	if (_v0.$ === 'Just') {
-		var lastPos = _v0.a;
-		return (lastPos.a + lastPos.b) + $author$project$ViewVariables$blockTextXPadding;
-	} else {
-		return 0;
-	}
-};
-var $author$project$ViewStructure$getBlockWidth = F2(
-	function (call, inputPositions) {
-		return A2(
-			$elm$core$Basics$max,
-			$author$project$ViewStructure$inputPositionsMax(inputPositions),
-			$author$project$ViewVariables$callTextBlockSize(call.functionName));
-	});
-var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
-var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
-var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
-var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
-	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
-};
-var $author$project$ViewStructure$getInputWidth = function (input) {
-	if (input.$ === 'Text') {
-		var str = input.a;
-		return $author$project$ViewVariables$numCharactersToInputWidth(
-			$elm$core$String$length(str));
-	} else {
-		return $author$project$ViewVariables$nodeRadius * 2;
-	}
-};
-var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
-var $author$project$ViewStructure$inputPositionList = F4(
-	function (inputs, counter, currentX, shouldAddTail) {
-		if (!inputs.b) {
-			return shouldAddTail ? _List_fromArray(
-				[
-					_Utils_Tuple2(
-					counter,
-					_Utils_Tuple2(
-						currentX,
-						$author$project$ViewStructure$getInputWidth($author$project$Model$Hole)))
-				]) : _List_Nil;
-		} else {
-			var input = inputs.a;
-			var rest = inputs.b;
-			var width = $author$project$ViewStructure$getInputWidth(input);
-			return A2(
-				$elm$core$List$cons,
-				_Utils_Tuple2(
-					counter,
-					_Utils_Tuple2(currentX, width)),
-				A4($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing, shouldAddTail));
-		}
-	});
-var $author$project$ViewStructure$makeInputPositions = F2(
-	function (call, shouldAddTail) {
-		return $elm$core$Dict$fromList(
-			A4($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding, shouldAddTail));
-	});
-var $author$project$ViewStructure$makeBlockPosition = F5(
-	function (xpos, ypos, call, shouldCenter, shouldAddTail) {
-		var inputPositions = A2($author$project$ViewStructure$makeInputPositions, call, shouldAddTail);
-		var blockYpos = shouldCenter ? (ypos - (($author$project$ViewVariables$blockHeight / 2) | 0)) : ypos;
-		var blockW = A2($author$project$ViewStructure$getBlockWidth, call, inputPositions);
-		var blockXpos = shouldCenter ? (xpos - ((blockW / 2) | 0)) : xpos;
-		return A4($author$project$ViewStructure$BlockPosition, blockXpos, blockYpos, blockW, inputPositions);
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
-	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
-};
-var $author$project$ViewStructure$getAllBlockPositions = F3(
-	function (maybeMoveInfo, func, currentY) {
-		if (!func.b) {
-			if (maybeMoveInfo.$ === 'Nothing') {
-				return _Utils_Tuple2(_List_Nil, $elm$core$Dict$empty);
-			} else {
-				var moveInfo = maybeMoveInfo.a;
-				return _Utils_Tuple2(
-					_List_fromArray(
-						[moveInfo.movedCall]),
-					A3(
-						$elm$core$Dict$insert,
-						moveInfo.movedCall.id,
-						$author$project$ViewStructure$movedInfoBlockPos(moveInfo),
-						$elm$core$Dict$empty));
-			}
-		} else {
-			var call = func.a;
-			var rest = func.b;
-			var isMoved = function () {
-				if (maybeMoveInfo.$ === 'Nothing') {
-					return false;
-				} else {
-					var moveInfo = maybeMoveInfo.a;
-					return _Utils_cmp(moveInfo.movedPos.b, currentY + $author$project$ViewVariables$blockHeight) < 0;
-				}
-			}();
-			var newMoveInfo = isMoved ? $elm$core$Maybe$Nothing : maybeMoveInfo;
-			var newY = function () {
-				if (isMoved) {
-					if (maybeMoveInfo.$ === 'Just') {
-						var moveInfo = maybeMoveInfo.a;
-						return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall);
-					} else {
-						return 0;
-					}
-				} else {
-					return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(call);
-				}
-			}();
-			var restCall = isMoved ? func : rest;
-			var iteration = A3($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY);
-			var topCall = isMoved ? A2(
-				$elm$core$Maybe$withDefault,
-				call,
-				A2(
-					$elm$core$Maybe$map,
-					function ($) {
-						return $.movedCall;
-					},
-					maybeMoveInfo)) : call;
-			var blockPos = function () {
-				if (isMoved) {
-					if (maybeMoveInfo.$ === 'Just') {
-						var moveInfo = maybeMoveInfo.a;
-						return $author$project$ViewStructure$movedInfoBlockPos(moveInfo);
-					} else {
-						return A5($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false, false);
-					}
-				} else {
-					return A5(
-						$author$project$ViewStructure$makeBlockPosition,
-						0,
-						currentY + $author$project$ViewStructure$callLinesSpace(call),
-						call,
-						false,
-						false);
-				}
-			}();
-			return _Utils_Tuple2(
-				A2($elm$core$List$cons, topCall, iteration.a),
-				A3($elm$core$Dict$insert, topCall.id, blockPos, iteration.b));
-		}
-	});
-var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
-var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
-	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
-};
-var $author$project$ViewStructure$getBlockPositions = F5(
-	function (func, mouseState, xoffset, yoffset, maybeMove) {
-		var fixedMoveInfo = A3($author$project$ViewStructure$fixMoveInfo, xoffset, yoffset, maybeMove);
-		var allPositions = A3(
-			$author$project$ViewStructure$getAllBlockPositions,
-			fixedMoveInfo,
-			func.calls,
-			$author$project$ViewStructure$getFuncHeaderHeight(func));
-		return _Utils_Tuple2(
-			_Utils_update(
-				func,
-				{calls: allPositions.a}),
-			allPositions.b);
-	});
-var $author$project$ViewStructure$getHeaderBlockPos = F3(
-	function (func, xoffset, yoffset) {
-		return A5(
-			$author$project$ViewStructure$makeBlockPosition,
-			xoffset,
-			yoffset,
-			A4($author$project$Model$Call, 0, func.args, func.name, ''),
-			false,
-			true);
-	});
-var $author$project$LineRouting$findMaxBurden = F4(
-	function (fArray, outputBurden, currentIndex, maxIndex) {
-		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
-			return 0;
-		} else {
-			var callId = (currentIndex < 0) ? currentIndex : A2(
-				$elm$core$Maybe$withDefault,
-				-100,
-				A2(
-					$elm$core$Maybe$map,
-					function (call) {
-						return call.id;
-					},
-					A2($elm$core$Array$get, currentIndex, fArray)));
-			return A2(
-				$elm$core$Basics$max,
-				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
-				A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					A2($elm$core$Dict$get, callId, outputBurden)));
-		}
-	});
-var $author$project$LineRouting$findThisRouting = F4(
-	function (inputInfo, outputBurden, fArray, idToPos) {
-		var oIndex = function () {
-			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-			if (_v1.$ === 'Just') {
-				var outputIndex = _v1.a;
-				return outputIndex;
-			} else {
-				return inputInfo.outputId;
-			}
-		}();
-		var cIndex = function () {
-			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-			if (_v0.$ === 'Just') {
-				var callIndex = _v0.a;
-				return callIndex;
-			} else {
-				return 0;
-			}
-		}();
-		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
-	});
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $author$project$LineRouting$updateCallLineRoute = F3(
-	function (inputInfo, thisRouting, lineRoute) {
-		return $elm$core$Maybe$Just(
-			A3(
-				$elm$core$Array$set,
-				inputInfo.index,
-				$elm$core$Maybe$Just(thisRouting),
-				function () {
-					if (lineRoute.$ === 'Nothing') {
-						return A2(
-							$elm$core$Array$initialize,
-							$elm$core$List$length(inputInfo.call.inputs),
-							$elm$core$Basics$always($elm$core$Maybe$Nothing));
-					} else {
-						var route = lineRoute.a;
-						return route;
-					}
-				}()));
-	});
-var $author$project$LineRouting$setLineRouting = F4(
-	function (lineRouting, inputInfo, thisRouting, isLeft) {
-		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
-		return A3(
-			$elm$core$Dict$update,
-			inputInfo.call.id,
-			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
-			lineRouting);
-	});
-var $author$project$LineRouting$updateOutputBurden = F2(
-	function (burden, otherBurden) {
-		if (otherBurden.$ === 'Just') {
-			var ob = otherBurden.a;
-			return $elm$core$Maybe$Just(
-				A2($elm$core$Basics$max, burden, ob));
-		} else {
-			return $elm$core$Maybe$Just(burden);
-		}
-	});
-var $author$project$LineRouting$setOutputBurden = F3(
-	function (outputBurden, id, burden) {
-		return A3(
-			$elm$core$Dict$update,
-			id,
-			$author$project$LineRouting$updateOutputBurden(burden),
-			outputBurden);
-	});
-var $author$project$LineRouting$addLineRouting = F6(
-	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
-		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
-		return _Utils_Tuple2(
-			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
-			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
-	});
-var $author$project$LineRouting$getOutputBurden = F2(
-	function (outputBurden, id) {
-		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
-		if (_v0.$ === 'Nothing') {
-			return 0;
-		} else {
-			var burden = _v0.a;
-			return burden;
-		}
-	});
-var $author$project$LineRouting$existingBurdenOne = F4(
-	function (inputInfo, burden, lineRouting, isLeft) {
-		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
-		if (!_v0) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var value = _v0;
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
-		}
-	});
-var $author$project$LineRouting$isDirectlyAbove = F2(
-	function (inputInfo, idToPos) {
-		var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-		if (_v0.$ === 'Just') {
-			var inputPos = _v0.a;
-			if (inputInfo.outputId < 0) {
-				return !inputPos;
-			} else {
-				var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-				if (_v1.$ === 'Just') {
-					var outputPos = _v1.a;
-					return _Utils_eq(inputPos, outputPos + 1);
-				} else {
-					return false;
-				}
-			}
-		} else {
-			return false;
-		}
-	});
-var $author$project$LineRouting$existingBurden = F5(
-	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
-		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
-		} else {
-			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
-			if (_v0.$ === 'Just') {
-				var newRouting = _v0.a;
-				return $elm$core$Maybe$Just(newRouting);
-			} else {
-				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
-			}
-		}
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $author$project$LineRouting$buildLineRouting = F7(
-	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
-		buildLineRouting:
-		while (true) {
-			if (!ordering.b) {
-				return lineRouting;
-			} else {
-				var inputInfo = ordering.a;
-				var rest = ordering.b;
-				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
-				if (_v1.$ === 'Just') {
-					var newLineRouting = _v1.a;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = outputBurdenLeft,
-						$temp$outputBurdenRight = outputBurdenRight,
-						$temp$lineRouting = newLineRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				} else {
-					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
-					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
-					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
-					var newBurden = _v2.a;
-					var newRouting = _v2.b;
-					var newLeft = isLeft ? newBurden : outputBurdenLeft;
-					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = newLeft,
-						$temp$outputBurdenRight = newRight,
-						$temp$lineRouting = newRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = !isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				}
-			}
-		}
-	});
-var $author$project$LineRouting$byOutput = F2(
-	function (idToPos, element) {
-		var _v0 = A2($elm$core$Dict$get, element.call.id, idToPos);
-		if (_v0.$ === 'Just') {
-			var callPos = _v0.a;
-			var _v1 = A2($elm$core$Dict$get, element.outputId, idToPos);
-			if (_v1.$ === 'Just') {
-				var pos = _v1.a;
-				return _Utils_Tuple2(-pos, -callPos);
-			} else {
-				return _Utils_Tuple2(-element.outputId, -callPos);
-			}
-		} else {
-			return _Utils_Tuple2(1, 1);
-		}
-	});
-var $author$project$LineRouting$InputInfo = F3(
-	function (call, index, outputId) {
-		return {call: call, index: index, outputId: outputId};
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
-var $author$project$LineRouting$getCallOrderedInputs = F2(
-	function (funcId, call) {
-		return A2(
-			$elm$core$List$filterMap,
-			function (inputPair) {
-				var _v0 = inputPair.a;
-				switch (_v0.$) {
-					case 'Output':
-						var outputId = _v0.a;
-						return $elm$core$Maybe$Just(
-							A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
-					case 'FunctionArg':
-						var index = _v0.a;
-						return $elm$core$Maybe$Just(
-							A3($author$project$LineRouting$InputInfo, call, inputPair.b, (-index) - 1));
-					default:
-						return $elm$core$Maybe$Nothing;
-				}
-			},
-			A3(
-				$elm$core$List$map2,
-				$elm$core$Tuple$pair,
-				call.inputs,
-				A2(
-					$elm$core$List$range,
-					0,
-					$elm$core$List$length(call.inputs) - 1)));
-	});
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$LineRouting$getOutputOrdering = F2(
-	function (func, idToPos) {
-		return A2(
-			$elm$core$List$sortBy,
-			$author$project$LineRouting$byOutput(idToPos),
-			A2(
-				$elm$core$List$concatMap,
-				$author$project$LineRouting$getCallOrderedInputs(func.id),
-				func.calls));
-	});
-var $author$project$LineRouting$getLineRouting = function (func) {
-	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
-	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
-	var funcArray = $elm$core$Array$fromList(func.calls);
-	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
-};
-var $author$project$ViewStructure$getMaxBlockBottom = function (blockPositions) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, blockpos, acc) {
-				return A2($elm$core$Basics$max, blockpos.ypos + $author$project$ViewVariables$blockHeight, acc);
-			}),
-		0,
-		blockPositions);
-};
-var $author$project$ViewStructure$getMaxBlockWidth = F2(
-	function (blockPositions, topBlock) {
-		return A3(
-			$elm$core$Dict$foldr,
-			F3(
-				function (key, blockpos, acc) {
-					return A2($elm$core$Basics$max, blockpos.width, acc);
-				}),
-			topBlock.width,
-			blockPositions);
-	});
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$LineRouting$maybeMax = function (subroute) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$elm$core$List$maximum(
-			A2(
-				$elm$core$List$map,
-				$elm$core$Maybe$withDefault(0),
-				$elm$core$Array$toList(subroute))));
-};
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$LineRouting$getMaxLine = function (routing) {
-	return A2(
-		$elm$core$Basics$max,
-		0,
-		A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$maximum(
-				A2(
-					$elm$core$List$map,
-					$author$project$LineRouting$maybeMax,
-					$elm$core$Dict$values(routing)))));
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$List$minimum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$LineRouting$maybeMin = function (subroute) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$elm$core$List$minimum(
-			A2(
-				$elm$core$List$map,
-				$elm$core$Maybe$withDefault(0),
-				$elm$core$Array$toList(subroute))));
-};
-var $author$project$LineRouting$getMinLine = function (routing) {
-	return A2(
-		$elm$core$Basics$min,
-		0,
-		A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$minimum(
-				A2(
-					$elm$core$List$map,
-					$author$project$LineRouting$maybeMin,
-					$elm$core$Dict$values(routing)))));
-};
-var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
-var $author$project$ViewStructure$getViewStructure = F8(
-	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, maybeMoveInfo, isToolbar) {
-		var blockTuple = A5($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo);
-		var sortedFunc = blockTuple.a;
-		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
-		var leftWidth = (-$author$project$LineRouting$getMinLine(lineRouting)) * $author$project$ViewVariables$lineXSpace;
-		var topBlockPosition = A3($author$project$ViewStructure$getHeaderBlockPos, func, xoffset + leftWidth, yoffset);
-		var rightWidth = $author$project$LineRouting$getMaxLine(lineRouting) * $author$project$ViewVariables$lineXSpace;
-		var blockPositionsWithoutLeftWidth = blockTuple.b;
-		var blockPositions = A3($author$project$ViewStructure$fixLeftForMoveInfo, blockPositionsWithoutLeftWidth, maybeMoveInfo, leftWidth);
-		var funcHeight = $author$project$ViewStructure$getMaxBlockBottom(blockPositions);
-		var maxWidth = A2($author$project$ViewStructure$getMaxBlockWidth, blockPositions, topBlockPosition);
-		var totalWidth = (leftWidth + rightWidth) + maxWidth;
-		return $author$project$ViewStructure$ViewStructure(blockPositions)(lineRouting)(sortedFunc)(sortedFunc.id)(topBlockPosition)(maxWidth)(totalWidth)(funcHeight)(mouseState)(svgScreenWidth)(svgScreenHeight)(isToolbar);
-	});
-var $author$project$ViewVariables$buttonHeight = 50;
-var $author$project$ViewVariables$titleHeight = 90;
-var $author$project$ViewVariables$svgYpos = $author$project$ViewVariables$titleHeight + $author$project$ViewVariables$buttonHeight;
-var $author$project$ViewVariables$viewportHeight = 500;
-var $author$project$ViewVariables$viewportWidth = F2(
-	function (svgWindowWidth, svgWindowHeight) {
-		return $elm$core$Basics$floor((svgWindowWidth / svgWindowHeight) * $author$project$ViewVariables$viewportHeight);
-	});
-var $author$project$ViewStructure$mouseToSvgCoordinates = F5(
-	function (mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset) {
-		return _Utils_Tuple2(
-			((((mouseState.mouseX + mouseState.scrollX) * A2($author$project$ViewVariables$viewportWidth, svgScreenWidth, svgScreenHeight)) / svgScreenWidth) | 0) - xoffset,
-			(((((mouseState.mouseY + mouseState.scrollY) - $author$project$ViewVariables$svgYpos) * $author$project$ViewVariables$viewportHeight) / svgScreenHeight) | 0) - yoffset);
-	});
-var $author$project$ViewPositions$selectedFunc = F5(
-	function (mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset) {
-		var view = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, false);
-		var oldPos = view.headerPos;
-		var mouseCoordinates = A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgWindowWidth, svgWindowHeight, 0, 0);
-		var xpos = mouseCoordinates.a - mouseOffset.a;
-		var ypos = mouseCoordinates.b - mouseOffset.b;
-		var newPos = _Utils_update(
-			oldPos,
-			{xpos: xpos, ypos: ypos});
-		return _Utils_update(
-			view,
-			{headerPos: newPos});
-	});
-var $author$project$ViewPositions$getSelected = F3(
-	function (mouseState, svgWindowWidth, svgWindowHeight) {
-		var _v0 = mouseState.mouseSelection;
-		if (_v0.$ === 'FunctionSelected') {
-			var func = _v0.a;
-			var mouseOffset = _v0.b;
-			return $elm$core$Maybe$Just(
-				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewStructure$MovedBlockInfo = F2(
-	function (movedCall, movedPos) {
-		return {movedCall: movedCall, movedPos: movedPos};
-	});
-var $author$project$ViewStructure$maybeMovedInfo = F3(
-	function (mouseState, svgScreenWidth, svgScreenHeight) {
-		var _v0 = mouseState.mouseSelection;
-		if (_v0.$ === 'BlockSelected') {
-			var funcId = _v0.a;
-			var call = _v0.b;
-			var mouseOffset = _v0.c;
-			return $elm$core$Maybe$Just(
-				A2(
-					$author$project$ViewStructure$MovedBlockInfo,
-					call,
-					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewPositions$getCurrentMoveInfo = F4(
-	function (maybeMoved, rest, xpos, testStructure) {
-		if (maybeMoved.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var moveI = maybeMoved.a;
-			if (!rest.b) {
-				return $elm$core$Maybe$Just(moveI);
-			} else {
-				return (_Utils_cmp(moveI.movedPos.a, xpos + testStructure.funcWidth) < 1) ? $elm$core$Maybe$Just(moveI) : $elm$core$Maybe$Nothing;
-			}
-		}
-	});
-var $author$project$ViewPositions$recursivePosition = F8(
-	function (xpos, ypos, maybeSelected, maybeMoved, mouseState, svgWindowWidth, svgWindowHeight, onion) {
-		if (!onion.b) {
-			if (maybeSelected.$ === 'Nothing') {
-				return _List_Nil;
-			} else {
-				var selected = maybeSelected.a;
-				return _List_fromArray(
-					[selected]);
-			}
-		} else {
-			var func = onion.a;
-			var rest = onion.b;
-			var testStructure = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, $elm$core$Maybe$Nothing, false);
-			var newy = ypos;
-			var currentMoveInfo = A4($author$project$ViewPositions$getCurrentMoveInfo, maybeMoved, rest, xpos, testStructure);
-			var newMoveInfo = function () {
-				if (currentMoveInfo.$ === 'Nothing') {
-					return maybeMoved;
-				} else {
-					var moveInfo = currentMoveInfo.a;
-					return $elm$core$Maybe$Nothing;
-				}
-			}();
-			var newStructure = function () {
-				if (currentMoveInfo.$ === 'Nothing') {
-					return testStructure;
-				} else {
-					var moveInfo = currentMoveInfo.a;
-					return A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, currentMoveInfo, false);
-				}
-			}();
-			var isSelected = function () {
-				if (maybeSelected.$ === 'Nothing') {
-					return false;
-				} else {
-					var selected = maybeSelected.a;
-					return _Utils_cmp(selected.headerPos.xpos, xpos + newStructure.funcWidth) < 1;
-				}
-			}();
-			var newMaybeSelected = isSelected ? $elm$core$Maybe$Nothing : maybeSelected;
-			var recurList = isSelected ? onion : rest;
-			var newW = function () {
-				if (isSelected) {
-					if (maybeSelected.$ === 'Just') {
-						var selected = maybeSelected.a;
-						return selected.funcWidth;
-					} else {
-						return 0;
-					}
-				} else {
-					return newStructure.funcWidth;
-				}
-			}();
-			var newx = (xpos + newW) + $author$project$ViewVariables$functionXSpacing;
-			var recurrance = A8($author$project$ViewPositions$recursivePosition, newx, newy, newMaybeSelected, newMoveInfo, mouseState, svgWindowWidth, svgWindowHeight, recurList);
-			if (isSelected) {
-				if (maybeSelected.$ === 'Just') {
-					var selected = maybeSelected.a;
-					return A2($elm$core$List$cons, selected, recurrance);
-				} else {
-					return recurrance;
-				}
-			} else {
-				return A2($elm$core$List$cons, newStructure, recurrance);
-			}
-		}
-	});
-var $author$project$ViewPositions$getViewStructures = F6(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
-		var selected = A3($author$project$ViewPositions$getSelected, mouseState, svgWindowWidth, svgWindowHeight);
-		var moved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
-		return A8($author$project$ViewPositions$recursivePosition, $author$project$ViewVariables$funcInitialX + xoffset, $author$project$ViewVariables$funcInitialY + yoffset, selected, moved, mouseState, svgWindowWidth, svgWindowHeight, onion);
-	});
-var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
-	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$buttonHeight;
-};
-var $author$project$ViewVariables$scrollbarWidth = 40;
-var $author$project$ViewVariables$toSvgWindowWidth = function (windowWidth) {
-	return windowWidth - ($author$project$ViewVariables$scrollbarWidth + 1);
-};
-var $author$project$Update$programDropped = function (model) {
-	var svgW = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
-	var svgH = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
-	var viewStructures = A6($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, 0, 0);
-	return A2(
-		$elm$core$List$map,
-		function ($) {
-			return $.sortedFunc;
-		},
-		viewStructures);
-};
-var $author$project$Update$modelBlockDropped = F2(
-	function (model, call) {
-		var oldMouse = model.mouseState;
-		var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
-			$author$project$Update$programDropped(model));
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$NameSelected(call.id)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newProgram}),
-			$author$project$Update$focusInputCommand(
-				$author$project$Update$nodeNameId(call.id)));
-	});
-var $author$project$Update$modelFunctionDropped = F2(
-	function (model, func) {
-		var oldMouse = model.mouseState;
-		var newProgram = $author$project$Update$programDropped(model);
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$FunctionNameSelected(func.id)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newProgram}),
-			$author$project$Update$focusInputCommand(
-				$author$project$Update$headerNameId(func.id)));
-	});
-var $author$project$Update$modelMouseRelease = function (model) {
-	var _v0 = model.mouseState.mouseSelection;
-	switch (_v0.$) {
-		case 'BlockSelected':
-			var funcId = _v0.a;
-			var call = _v0.b;
-			return A2($author$project$Update$modelBlockDropped, model, call);
-		case 'FunctionSelected':
-			var func = _v0.a;
-			var mouseOffset = _v0.b;
-			return A2($author$project$Update$modelFunctionDropped, model, func);
-		default:
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-	}
 };
 var $author$project$Update$updateWindow = F2(
 	function (msg, model) {
@@ -10968,6 +10968,11 @@ var $author$project$Update$updateWindow = F2(
 				return _Utils_Tuple2(
 					A2($author$project$Update$modelWithError, model, errorString),
 					$elm$core$Platform$Cmd$none);
+			case 'PlayOnion':
+				var onion = msg.a;
+				return A2($author$project$Update$playOnionResult, model, onion);
+			case 'StopSound':
+				return $author$project$Update$stopSoundResult(model);
 			case 'MouseRelease':
 				return $author$project$Update$modelMouseRelease(model);
 			case 'MouseMoved':
@@ -11154,11 +11159,6 @@ var $author$project$Update$updateProgram = F2(
 				var name = msg.a;
 				var mouseOffset = msg.b;
 				return A3($author$project$Update$spawnFuncModel, model, name, mouseOffset);
-			case 'PlayOnion':
-				var onion = msg.a;
-				return A2($author$project$Update$playOnionResult, model, onion);
-			case 'StopSound':
-				return $author$project$Update$stopSoundResult(model);
 			default:
 				return A2($author$project$Update$updateWindow, msg, model);
 		}
@@ -12993,6 +12993,7 @@ var $author$project$TitleBar$makeIconButton = F4(
 					$rtfeldman$elm_css$Html$Styled$text(textString)
 				]));
 	});
+var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
 var $rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
 var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PercentageUnits, '%');
 var $author$project$Model$PlayOnion = function (a) {
@@ -13188,7 +13189,9 @@ var $author$project$TitleBar$makeTitle = function (model) {
 					[
 						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
 						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$pct(100))
+						$rtfeldman$elm_css$Css$pct(100)),
+						$rtfeldman$elm_css$Css$margin(
+						$rtfeldman$elm_css$Css$px(20))
 					]))
 			]),
 		_List_fromArray(
@@ -13386,7 +13389,6 @@ var $rtfeldman$elm_css$Css$int = function (val) {
 		value: $elm$core$String$fromInt(val)
 	};
 };
-var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
 var $rtfeldman$elm_css$Css$UnitlessFloat = {$: 'UnitlessFloat'};
 var $rtfeldman$elm_css$Css$num = function (val) {
 	return {
@@ -15253,6 +15255,7 @@ var $author$project$View$makeHomePage = function (model) {
 		$author$project$View$programPage(model),
 		model);
 };
+var $rtfeldman$elm_css$Css$marginBottom = $rtfeldman$elm_css$Css$prop1('margin-bottom');
 var $author$project$Docs$Tutorial$pageWidth = 600;
 var $rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, textRendering: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
 var $rtfeldman$elm_css$Css$prop2 = F3(
@@ -15290,29 +15293,57 @@ var $author$project$Docs$Tutorial$wrapCenter = function (elements) {
 var $author$project$Docs$Tutorial$makeExampleCalls = F3(
 	function (calls, model, addPlayButton) {
 		return $author$project$Docs$Tutorial$wrapCenter(
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A5(
-						$author$project$DrawProgram$drawProgram,
+			_List_fromArray(
+				[
+					A2(
+					$rtfeldman$elm_css$Html$Styled$div,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$marginBottom(
+									$rtfeldman$elm_css$Css$em(2))
+								]))
+						]),
+					_Utils_ap(
 						_List_fromArray(
 							[
-								A2($author$project$Model$makeMain, 1, calls)
+								A5(
+								$author$project$DrawProgram$drawProgram,
+								_List_fromArray(
+									[
+										A2($author$project$Model$makeMain, 1, calls)
+									]),
+								model.mouseState,
+								$author$project$Docs$Tutorial$pageWidth,
+								$author$project$ViewVariables$toSvgWindowHeight(model.windowHeight),
+								false)
 							]),
-						model.mouseState,
-						$author$project$Docs$Tutorial$pageWidth,
-						$author$project$ViewVariables$toSvgWindowHeight(model.windowHeight),
-						false)
-					]),
-				addPlayButton ? _List_fromArray(
-					[
-						$author$project$TitleBar$playButton(
-						_List_fromArray(
+						addPlayButton ? _List_fromArray(
 							[
-								A2($author$project$Model$makeMain, 1, calls)
-							])),
-						$author$project$TitleBar$stopButton(model)
-					]) : _List_Nil));
+								A2(
+								$rtfeldman$elm_css$Html$Styled$div,
+								_List_fromArray(
+									[
+										$rtfeldman$elm_css$Html$Styled$Attributes$css(
+										_List_fromArray(
+											[
+												$rtfeldman$elm_css$Css$marginTop(
+												$rtfeldman$elm_css$Css$em(1))
+											]))
+									]),
+								_List_fromArray(
+									[
+										$author$project$TitleBar$playButton(
+										_List_fromArray(
+											[
+												A2($author$project$Model$makeMain, 1, calls)
+											])),
+										$author$project$TitleBar$stopButton(model)
+									]))
+							]) : _List_Nil))
+				]));
 	});
 var $author$project$Docs$Tutorial$emptyNoteBlock = function (model) {
 	return A3(
@@ -15372,9 +15403,9 @@ var $author$project$Docs$Tutorial$bodyList = function (model) {
 		[
 			$author$project$Docs$Tutorial$makeMarkdown('\n## The Note Block\n'),
 			$author$project$Docs$Tutorial$emptyNoteBlock(model),
-			$author$project$Docs$Tutorial$makeMarkdown('\nThe main function above contains a single function call to the `note` function.\n\nThe three dots above on the the `note` call represent the three arguments the `note` function requires.\n\nThe dot on the bottom of the block represents the output of the function, which is a song with a single\n  musical note in it.\n\nThis function call has holes where the arguments should be, so you cannot evaluate it to get a song as\n  it is an incomplete program.\n'),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe main function above contains a block which represents a calling the `note` function.\n\nThe three black dots on top of the `note` call represent the three arguments the function requires.\n\nThe dot on the bottom of the block represents the output of the function, a song with a single\n  musical note in it.\n\nThis function call has holes where the arguments should be, so you cannot evaluate it to get a song.\n'),
 			$author$project$Docs$Tutorial$simpleNoteBlock(model),
-			$author$project$Docs$Tutorial$makeMarkdown('\nThe arguments are the information `note` needs to create a single musical notes.\n\nThe three arguments to `note` are the `startTime` (in seconds), `frequency` (in hertz), and `duration` (in seconds).\n')
+			$author$project$Docs$Tutorial$makeMarkdown('\nThis function call has three arguments provided.\n\nThe arguments are the information `note` needs to create a single musical notes.\n\nYou can provide them when editing code by clicking a hole and typing on your keyboard.\n\nThe three arguments to `note` are the `startTime` (in seconds), `frequency` (in hertz), and `duration` (in seconds).\n\nThis call to `note` plays the note `A4` for 1 second. Alternatively, you can type the constant `A4` for 440.\n')
 		]);
 };
 var $author$project$Docs$Tutorial$tutorialBody = function (model) {
