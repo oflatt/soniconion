@@ -15154,6 +15154,20 @@ var $author$project$View$makeHomePage = function (model) {
 		$author$project$View$programPage(model),
 		model);
 };
+var $rtfeldman$elm_css$Css$auto = {alignItemsOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, flexBasis: $rtfeldman$elm_css$Css$Structure$Compatible, intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, justifyContentOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrAutoOrCoverOrContain: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, overflow: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, textRendering: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'auto'};
+var $rtfeldman$elm_css$Css$prop2 = F3(
+	function (key, argA, argB) {
+		return A2(
+			$rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[argA.value, argB.value])));
+	});
+var $rtfeldman$elm_css$Css$margin2 = $rtfeldman$elm_css$Css$prop2('margin');
+var $rtfeldman$elm_css$Css$maxWidth = $rtfeldman$elm_css$Css$prop1('max-width');
 var $elm_explorations$markdown$Markdown$defaultOptions = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
 	githubFlavored: $elm$core$Maybe$Just(
@@ -15170,9 +15184,48 @@ var $elm$core$Maybe$isJust = function (maybe) {
 };
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
 var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
+var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$block),
+						$rtfeldman$elm_css$Css$maxWidth(
+						$rtfeldman$elm_css$Css$px(600)),
+						A2(
+						$rtfeldman$elm_css$Css$margin2,
+						$rtfeldman$elm_css$Css$px(0),
+						$rtfeldman$elm_css$Css$auto)
+					]))
+			]),
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$fromUnstyled(
+				A2($elm_explorations$markdown$Markdown$toHtml, _List_Nil, str))
+			]));
+};
+var $author$project$Docs$Tutorial$tutorialText = '\n\n# test\n\n';
 var $author$project$Docs$Tutorial$makeTutorialPage = function (model) {
-	return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
-		A2($elm_explorations$markdown$Markdown$toHtml, _List_Nil, '\n# test\n'));
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$pageColor),
+						$rtfeldman$elm_css$Css$fontFamilies(
+						_List_fromArray(
+							['IBM Plex Sans', 'sans-serif']))
+					]))
+			]),
+		_List_fromArray(
+			[
+				$author$project$Docs$Tutorial$makeMarkdown($author$project$Docs$Tutorial$tutorialText)
+			]));
 };
 var $author$project$View$makeUnusedPage = function (model) {
 	return A2(
@@ -15186,7 +15239,7 @@ var $author$project$View$view = function (model) {
 			[
 				$rtfeldman$elm_css$Html$Styled$toUnstyled(
 				function () {
-					var _v0 = A2($elm$core$Debug$log, 'page ', model.currentPage);
+					var _v0 = model.currentPage;
 					switch (_v0) {
 						case 'Home':
 							return $author$project$View$makeHomePage(model);
