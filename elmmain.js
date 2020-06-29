@@ -5359,7 +5359,7 @@ var $elm$core$List$member = F2(
 			xs);
 	});
 var $author$project$Model$pageNames = _List_fromArray(
-	['Home', 'Unused']);
+	['Home', 'Unused', 'Tutorial']);
 var $author$project$Model$urlToPageName = function (url) {
 	if ($elm$core$String$length(url.path) > 1) {
 		var potentialName = A3(
@@ -11120,8 +11120,7 @@ var $author$project$Update$update = F2(
 				}
 			case 'PageChange':
 				var pageName = msg.a;
-				var result = A2($author$project$Update$changeByName, model, pageName);
-				return result;
+				return A2($author$project$Update$changeByName, model, pageName);
 			case 'UrlChanged':
 				var url = msg.a;
 				return _Utils_Tuple2(
@@ -15187,7 +15186,7 @@ var $author$project$View$view = function (model) {
 			[
 				$rtfeldman$elm_css$Html$Styled$toUnstyled(
 				function () {
-					var _v0 = model.currentPage;
+					var _v0 = A2($elm$core$Debug$log, 'page ', model.currentPage);
 					switch (_v0) {
 						case 'Home':
 							return $author$project$View$makeHomePage(model);
