@@ -394,6 +394,12 @@ updateWindow msg model =
             (model, Cmd.none)
         SetError errorString ->
             (modelWithError model errorString, Cmd.none)
+
+        PlayOnion onion ->
+            playOnionResult model onion
+        StopSound -> stopSoundResult model
+        
+                
         MouseRelease ->
             modelMouseRelease model
         MouseMoved pos ->
@@ -528,11 +534,6 @@ updateProgram msg model =
         SpawnFunction name mouseOffset ->
             spawnFuncModel model name mouseOffset
                 
-        PlayOnion onion ->
-            playOnionResult model onion
-        StopSound -> stopSoundResult model
-                
-
         _ -> updateWindow msg model
         
 

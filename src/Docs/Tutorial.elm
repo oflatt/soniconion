@@ -11,7 +11,7 @@ import Markdown
 import Html.Styled exposing (fromUnstyled, div, text, Html)
 import Html.Styled.Attributes exposing (css)
 import Css exposing (display, block, maxWidth, margin2, px, auto, backgroundColor, fontFamilies
-                    ,padding3, textAlign, center, em, fontSize, color, rgb)
+                    ,padding3, textAlign, center, em, fontSize, color, rgb, marginBottom, marginTop)
 
 import Debug exposing (log)
 
@@ -53,37 +53,45 @@ bodyList model =
    ,emptyNoteBlock model
    ,makeMarkdown
    """
-The main function above contains a single function call to the `note` function.
+The main function above contains a block which represents a calling the `note` function.
 
-The three dots above on the the `note` call represent the three arguments the `note` function requires.
+The three black dots on top of the `note` call represent the three arguments the function requires.
 
-The dot on the bottom of the block represents the output of the function, which is a song with a single
+The dot on the bottom of the block represents the output of the function, a song with a single
   musical note in it.
 
-This function call has holes where the arguments should be, so you cannot evaluate it to get a song as
-  it is an incomplete program.
+This function call has holes where the arguments should be, so you cannot evaluate it to get a song.
 """
    ,simpleNoteBlock model
    ,makeMarkdown """
+This function call has three arguments provided.
+
 The arguments are the information `note` needs to create a single musical notes.
 
+You can provide them when editing code by clicking a hole and typing on your keyboard.
+
 The three arguments to `note` are the `startTime` (in seconds), `frequency` (in hertz), and `duration` (in seconds).
+
+This call to `note` plays the note `A4` for 1 second. Alternatively, you can type the constant `A4` for 440.
 """]
 
 
 makeExampleCalls calls model addPlayButton =
     (wrapCenter
-         ([
-          (drawProgram
-               [(makeMain 1 calls)]
-               model.mouseState
-               pageWidth
-               (ViewVariables.toSvgWindowHeight model.windowHeight)
-               False)
-        ] ++
-         if addPlayButton
-         then [(playButton [(makeMain 1 calls)]), (stopButton model)]
-         else []))
+         [(div
+           [css [marginBottom (em 2)]]
+           ([
+            (drawProgram
+                 [(makeMain 1 calls)]
+                 model.mouseState
+                 pageWidth
+                 (ViewVariables.toSvgWindowHeight model.windowHeight)
+                 False)
+           ] ++ if addPlayButton
+                then [div
+                      [css [marginTop (em 1)]]
+                           [(playButton [(makeMain 1 calls)]), (stopButton model)]]
+                else []))])
         
    
 emptyNoteBlock model = makeExampleCalls [(constructCall 2 "note")] model False

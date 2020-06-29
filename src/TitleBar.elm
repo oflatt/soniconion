@@ -10,7 +10,7 @@ import Utils exposing (darken)
 import Css exposing (pct, px, textAlign, padding, fontFamilies, fontSize, top, display, height, width, inlineBlock
                     ,center, alignItems, inlineFlex, paddingRight, rgb, backgroundColor, paddingLeft, border, none
                     ,borderRadius, marginLeft, paddingTop, alignSelf, top, em, relative, position
-                    ,marginRight, hover)
+                    ,marginRight, hover, margin)
 import Html.Styled exposing (div, text, button, fromUnstyled)
 import Html.Styled.Attributes exposing (css, href, src, rel)
 import Html.Styled.Events exposing (onClick, onMouseOver, onMouseLeave)
@@ -81,6 +81,7 @@ stopButton model =
 makeTitle model = (div[css[
                         display (inlineBlock)
                        ,width (pct 100)
+                       ,margin (px 20)
                        ]
                       ]
                        [
