@@ -28,7 +28,7 @@ view model =
     {title = "Sonic Onion"
     , body =
          [toUnstyled
-              (case (log "page " model.currentPage) of
+              (case model.currentPage of
                    "Home" -> (makeHomePage model)
                    "Unused" -> (makeUnusedPage model)
                    "Docs" -> (makeDocsPage model)
