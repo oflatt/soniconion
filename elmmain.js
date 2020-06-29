@@ -15168,11 +15168,11 @@ var $rtfeldman$elm_css$Css$prop2 = F3(
 	});
 var $rtfeldman$elm_css$Css$margin2 = $rtfeldman$elm_css$Css$prop2('margin');
 var $rtfeldman$elm_css$Css$maxWidth = $rtfeldman$elm_css$Css$prop1('max-width');
-var $elm_explorations$markdown$Markdown$defaultOptions = {
+var $author$project$Docs$Tutorial$options = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
 	githubFlavored: $elm$core$Maybe$Just(
 		{breaks: false, tables: false}),
-	sanitize: true,
+	sanitize: false,
 	smartypants: false
 };
 var $elm$core$Maybe$isJust = function (maybe) {
@@ -15183,7 +15183,6 @@ var $elm$core$Maybe$isJust = function (maybe) {
 	}
 };
 var $elm_explorations$markdown$Markdown$toHtmlWith = _Markdown_toHtml;
-var $elm_explorations$markdown$Markdown$toHtml = $elm_explorations$markdown$Markdown$toHtmlWith($elm_explorations$markdown$Markdown$defaultOptions);
 var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
@@ -15204,11 +15203,26 @@ var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
 		_List_fromArray(
 			[
 				$rtfeldman$elm_css$Html$Styled$fromUnstyled(
-				A2($elm_explorations$markdown$Markdown$toHtml, _List_Nil, str))
+				A3($elm_explorations$markdown$Markdown$toHtmlWith, $author$project$Docs$Tutorial$options, _List_Nil, str))
 			]));
 };
-var $author$project$Docs$Tutorial$tutorialText = '\n\n# test\n\n';
-var $author$project$Docs$Tutorial$makeTutorialPage = function (model) {
+var $author$project$Docs$Tutorial$tutorialText = '\n\n### The Note Block\n\n';
+var $rtfeldman$elm_css$Css$color = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'color', c.value);
+};
+var $rtfeldman$elm_css$Css$prop3 = F4(
+	function (key, argA, argB, argC) {
+		return A2(
+			$rtfeldman$elm_css$Css$property,
+			key,
+			A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[argA.value, argB.value, argC.value])));
+	});
+var $rtfeldman$elm_css$Css$padding3 = $rtfeldman$elm_css$Css$prop3('padding');
+var $author$project$Docs$Tutorial$makeMarkdownTitle = function (title) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$div,
 		_List_fromArray(
@@ -15216,16 +15230,61 @@ var $author$project$Docs$Tutorial$makeTutorialPage = function (model) {
 				$rtfeldman$elm_css$Html$Styled$Attributes$css(
 				_List_fromArray(
 					[
-						$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$pageColor),
-						$rtfeldman$elm_css$Css$fontFamilies(
-						_List_fromArray(
-							['IBM Plex Sans', 'sans-serif']))
+						A3(
+						$rtfeldman$elm_css$Css$padding3,
+						$rtfeldman$elm_css$Css$em(4),
+						$rtfeldman$elm_css$Css$em(0),
+						$rtfeldman$elm_css$Css$em(1)),
+						$rtfeldman$elm_css$Css$textAlign($rtfeldman$elm_css$Css$center)
 					]))
 			]),
 		_List_fromArray(
 			[
-				$author$project$Docs$Tutorial$makeMarkdown($author$project$Docs$Tutorial$tutorialText)
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$em(4)),
+								$rtfeldman$elm_css$Css$color(
+								A3($rtfeldman$elm_css$Css$rgb, 0, 14, 22))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(title)
+					]))
 			]));
+};
+var $author$project$Docs$Tutorial$wrapMarkdownPage = F2(
+	function (title, page) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$pageColor),
+							$rtfeldman$elm_css$Css$fontFamilies(
+							_List_fromArray(
+								['IBM Plex Sans', 'sans-serif']))
+						]))
+				]),
+			_List_fromArray(
+				[
+					$author$project$Docs$Tutorial$makeMarkdownTitle(title),
+					page
+				]));
+	});
+var $author$project$Docs$Tutorial$makeTutorialPage = function (model) {
+	return A2(
+		$author$project$Docs$Tutorial$wrapMarkdownPage,
+		'Tutorial',
+		$author$project$Docs$Tutorial$makeMarkdown($author$project$Docs$Tutorial$tutorialText));
 };
 var $author$project$View$makeUnusedPage = function (model) {
 	return A2(
