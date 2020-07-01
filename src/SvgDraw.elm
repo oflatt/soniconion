@@ -7,7 +7,6 @@ import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
 import ViewVariables exposing (blockHeight, blockSpacing)
 import Utils
-import Update
 
 import ViewStructure exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, countOutputsBefore
                               ,mouseToSvgCoordinates)
@@ -333,7 +332,7 @@ drawBlockNameInput call viewStructure blockPos =
          (BlockNameUpdate call.id)
          Css.transparent
          (blockNameEvents call viewStructure)
-         (Update.nodeNameId call.id)
+         (nodeNameId call.id)
          viewStructure)
 
 drawHeaderNameInput function viewStructure =
@@ -346,7 +345,7 @@ drawHeaderNameInput function viewStructure =
          (HeaderNameUpdate viewStructure.id)
          Css.transparent
          (headerNameEvents function viewStructure)
-         (Update.headerNameId viewStructure.id)
+         (headerNameId viewStructure.id)
          viewStructure)
 
         

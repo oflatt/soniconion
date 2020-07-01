@@ -7,7 +7,6 @@ import ViewStructure exposing (mouseToSvgCoordinates, ViewStructure)
 import ViewPositions exposing (getViewStructures)
 import ViewVariables
 import SvgDraw
-import Update exposing (nodeInputId, nodeOutputId)
 
 
 import Browser

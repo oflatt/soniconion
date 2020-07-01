@@ -28,7 +28,8 @@ recur =
         
 loopFunctionBody =
     (Begin (initialVariables ++
-                [CallFunction (Lit "onTick") [(Lit "state")]
+                [CallFunction (Lit "sleep") [(Lit "4")]
+                ,CallFunction (Lit "onTick") [(Lit "state")]
                 ,CallFunction (Lit "update")
                     [(Lit "state")
                     ,handleContinuations (CallFunction (Get (Lit "functions") (Lit "main")) [])

@@ -5,7 +5,7 @@ import ModelHelpers exposing (OnionMap)
 import Compiler.CompModel exposing (Expr, Value(..), Method, CompModel, CompileExprFunction(..), AST(..)
                                    ,false, true)
 import Compiler.CompModel as CompModel
-import Compiler.CompileBuiltIn exposing (buildTailFuncCall)
+import Compiler.CompileBuiltIn exposing (buildTailFuncCall, buildIf)
 
 
 import Array exposing (Array)
@@ -61,10 +61,19 @@ makeContinuations exprArr numRefs pos onionMap =
                                     case left of
                                         StackIndex p -> makeContinuations exprArr numRefs p onionMap
                                         _ -> exprArr
+                                leftWrap = case left of
+                                               StackIndex p -> False
+                                               _ -> True
+                                rightWrap = case right of
+                                                StackIndex p -> False
+                                                _ -> True
+                                rightRecur = case right of
+                                                 StackIndex p -> makeContinuations leftRecur numRefs p onionMap
+                                                 _ -> leftRecur
                             in
-                                case right of
-                                    StackIndex p -> makeContinuations leftRecur numRefs p onionMap
-                                    _ -> leftRecur
+                                Array.set pos {expr | compileExprFunction=
+                                                   (CompileExprFunction (buildIf leftWrap rightWrap))}
+                                    rightRecur
                         _ -> exprArr -- todo add error handling
                 other ->
                     case Dict.get other onionMap of

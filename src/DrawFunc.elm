@@ -5,7 +5,7 @@ import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, Inp
 import LineRouting exposing (CallLineRoute)
 import ViewVariables
 import SvgDraw exposing (blockMouseOffset)
-import Update exposing (nodeInputId, nodeOutputId)
+
 
 import Browser
 
@@ -76,7 +76,7 @@ drawHeaderFinalOutput viewStructure inputCounter =
             (case (Dict.get inputCounter blockPos.inputPositions) of
                  Just nodeP -> nodeP
                  Nothing -> (-100, -100)) -- something went wrong
-        domId = (Update.headerNodeId viewStructure.id inputCounter)
+        domId = (headerNodeId viewStructure.id inputCounter)
         events = SvgDraw.headerEventsFinal inputCounter viewStructure
         isInputHighlighted = False
     in
@@ -90,7 +90,7 @@ drawHeaderOutput input viewStructure inputCounter =
             (case (Dict.get inputCounter blockPos.inputPositions) of
                  Just nodeP -> nodeP
                  Nothing -> (-100, -100)) -- something went wrong
-        domId = (Update.headerNodeId viewStructure.id inputCounter)
+        domId = (headerNodeId viewStructure.id inputCounter)
         events = SvgDraw.headerEvents inputCounter viewStructure
         isInputHighlighted =
             case viewStructure.mouseState.mouseSelection of

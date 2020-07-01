@@ -40,7 +40,7 @@ generalList = [(BuiltInSpec
               ,(BuiltInSpec
                     "if"
                     (Finite ["condition", "thenValue", "elseValue"])
-                    (CompileExprFunction buildIf))]
+                    (CompileExprFunction (buildIf False False)))]
 
 compareUnary op =
     (BuiltInSpec op (Infinite ["leftComparable", "rightComparable"] "comparables") (CompileExprFunction buildUnary))

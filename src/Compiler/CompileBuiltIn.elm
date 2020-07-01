@@ -19,12 +19,19 @@ buildValue val =
         ScriptVariable str ->
             makeLit (Lit str)
 
-buildIf expr =
+wrapFuncRes val =
+    Arr [false, val]
+
+buildIf leftWrap rightWrap expr =
     case expr.children of
         (cond::thenValue::elseValue::[]) ->
             (If (getLit (buildValue cond) "anchor")
-                 (buildValue thenValue)
-                 (buildValue elseValue))
+                 (if leftWrap
+                  then (wrapFuncRes (buildValue thenValue))
+                  else (buildValue thenValue))
+                 (if rightWrap
+                  then (wrapFuncRes (buildValue elseValue))
+                  else (buildValue elseValue)))
         _ -> Empty -- fail silently
                 
 buildWave : Expr -> AST

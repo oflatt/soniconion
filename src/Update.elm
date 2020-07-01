@@ -1,5 +1,4 @@
-port module Update exposing (update, nodeInputId, nodeOutputId, scrollChange, nodeNameId, headerNodeId,
-                                 headerNameId, fpsChange, runningChange)
+port module Update exposing (update, scrollChange, fpsChange, runningChange)
 import Debug exposing (log)
 
 import Task
@@ -25,6 +24,7 @@ import Compiler.Compile exposing (compileOnion)
 import ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateInputOn
                              ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
                              ,getFunc)
+import DrawToolbar
 
 import Debug exposing (log)
 
@@ -60,20 +60,7 @@ changeByName model pageName =
                     model.url
                 Just url -> url
 
-    in changeUrl model newurl pageName
-
-nodeInputId callid inputindex =
-    "i" ++ (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
-nodeOutputId callid =
-    "o" ++ (String.fromInt callid)
-nodeNameId callid =
-    "n" ++ (String.fromInt callid)
-
-headerNodeId functionid index =
-    "h" ++ (String.fromInt functionid) ++ "-" ++ (String.fromInt index)
-headerNameId functionid =
-    "hn" ++ (String.fromInt functionid)
-        
+    in changeUrl model newurl pageName        
 mouse_scale_x : Int -> Int
 mouse_scale_x mouse_x = (round ((toFloat mouse_x) * 1.65))
 
@@ -266,7 +253,8 @@ finishBlockAtPos func blockId =
 programDropped model =
     let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
         svgH = ViewVariables.toSvgWindowHeight model.windowHeight
-        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH 0 0
+        toolbar = (DrawToolbar.drawToolbar model.program model.mouseState svgW svgH)
+        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH toolbar.width 0
     in
         List.map .sortedFunc viewStructures
         

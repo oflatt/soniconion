@@ -135,6 +135,19 @@ type alias Function = { name: String
                       , args: List Input
                       , calls: List Call}
 
+nodeInputId callid inputindex =
+    "i" ++ (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
+nodeOutputId callid =
+    "o" ++ (String.fromInt callid)
+nodeNameId callid =
+    "n" ++ (String.fromInt callid)
+
+headerNodeId functionid index =
+    "h" ++ (String.fromInt functionid) ++ "-" ++ (String.fromInt index)
+headerNameId functionid =
+    "hn" ++ (String.fromInt functionid)
+
+    
 makeMain id calls =
     makeFunc id calls "main"
 

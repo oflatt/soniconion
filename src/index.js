@@ -94,6 +94,12 @@ function cleanup(state) {
     }
 }
 
+function sleep(duration) {
+  window.asyncRun.pauseImmediate(() => {
+    window.setTimeout(() => window.asyncRun.continueImmediate({ type: 'normal', value: undefined }), duration);
+  });
+}
+
 function runNew(javascriptCode) {
     const state = makeInitialState();
     window.runningState = state;
@@ -103,7 +109,7 @@ function runNew(javascriptCode) {
 						 estimator: "exact",
 						 yieldInterval: 50});
     window.asyncRun.g = {console, window, Tone, onTick, update, getTime, state, mathMod, document, window, app
-			 ,Object, Math, Date, songToNotes, setTimeout};
+			 ,Object, Math, Date, songToNotes, sleep};
     window.asyncRun.run(() => {});
     window.runLock = false;
     app.ports.runningChange.send({'running' : true});
