@@ -99,7 +99,7 @@ makeTitle model = (div[css[
                                   ,fontSize (px 24)
                                   ,marginLeft (px buttonSpacing)]]
                              [text ("fps: " ++ (if not model.isRunning
-                                                then ""
+                                                then "none"
                                                 else (String.fromInt model.fps)))])
                        ,(makeIconButton (text "") "Tutorial" (PageChange "Tutorial")
                              (rgb 212 214 67))

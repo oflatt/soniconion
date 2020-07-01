@@ -94,11 +94,12 @@ All literal values instantiate songs, and all calls to the `note` function resul
 `+` also compute using songs, but require the definition of a song `anchor`.
 
 The `anchor` of a song is the attachment point for future songs. This anchor is initialized
-to the duration of a song when the song is a literal. The anchor is upated when songs are chained.
+to the duration of a song when the song is a literal. When songs are chained, the new anchor
+is updated to be `duration` greater.
 
 Mathematical operations like `+` operate
-on the anchors of multiple songs, returning the first argument with a modified anchor, similar to how
-`note` extends a song with another note.
+on the anchors of multiple songs, returning the first argument with a modified anchor, 
+in a similar way to how `note` extends a song with another note.
 Consider the following example.
 """
    ,ex1Addition model
@@ -120,8 +121,9 @@ is used to update the anchor of the literal `2`.
    ,sideEffectFreeExample model
    ,makeMarkdown """
 Notice that, in the example above, only the second note plays.
-Sonic Onion is a functional, reactice programming language without side-effects. In other words,
-each call produces a new song, and the result of the program is a single song.
+This is because the call to `note` constructs a song, but the song only plays
+when it is returned at the end of the `main` function. In other words, the result of the entire program
+is a single song, so the top note is a song which is not used anywhere.
 Each function returns the result of the last call in the body of the function, and last block of the `main`
 function should be the entire desired song.
 
@@ -162,7 +164,7 @@ X coordinate, which can be refered to using the `mouseX` variable.
    ,makeMarkdown """
 The output of the program changes over time, with a frequency that matches the mouse
 position. In reality, the continuous nature of your program is simulated by running many times
-per second. This is why we display a `fps` or frames per second counter, to get an idea of fine
+per second. This is why we display a `fps`, or frames per second, counter to get an idea of how fine
 the simulation is.
 
 Some other useful signals are `mouseY`, the Y coordinate of the mouse, and `time`, the current time
@@ -190,6 +192,7 @@ In the example above, we use `if` to detect if the mouse is far enough down
 the screen, and change the note if it is.
 The condition is that the mouse is greater than 200 pixels down the screen, and the
 choices are two notes, either `A4` or `B4`. Using `if`, we can pick between entire songs!
+The song is a signal which changes depending on the mouse position.
 """
    
    ,makeMarkdown """
