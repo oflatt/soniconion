@@ -6395,26 +6395,38 @@ var $author$project$Compiler$CompModel$getLit = F2(
 			obj,
 			$author$project$Compiler$CompModel$Lit(str));
 	});
-var $author$project$Compiler$CompileBuiltIn$buildIf = function (expr) {
-	var _v0 = expr.children;
-	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
-		var cond = _v0.a;
-		var _v1 = _v0.b;
-		var thenValue = _v1.a;
-		var _v2 = _v1.b;
-		var elseValue = _v2.a;
-		return A3(
-			$author$project$Compiler$CompModel$If,
-			A2(
-				$author$project$Compiler$CompModel$getLit,
-				$author$project$Compiler$CompileBuiltIn$buildValue(cond),
-				'anchor'),
-			$author$project$Compiler$CompileBuiltIn$buildValue(thenValue),
-			$author$project$Compiler$CompileBuiltIn$buildValue(elseValue));
-	} else {
-		return $author$project$Compiler$CompModel$Empty;
-	}
+var $author$project$Compiler$CompModel$Arr = function (a) {
+	return {$: 'Arr', a: a};
 };
+var $author$project$Compiler$CompModel$false = $author$project$Compiler$CompModel$Lit('false');
+var $author$project$Compiler$CompileBuiltIn$wrapFuncRes = function (val) {
+	return $author$project$Compiler$CompModel$Arr(
+		_List_fromArray(
+			[$author$project$Compiler$CompModel$false, val]));
+};
+var $author$project$Compiler$CompileBuiltIn$buildIf = F3(
+	function (leftWrap, rightWrap, expr) {
+		var _v0 = expr.children;
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var cond = _v0.a;
+			var _v1 = _v0.b;
+			var thenValue = _v1.a;
+			var _v2 = _v1.b;
+			var elseValue = _v2.a;
+			return A3(
+				$author$project$Compiler$CompModel$If,
+				A2(
+					$author$project$Compiler$CompModel$getLit,
+					$author$project$Compiler$CompileBuiltIn$buildValue(cond),
+					'anchor'),
+				leftWrap ? $author$project$Compiler$CompileBuiltIn$wrapFuncRes(
+					$author$project$Compiler$CompileBuiltIn$buildValue(thenValue)) : $author$project$Compiler$CompileBuiltIn$buildValue(thenValue),
+				rightWrap ? $author$project$Compiler$CompileBuiltIn$wrapFuncRes(
+					$author$project$Compiler$CompileBuiltIn$buildValue(elseValue)) : $author$project$Compiler$CompileBuiltIn$buildValue(elseValue));
+		} else {
+			return $author$project$Compiler$CompModel$Empty;
+		}
+	});
 var $author$project$Compiler$Song$join = F2(
 	function (song1, song2) {
 		return A2(
@@ -6492,7 +6504,8 @@ var $author$project$BuiltIn$generalList = _List_fromArray(
 		$author$project$BuiltIn$Finite(
 			_List_fromArray(
 				['condition', 'thenValue', 'elseValue'])),
-		$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildIf))
+		$author$project$Compiler$CompModel$CompileExprFunction(
+			A2($author$project$Compiler$CompileBuiltIn$buildIf, false, false)))
 	]);
 var $author$project$Compiler$CompModel$getAnchor = function (obj) {
 	return A2($author$project$Compiler$CompModel$getLit, obj, 'anchor');
@@ -7251,7 +7264,7 @@ var $author$project$Update$focusInputCommand = function (domId) {
 		$author$project$Model$SilentDomError,
 		$elm$browser$Browser$Dom$focus(domId));
 };
-var $author$project$Update$nodeNameId = function (callid) {
+var $author$project$Model$nodeNameId = function (callid) {
 	return 'n' + $elm$core$String$fromInt(callid);
 };
 var $author$project$Update$blockNameHighlightModel = F2(
@@ -7267,7 +7280,7 @@ var $author$project$Update$blockNameHighlightModel = F2(
 				model,
 				{mouseState: newMouse}),
 			$author$project$Update$focusInputCommand(
-				$author$project$Update$nodeNameId(id)));
+				$author$project$Model$nodeNameId(id)));
 	});
 var $author$project$ModelHelpers$updateCallIfMatchesId = F4(
 	function (call, callFunc, id, onion) {
@@ -7351,7 +7364,7 @@ var $author$project$Model$FunctionOutputSelected = F2(
 	function (a, b) {
 		return {$: 'FunctionOutputSelected', a: a, b: b};
 	});
-var $author$project$Update$headerNodeId = F2(
+var $author$project$Model$headerNodeId = F2(
 	function (functionid, index) {
 		return 'h' + ($elm$core$String$fromInt(functionid) + ('-' + $elm$core$String$fromInt(index)));
 	});
@@ -7368,7 +7381,7 @@ var $author$project$Update$headerHighlightModel = F3(
 				model,
 				{mouseState: newMouse}),
 			$author$project$Update$focusInputCommand(
-				A2($author$project$Update$headerNodeId, id, index)));
+				A2($author$project$Model$headerNodeId, id, index)));
 	});
 var $author$project$Update$headerAddOutputModel = F3(
 	function (model, id, index) {
@@ -7574,7 +7587,7 @@ var $author$project$Update$headerNameClickModel = F3(
 var $author$project$Model$FunctionNameSelected = function (a) {
 	return {$: 'FunctionNameSelected', a: a};
 };
-var $author$project$Update$headerNameId = function (functionid) {
+var $author$project$Model$headerNameId = function (functionid) {
 	return 'hn' + $elm$core$String$fromInt(functionid);
 };
 var $author$project$Update$headerNameHighlightModel = F2(
@@ -7590,7 +7603,7 @@ var $author$project$Update$headerNameHighlightModel = F2(
 				model,
 				{mouseState: newMouse}),
 			$author$project$Update$focusInputCommand(
-				$author$project$Update$headerNameId(id)));
+				$author$project$Model$headerNameId(id)));
 	});
 var $author$project$Update$headerNameUpdateModel = F3(
 	function (model, id, str) {
@@ -7614,7 +7627,7 @@ var $author$project$Model$InputSelected = F2(
 	function (a, b) {
 		return {$: 'InputSelected', a: a, b: b};
 	});
-var $author$project$Update$nodeInputId = F2(
+var $author$project$Model$nodeInputId = F2(
 	function (callid, inputindex) {
 		return 'i' + ($elm$core$String$fromInt(callid) + ('-' + $elm$core$String$fromInt(inputindex)));
 	});
@@ -7631,7 +7644,7 @@ var $author$project$Update$inputHighlightModel = F3(
 				model,
 				{mouseState: newMouse}),
 			$author$project$Update$focusInputCommand(
-				A2($author$project$Update$nodeInputId, id, index)));
+				A2($author$project$Model$nodeInputId, id, index)));
 	});
 var $author$project$Update$inputClickModel = F3(
 	function (model, id, index) {
@@ -7681,7 +7694,7 @@ var $author$project$Update$inputUpdateModel = F4(
 						return $author$project$Model$Hole;
 					}),
 				$author$project$Update$focusInputCommand(
-					A2($author$project$Update$nodeInputId, id, index)));
+					A2($author$project$Model$nodeInputId, id, index)));
 		} else {
 			return _Utils_Tuple2(
 				A4(
@@ -7698,7 +7711,7 @@ var $author$project$Update$inputUpdateModel = F4(
 var $author$project$Model$OutputSelected = function (a) {
 	return {$: 'OutputSelected', a: a};
 };
-var $author$project$Update$nodeOutputId = function (callid) {
+var $author$project$Model$nodeOutputId = function (callid) {
 	return 'o' + $elm$core$String$fromInt(callid);
 };
 var $author$project$Update$outputHighlightModel = F2(
@@ -7717,7 +7730,7 @@ var $author$project$Update$outputHighlightModel = F2(
 				$elm$core$Task$attempt,
 				$author$project$Model$SilentDomError,
 				$elm$browser$Browser$Dom$focus(
-					$author$project$Update$nodeOutputId(id))));
+					$author$project$Model$nodeOutputId(id))));
 	});
 var $author$project$Update$outputClickModel = F2(
 	function (model, id) {
@@ -7928,7 +7941,7 @@ var $author$project$Update$keyboardUpdateInput = F4(
 					index,
 					$author$project$Update$updateWithChar(_char)),
 				$author$project$Update$focusInputCommand(
-					A2($author$project$Update$nodeInputId, id, index))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					A2($author$project$Model$nodeInputId, id, index))) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		} else {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
@@ -7953,1243 +7966,42 @@ var $author$project$Update$keyboardUpdate = F2(
 		}
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $author$project$ViewVariables$functionXSpacing = 25;
-var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$functionXSpacing;
-var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
-var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
-var $author$project$ViewStructure$ViewStructure = function (blockPositions) {
-	return function (lineRouting) {
-		return function (sortedFunc) {
-			return function (id) {
-				return function (headerPos) {
-					return function (funcBlockMaxWidth) {
-						return function (funcWidth) {
-							return function (funcHeight) {
-								return function (mouseState) {
-									return function (svgWidth) {
-										return function (svgHeight) {
-											return function (isToolbar) {
-												return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcHeight: funcHeight, funcWidth: funcWidth, headerPos: headerPos, id: id, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc, svgHeight: svgHeight, svgWidth: svgWidth};
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			};
-		};
-	};
-};
-var $author$project$ViewStructure$fixLeftForMoveInfo = F3(
-	function (withoutLeft, maybeMove, leftW) {
-		if (maybeMove.$ === 'Nothing') {
-			return withoutLeft;
+var $author$project$DrawToolbar$ToolResult = F3(
+	function (width, height, svg) {
+		return {height: height, svg: svg, width: width};
+	});
+var $author$project$BuiltIn$callFromSpec = F2(
+	function (spec, id) {
+		return A2($author$project$BuiltIn$constructCall, id, spec.functionName);
+	});
+var $author$project$BuiltIn$makeAllFunction = F2(
+	function (builtInList, counter) {
+		if (!builtInList.b) {
+			return _List_Nil;
 		} else {
-			var moveInfo = maybeMove.a;
-			var _v1 = A2($elm$core$Dict$get, moveInfo.movedCall.id, withoutLeft);
-			if (_v1.$ === 'Just') {
-				var blockPos = _v1.a;
-				var newx = blockPos.xpos - leftW;
-				return A3(
-					$elm$core$Dict$insert,
-					moveInfo.movedCall.id,
-					_Utils_update(
-						blockPos,
-						{xpos: newx}),
-					withoutLeft);
-			} else {
-				return withoutLeft;
-			}
-		}
-	});
-var $author$project$ViewStructure$fixMoveInfo = F3(
-	function (xoffset, yoffset, maybeMove) {
-		if (maybeMove.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var moveInfo = maybeMove.a;
-			var newy = moveInfo.movedPos.b - yoffset;
-			var newx = moveInfo.movedPos.a - xoffset;
-			return $elm$core$Maybe$Just(
-				_Utils_update(
-					moveInfo,
-					{
-						movedPos: _Utils_Tuple2(newx, newy)
-					}));
-		}
-	});
-var $author$project$ViewVariables$blockHeight = 50;
-var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
-var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
-var $author$project$ViewStructure$countOutputsBefore = F2(
-	function (inputs, threshhold) {
-		countOutputsBefore:
-		while (true) {
-			if (!threshhold) {
-				return 0;
-			} else {
-				if (!inputs.b) {
-					return 0;
-				} else {
-					var input = inputs.a;
-					var rest = inputs.b;
-					switch (input.$) {
-						case 'Output':
-							var id = input.a;
-							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
-						case 'FunctionArg':
-							var index = input.a;
-							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
-						default:
-							var $temp$inputs = rest,
-								$temp$threshhold = threshhold - 1;
-							inputs = $temp$inputs;
-							threshhold = $temp$threshhold;
-							continue countOutputsBefore;
-					}
-				}
-			}
-		}
-	});
-var $author$project$ViewStructure$countOutputs = function (inputs) {
-	return A2(
-		$author$project$ViewStructure$countOutputsBefore,
-		inputs,
-		$elm$core$List$length(inputs));
-};
-var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewVariables$blockSpacing * 3) / 2) | 0;
-var $author$project$ViewStructure$callLinesSpace = function (call) {
-	return $author$project$ViewStructure$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
-};
-var $author$project$ViewStructure$BlockPosition = F4(
-	function (xpos, ypos, width, inputPositions) {
-		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
-	});
-var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
-var $author$project$ViewVariables$blockTextInputHeight = $author$project$ViewVariables$blockHeight - (4 * $author$project$ViewVariables$nodeRadius);
-var $author$project$ViewVariables$charOverestimatePercent = 0.6;
-var $author$project$ViewVariables$inputFontSizePercent = 0.80;
-var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
-var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
-var $author$project$ViewVariables$callTextBlockSize = function (text) {
-	return $elm$core$Basics$floor(
-		$author$project$ViewVariables$blockCharacterOverestimate * $elm$core$String$length(text)) + (2 * $author$project$ViewVariables$blockTextXPadding);
-};
-var $elm$core$Dict$sizeHelp = F2(
-	function (n, dict) {
-		sizeHelp:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return n;
-			} else {
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
-					$temp$dict = left;
-				n = $temp$n;
-				dict = $temp$dict;
-				continue sizeHelp;
-			}
-		}
-	});
-var $elm$core$Dict$size = function (dict) {
-	return A2($elm$core$Dict$sizeHelp, 0, dict);
-};
-var $author$project$ViewStructure$inputPositionsMax = function (inputPositions) {
-	var _v0 = A2(
-		$elm$core$Dict$get,
-		$elm$core$Dict$size(inputPositions) - 1,
-		inputPositions);
-	if (_v0.$ === 'Just') {
-		var lastPos = _v0.a;
-		return (lastPos.a + lastPos.b) + $author$project$ViewVariables$blockTextXPadding;
-	} else {
-		return 0;
-	}
-};
-var $author$project$ViewStructure$getBlockWidth = F2(
-	function (call, inputPositions) {
-		return A2(
-			$elm$core$Basics$max,
-			$author$project$ViewStructure$inputPositionsMax(inputPositions),
-			$author$project$ViewVariables$callTextBlockSize(call.functionName));
-	});
-var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
-var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
-var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
-var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
-	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
-};
-var $author$project$ViewStructure$getInputWidth = function (input) {
-	if (input.$ === 'Text') {
-		var str = input.a;
-		return $author$project$ViewVariables$numCharactersToInputWidth(
-			$elm$core$String$length(str));
-	} else {
-		return $author$project$ViewVariables$nodeRadius * 2;
-	}
-};
-var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
-var $author$project$ViewStructure$inputPositionList = F4(
-	function (inputs, counter, currentX, shouldAddTail) {
-		if (!inputs.b) {
-			return shouldAddTail ? _List_fromArray(
-				[
-					_Utils_Tuple2(
-					counter,
-					_Utils_Tuple2(
-						currentX,
-						$author$project$ViewStructure$getInputWidth($author$project$Model$Hole)))
-				]) : _List_Nil;
-		} else {
-			var input = inputs.a;
-			var rest = inputs.b;
-			var width = $author$project$ViewStructure$getInputWidth(input);
+			var spec = builtInList.a;
+			var specs = builtInList.b;
 			return A2(
 				$elm$core$List$cons,
-				_Utils_Tuple2(
-					counter,
-					_Utils_Tuple2(currentX, width)),
-				A4($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing, shouldAddTail));
+				A2($author$project$BuiltIn$callFromSpec, spec, counter),
+				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
 		}
 	});
-var $author$project$ViewStructure$makeInputPositions = F2(
-	function (call, shouldAddTail) {
-		return $elm$core$Dict$fromList(
-			A4($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding, shouldAddTail));
+var $author$project$BuiltIn$allBuiltInAsFunction = A3(
+	$author$project$Model$makeFunc,
+	-1,
+	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100),
+	'function');
+var $author$project$Model$BlockClick = F3(
+	function (a, b, c) {
+		return {$: 'BlockClick', a: a, b: b, c: c};
 	});
-var $author$project$ViewStructure$makeBlockPosition = F5(
-	function (xpos, ypos, call, shouldCenter, shouldAddTail) {
-		var inputPositions = A2($author$project$ViewStructure$makeInputPositions, call, shouldAddTail);
-		var blockYpos = shouldCenter ? (ypos - (($author$project$ViewVariables$blockHeight / 2) | 0)) : ypos;
-		var blockW = A2($author$project$ViewStructure$getBlockWidth, call, inputPositions);
-		var blockXpos = shouldCenter ? (xpos - ((blockW / 2) | 0)) : xpos;
-		return A4($author$project$ViewStructure$BlockPosition, blockXpos, blockYpos, blockW, inputPositions);
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
-	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
-};
-var $author$project$ViewStructure$getAllBlockPositions = F3(
-	function (maybeMoveInfo, func, currentY) {
-		if (!func.b) {
-			if (maybeMoveInfo.$ === 'Nothing') {
-				return _Utils_Tuple2(_List_Nil, $elm$core$Dict$empty);
-			} else {
-				var moveInfo = maybeMoveInfo.a;
-				return _Utils_Tuple2(
-					_List_fromArray(
-						[moveInfo.movedCall]),
-					A3(
-						$elm$core$Dict$insert,
-						moveInfo.movedCall.id,
-						$author$project$ViewStructure$movedInfoBlockPos(moveInfo),
-						$elm$core$Dict$empty));
-			}
-		} else {
-			var call = func.a;
-			var rest = func.b;
-			var isMoved = function () {
-				if (maybeMoveInfo.$ === 'Nothing') {
-					return false;
-				} else {
-					var moveInfo = maybeMoveInfo.a;
-					return _Utils_cmp(moveInfo.movedPos.b, currentY + $author$project$ViewVariables$blockHeight) < 0;
-				}
-			}();
-			var newMoveInfo = isMoved ? $elm$core$Maybe$Nothing : maybeMoveInfo;
-			var newY = function () {
-				if (isMoved) {
-					if (maybeMoveInfo.$ === 'Just') {
-						var moveInfo = maybeMoveInfo.a;
-						return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall);
-					} else {
-						return 0;
-					}
-				} else {
-					return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(call);
-				}
-			}();
-			var restCall = isMoved ? func : rest;
-			var iteration = A3($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY);
-			var topCall = isMoved ? A2(
-				$elm$core$Maybe$withDefault,
-				call,
-				A2(
-					$elm$core$Maybe$map,
-					function ($) {
-						return $.movedCall;
-					},
-					maybeMoveInfo)) : call;
-			var blockPos = function () {
-				if (isMoved) {
-					if (maybeMoveInfo.$ === 'Just') {
-						var moveInfo = maybeMoveInfo.a;
-						return $author$project$ViewStructure$movedInfoBlockPos(moveInfo);
-					} else {
-						return A5($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false, false);
-					}
-				} else {
-					return A5(
-						$author$project$ViewStructure$makeBlockPosition,
-						0,
-						currentY + $author$project$ViewStructure$callLinesSpace(call),
-						call,
-						false,
-						false);
-				}
-			}();
-			return _Utils_Tuple2(
-				A2($elm$core$List$cons, topCall, iteration.a),
-				A3($elm$core$Dict$insert, topCall.id, blockPos, iteration.b));
-		}
-	});
-var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
-var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
-	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
-};
-var $author$project$ViewStructure$getBlockPositions = F5(
-	function (func, mouseState, xoffset, yoffset, maybeMove) {
-		var fixedMoveInfo = A3($author$project$ViewStructure$fixMoveInfo, xoffset, yoffset, maybeMove);
-		var allPositions = A3(
-			$author$project$ViewStructure$getAllBlockPositions,
-			fixedMoveInfo,
-			func.calls,
-			$author$project$ViewStructure$getFuncHeaderHeight(func));
-		return _Utils_Tuple2(
-			_Utils_update(
-				func,
-				{calls: allPositions.a}),
-			allPositions.b);
-	});
-var $author$project$ViewStructure$getHeaderBlockPos = F3(
-	function (func, xoffset, yoffset) {
-		return A5(
-			$author$project$ViewStructure$makeBlockPosition,
-			xoffset,
-			yoffset,
-			A4($author$project$Model$Call, 0, func.args, func.name, ''),
-			false,
-			true);
-	});
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
-var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var $elm$core$Array$getHelp = F3(
-	function (shift, index, tree) {
-		getHelp:
-		while (true) {
-			var pos = $elm$core$Array$bitMask & (index >>> shift);
-			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-			if (_v0.$ === 'SubTree') {
-				var subTree = _v0.a;
-				var $temp$shift = shift - $elm$core$Array$shiftStep,
-					$temp$index = index,
-					$temp$tree = subTree;
-				shift = $temp$shift;
-				index = $temp$index;
-				tree = $temp$tree;
-				continue getHelp;
-			} else {
-				var values = _v0.a;
-				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
-			}
-		}
-	});
-var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var $elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
-var $elm$core$Array$get = F2(
-	function (index, _v0) {
-		var len = _v0.a;
-		var startShift = _v0.b;
-		var tree = _v0.c;
-		var tail = _v0.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
-			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
-			A3($elm$core$Array$getHelp, startShift, index, tree)));
-	});
-var $author$project$LineRouting$findMaxBurden = F4(
-	function (fArray, outputBurden, currentIndex, maxIndex) {
-		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
-			return 0;
-		} else {
-			var callId = (currentIndex < 0) ? currentIndex : A2(
-				$elm$core$Maybe$withDefault,
-				-100,
-				A2(
-					$elm$core$Maybe$map,
-					function (call) {
-						return call.id;
-					},
-					A2($elm$core$Array$get, currentIndex, fArray)));
-			return A2(
-				$elm$core$Basics$max,
-				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
-				A2(
-					$elm$core$Maybe$withDefault,
-					0,
-					A2($elm$core$Dict$get, callId, outputBurden)));
-		}
-	});
-var $author$project$LineRouting$findThisRouting = F4(
-	function (inputInfo, outputBurden, fArray, idToPos) {
-		var oIndex = function () {
-			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-			if (_v1.$ === 'Just') {
-				var outputIndex = _v1.a;
-				return outputIndex;
-			} else {
-				return inputInfo.outputId;
-			}
-		}();
-		var cIndex = function () {
-			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-			if (_v0.$ === 'Just') {
-				var callIndex = _v0.a;
-				return callIndex;
-			} else {
-				return 0;
-			}
-		}();
-		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
-var $elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = $elm$core$Array$bitMask & (index >>> shift);
-		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (_v0.$ === 'SubTree') {
-			var subTree = _v0.a;
-			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _v0.a;
-			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
-			return A3(
-				$elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				$elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var $elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			$elm$core$Array$tailIndex(len)) > -1) ? A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
-			$elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4($elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
-	});
-var $author$project$LineRouting$updateCallLineRoute = F3(
-	function (inputInfo, thisRouting, lineRoute) {
-		return $elm$core$Maybe$Just(
-			A3(
-				$elm$core$Array$set,
-				inputInfo.index,
-				$elm$core$Maybe$Just(thisRouting),
-				function () {
-					if (lineRoute.$ === 'Nothing') {
-						return A2(
-							$elm$core$Array$initialize,
-							$elm$core$List$length(inputInfo.call.inputs),
-							$elm$core$Basics$always($elm$core$Maybe$Nothing));
-					} else {
-						var route = lineRoute.a;
-						return route;
-					}
-				}()));
-	});
-var $author$project$LineRouting$setLineRouting = F4(
-	function (lineRouting, inputInfo, thisRouting, isLeft) {
-		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
-		return A3(
-			$elm$core$Dict$update,
-			inputInfo.call.id,
-			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
-			lineRouting);
-	});
-var $author$project$LineRouting$updateOutputBurden = F2(
-	function (burden, otherBurden) {
-		if (otherBurden.$ === 'Just') {
-			var ob = otherBurden.a;
-			return $elm$core$Maybe$Just(
-				A2($elm$core$Basics$max, burden, ob));
-		} else {
-			return $elm$core$Maybe$Just(burden);
-		}
-	});
-var $author$project$LineRouting$setOutputBurden = F3(
-	function (outputBurden, id, burden) {
-		return A3(
-			$elm$core$Dict$update,
-			id,
-			$author$project$LineRouting$updateOutputBurden(burden),
-			outputBurden);
-	});
-var $author$project$LineRouting$addLineRouting = F6(
-	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
-		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
-		return _Utils_Tuple2(
-			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
-			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
-	});
-var $author$project$LineRouting$getOutputBurden = F2(
-	function (outputBurden, id) {
-		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
-		if (_v0.$ === 'Nothing') {
-			return 0;
-		} else {
-			var burden = _v0.a;
-			return burden;
-		}
-	});
-var $author$project$LineRouting$existingBurdenOne = F4(
-	function (inputInfo, burden, lineRouting, isLeft) {
-		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
-		if (!_v0) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var value = _v0;
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
-		}
-	});
-var $author$project$LineRouting$isDirectlyAbove = F2(
-	function (inputInfo, idToPos) {
-		var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
-		if (_v0.$ === 'Just') {
-			var inputPos = _v0.a;
-			if (inputInfo.outputId < 0) {
-				return !inputPos;
-			} else {
-				var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
-				if (_v1.$ === 'Just') {
-					var outputPos = _v1.a;
-					return _Utils_eq(inputPos, outputPos + 1);
-				} else {
-					return false;
-				}
-			}
-		} else {
-			return false;
-		}
-	});
-var $author$project$LineRouting$existingBurden = F5(
-	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
-		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
-			return $elm$core$Maybe$Just(
-				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
-		} else {
-			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
-			if (_v0.$ === 'Just') {
-				var newRouting = _v0.a;
-				return $elm$core$Maybe$Just(newRouting);
-			} else {
-				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
-			}
-		}
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $author$project$LineRouting$buildLineRouting = F7(
-	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
-		buildLineRouting:
-		while (true) {
-			if (!ordering.b) {
-				return lineRouting;
-			} else {
-				var inputInfo = ordering.a;
-				var rest = ordering.b;
-				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
-				if (_v1.$ === 'Just') {
-					var newLineRouting = _v1.a;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = outputBurdenLeft,
-						$temp$outputBurdenRight = outputBurdenRight,
-						$temp$lineRouting = newLineRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				} else {
-					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
-					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
-					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
-					var newBurden = _v2.a;
-					var newRouting = _v2.b;
-					var newLeft = isLeft ? newBurden : outputBurdenLeft;
-					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
-					var $temp$fArray = fArray,
-						$temp$ordering = rest,
-						$temp$outputBurdenLeft = newLeft,
-						$temp$outputBurdenRight = newRight,
-						$temp$lineRouting = newRouting,
-						$temp$idToPos = idToPos,
-						$temp$isLeft = !isLeft;
-					fArray = $temp$fArray;
-					ordering = $temp$ordering;
-					outputBurdenLeft = $temp$outputBurdenLeft;
-					outputBurdenRight = $temp$outputBurdenRight;
-					lineRouting = $temp$lineRouting;
-					idToPos = $temp$idToPos;
-					isLeft = $temp$isLeft;
-					continue buildLineRouting;
-				}
-			}
-		}
-	});
-var $elm$core$Array$fromListHelp = F3(
-	function (list, nodeList, nodeListSize) {
-		fromListHelp:
-		while (true) {
-			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
-			var jsArray = _v0.a;
-			var remainingItems = _v0.b;
-			if (_Utils_cmp(
-				$elm$core$Elm$JsArray$length(jsArray),
-				$elm$core$Array$branchFactor) < 0) {
-				return A2(
-					$elm$core$Array$builderToArray,
-					true,
-					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
-			} else {
-				var $temp$list = remainingItems,
-					$temp$nodeList = A2(
-					$elm$core$List$cons,
-					$elm$core$Array$Leaf(jsArray),
-					nodeList),
-					$temp$nodeListSize = nodeListSize + 1;
-				list = $temp$list;
-				nodeList = $temp$nodeList;
-				nodeListSize = $temp$nodeListSize;
-				continue fromListHelp;
-			}
-		}
-	});
-var $elm$core$Array$fromList = function (list) {
-	if (!list.b) {
-		return $elm$core$Array$empty;
-	} else {
-		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
-	}
-};
-var $author$project$LineRouting$byOutput = F2(
-	function (idToPos, element) {
-		var _v0 = A2($elm$core$Dict$get, element.call.id, idToPos);
-		if (_v0.$ === 'Just') {
-			var callPos = _v0.a;
-			var _v1 = A2($elm$core$Dict$get, element.outputId, idToPos);
-			if (_v1.$ === 'Just') {
-				var pos = _v1.a;
-				return _Utils_Tuple2(-pos, -callPos);
-			} else {
-				return _Utils_Tuple2(-element.outputId, -callPos);
-			}
-		} else {
-			return _Utils_Tuple2(1, 1);
-		}
-	});
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $author$project$LineRouting$InputInfo = F3(
-	function (call, index, outputId) {
-		return {call: call, index: index, outputId: outputId};
-	});
-var $elm$core$Tuple$pair = F2(
+var $author$project$Model$SpawnBlock = F2(
 	function (a, b) {
-		return _Utils_Tuple2(a, b);
+		return {$: 'SpawnBlock', a: a, b: b};
 	});
-var $author$project$LineRouting$getCallOrderedInputs = F2(
-	function (funcId, call) {
-		return A2(
-			$elm$core$List$filterMap,
-			function (inputPair) {
-				var _v0 = inputPair.a;
-				switch (_v0.$) {
-					case 'Output':
-						var outputId = _v0.a;
-						return $elm$core$Maybe$Just(
-							A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
-					case 'FunctionArg':
-						var index = _v0.a;
-						return $elm$core$Maybe$Just(
-							A3($author$project$LineRouting$InputInfo, call, inputPair.b, (-index) - 1));
-					default:
-						return $elm$core$Maybe$Nothing;
-				}
-			},
-			A3(
-				$elm$core$List$map2,
-				$elm$core$Tuple$pair,
-				call.inputs,
-				A2(
-					$elm$core$List$range,
-					0,
-					$elm$core$List$length(call.inputs) - 1)));
-	});
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$LineRouting$getOutputOrdering = F2(
-	function (func, idToPos) {
-		return A2(
-			$elm$core$List$sortBy,
-			$author$project$LineRouting$byOutput(idToPos),
-			A2(
-				$elm$core$List$concatMap,
-				$author$project$LineRouting$getCallOrderedInputs(func.id),
-				func.calls));
-	});
-var $author$project$LineRouting$getLineRouting = function (func) {
-	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
-	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
-	var funcArray = $elm$core$Array$fromList(func.calls);
-	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
-};
-var $author$project$ViewStructure$getMaxBlockBottom = function (blockPositions) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, blockpos, acc) {
-				return A2($elm$core$Basics$max, blockpos.ypos + $author$project$ViewVariables$blockHeight, acc);
-			}),
-		0,
-		blockPositions);
-};
-var $author$project$ViewStructure$getMaxBlockWidth = F2(
-	function (blockPositions, topBlock) {
-		return A3(
-			$elm$core$Dict$foldr,
-			F3(
-				function (key, blockpos, acc) {
-					return A2($elm$core$Basics$max, blockpos.width, acc);
-				}),
-			topBlock.width,
-			blockPositions);
-	});
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$LineRouting$maybeMax = function (subroute) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$elm$core$List$maximum(
-			A2(
-				$elm$core$List$map,
-				$elm$core$Maybe$withDefault(0),
-				$elm$core$Array$toList(subroute))));
-};
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$LineRouting$getMaxLine = function (routing) {
-	return A2(
-		$elm$core$Basics$max,
-		0,
-		A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$maximum(
-				A2(
-					$elm$core$List$map,
-					$author$project$LineRouting$maybeMax,
-					$elm$core$Dict$values(routing)))));
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$List$minimum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$LineRouting$maybeMin = function (subroute) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$elm$core$List$minimum(
-			A2(
-				$elm$core$List$map,
-				$elm$core$Maybe$withDefault(0),
-				$elm$core$Array$toList(subroute))));
-};
-var $author$project$LineRouting$getMinLine = function (routing) {
-	return A2(
-		$elm$core$Basics$min,
-		0,
-		A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$minimum(
-				A2(
-					$elm$core$List$map,
-					$author$project$LineRouting$maybeMin,
-					$elm$core$Dict$values(routing)))));
-};
-var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
-var $author$project$ViewStructure$getViewStructure = F8(
-	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, maybeMoveInfo, isToolbar) {
-		var blockTuple = A5($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo);
-		var sortedFunc = blockTuple.a;
-		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
-		var leftWidth = (-$author$project$LineRouting$getMinLine(lineRouting)) * $author$project$ViewVariables$lineXSpace;
-		var topBlockPosition = A3($author$project$ViewStructure$getHeaderBlockPos, func, xoffset + leftWidth, yoffset);
-		var rightWidth = $author$project$LineRouting$getMaxLine(lineRouting) * $author$project$ViewVariables$lineXSpace;
-		var blockPositionsWithoutLeftWidth = blockTuple.b;
-		var blockPositions = A3($author$project$ViewStructure$fixLeftForMoveInfo, blockPositionsWithoutLeftWidth, maybeMoveInfo, leftWidth);
-		var funcHeight = $author$project$ViewStructure$getMaxBlockBottom(blockPositions);
-		var maxWidth = A2($author$project$ViewStructure$getMaxBlockWidth, blockPositions, topBlockPosition);
-		var totalWidth = (leftWidth + rightWidth) + maxWidth;
-		return $author$project$ViewStructure$ViewStructure(blockPositions)(lineRouting)(sortedFunc)(sortedFunc.id)(topBlockPosition)(maxWidth)(totalWidth)(funcHeight)(mouseState)(svgScreenWidth)(svgScreenHeight)(isToolbar);
-	});
+var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
+var $author$project$ViewVariables$blockHeight = 50;
 var $author$project$ViewVariables$buttonHeight = 50;
 var $author$project$ViewVariables$titleHeight = 90;
 var $author$project$ViewVariables$svgYpos = $author$project$ViewVariables$titleHeight + $author$project$ViewVariables$buttonHeight;
@@ -9204,1981 +8016,473 @@ var $author$project$ViewStructure$mouseToSvgCoordinates = F5(
 			((((mouseState.mouseX + mouseState.scrollX) * A2($author$project$ViewVariables$viewportWidth, svgScreenWidth, svgScreenHeight)) / svgScreenWidth) | 0) - xoffset,
 			(((((mouseState.mouseY + mouseState.scrollY) - $author$project$ViewVariables$svgYpos) * $author$project$ViewVariables$viewportHeight) / svgScreenHeight) | 0) - yoffset);
 	});
-var $author$project$ViewPositions$selectedFunc = F5(
-	function (mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset) {
-		var view = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, false);
-		var oldPos = view.headerPos;
-		var mouseCoordinates = A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgWindowWidth, svgWindowHeight, 0, 0);
-		var xpos = mouseCoordinates.a - mouseOffset.a;
-		var ypos = mouseCoordinates.b - mouseOffset.b;
-		var newPos = _Utils_update(
-			oldPos,
-			{xpos: xpos, ypos: ypos});
-		return _Utils_update(
-			view,
-			{headerPos: newPos});
-	});
-var $author$project$ViewPositions$getSelected = F3(
-	function (mouseState, svgWindowWidth, svgWindowHeight) {
-		var _v0 = mouseState.mouseSelection;
-		if (_v0.$ === 'FunctionSelected') {
-			var func = _v0.a;
-			var mouseOffset = _v0.b;
-			return $elm$core$Maybe$Just(
-				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
+var $author$project$SvgDraw$viewStructureToMouse = function (viewStructure) {
+	return A5($author$project$ViewStructure$mouseToSvgCoordinates, viewStructure.mouseState, viewStructure.svgWidth, viewStructure.svgHeight, 0, 0);
+};
+var $author$project$SvgDraw$blockMouseOffset = F2(
+	function (call, viewStructure) {
+		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			return _Utils_Tuple2((coordinates.a - blockPos.xpos) - viewStructure.headerPos.xpos, (coordinates.b - blockPos.ypos) - viewStructure.headerPos.ypos);
 		} else {
-			return $elm$core$Maybe$Nothing;
+			return _Utils_Tuple2(0, 0);
 		}
 	});
-var $author$project$ViewStructure$MovedBlockInfo = F2(
-	function (movedCall, movedPos) {
-		return {movedCall: movedCall, movedPos: movedPos};
-	});
-var $author$project$ViewStructure$maybeMovedInfo = F3(
-	function (mouseState, svgScreenWidth, svgScreenHeight) {
-		var _v0 = mouseState.mouseSelection;
-		if (_v0.$ === 'BlockSelected') {
-			var funcId = _v0.a;
-			var call = _v0.b;
-			var mouseOffset = _v0.c;
-			return $elm$core$Maybe$Just(
+var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
+	return _VirtualDom_nodeNS(
+		_VirtualDom_noScript(tag));
+};
+var $elm$svg$Svg$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$Attributes$pointerEvents = _VirtualDom_attribute('pointer-events');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
+	return A3(
+		$elm$svg$Svg$node,
+		'g',
+		_List_Nil,
+		_List_fromArray(
+			[
 				A2(
-					$author$project$ViewStructure$MovedBlockInfo,
-					call,
-					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewPositions$getCurrentMoveInfo = F4(
-	function (maybeMoved, rest, xpos, testStructure) {
-		if (maybeMoved.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var moveI = maybeMoved.a;
-			if (!rest.b) {
-				return $elm$core$Maybe$Just(moveI);
-			} else {
-				return (_Utils_cmp(moveI.movedPos.a, xpos + testStructure.funcWidth) < 1) ? $elm$core$Maybe$Just(moveI) : $elm$core$Maybe$Nothing;
-			}
-		}
-	});
-var $author$project$ViewPositions$recursivePosition = F8(
-	function (xpos, ypos, maybeSelected, maybeMoved, mouseState, svgWindowWidth, svgWindowHeight, onion) {
-		if (!onion.b) {
-			if (maybeSelected.$ === 'Nothing') {
-				return _List_Nil;
-			} else {
-				var selected = maybeSelected.a;
-				return _List_fromArray(
-					[selected]);
-			}
-		} else {
-			var func = onion.a;
-			var rest = onion.b;
-			var testStructure = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, $elm$core$Maybe$Nothing, false);
-			var newy = ypos;
-			var currentMoveInfo = A4($author$project$ViewPositions$getCurrentMoveInfo, maybeMoved, rest, xpos, testStructure);
-			var newMoveInfo = function () {
-				if (currentMoveInfo.$ === 'Nothing') {
-					return maybeMoved;
-				} else {
-					var moveInfo = currentMoveInfo.a;
-					return $elm$core$Maybe$Nothing;
-				}
-			}();
-			var newStructure = function () {
-				if (currentMoveInfo.$ === 'Nothing') {
-					return testStructure;
-				} else {
-					var moveInfo = currentMoveInfo.a;
-					return A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, currentMoveInfo, false);
-				}
-			}();
-			var isSelected = function () {
-				if (maybeSelected.$ === 'Nothing') {
-					return false;
-				} else {
-					var selected = maybeSelected.a;
-					return _Utils_cmp(selected.headerPos.xpos, xpos + newStructure.funcWidth) < 1;
-				}
-			}();
-			var newMaybeSelected = isSelected ? $elm$core$Maybe$Nothing : maybeSelected;
-			var recurList = isSelected ? onion : rest;
-			var newW = function () {
-				if (isSelected) {
-					if (maybeSelected.$ === 'Just') {
-						var selected = maybeSelected.a;
-						return selected.funcWidth;
-					} else {
-						return 0;
-					}
-				} else {
-					return newStructure.funcWidth;
-				}
-			}();
-			var newx = (xpos + newW) + $author$project$ViewVariables$functionXSpacing;
-			var recurrance = A8($author$project$ViewPositions$recursivePosition, newx, newy, newMaybeSelected, newMoveInfo, mouseState, svgWindowWidth, svgWindowHeight, recurList);
-			if (isSelected) {
-				if (maybeSelected.$ === 'Just') {
-					var selected = maybeSelected.a;
-					return A2($elm$core$List$cons, selected, recurrance);
-				} else {
-					return recurrance;
-				}
-			} else {
-				return A2($elm$core$List$cons, newStructure, recurrance);
-			}
-		}
-	});
-var $author$project$ViewPositions$getViewStructures = F6(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
-		var selected = A3($author$project$ViewPositions$getSelected, mouseState, svgWindowWidth, svgWindowHeight);
-		var moved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
-		return A8($author$project$ViewPositions$recursivePosition, $author$project$ViewVariables$funcInitialX + xoffset, $author$project$ViewVariables$funcInitialY + yoffset, selected, moved, mouseState, svgWindowWidth, svgWindowHeight, onion);
-	});
-var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
-	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$buttonHeight;
-};
-var $author$project$ViewVariables$scrollbarWidth = 40;
-var $author$project$ViewVariables$toSvgWindowWidth = function (windowWidth) {
-	return windowWidth - ($author$project$ViewVariables$scrollbarWidth + 1);
-};
-var $author$project$Update$programDropped = function (model) {
-	var svgW = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
-	var svgH = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
-	var viewStructures = A6($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, 0, 0);
-	return A2(
-		$elm$core$List$map,
-		function ($) {
-			return $.sortedFunc;
-		},
-		viewStructures);
-};
-var $author$project$Update$modelBlockDropped = F2(
-	function (model, call) {
-		var oldMouse = model.mouseState;
-		var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
-			$author$project$Update$programDropped(model));
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$NameSelected(call.id)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newProgram}),
-			$author$project$Update$focusInputCommand(
-				$author$project$Update$nodeNameId(call.id)));
-	});
-var $author$project$Update$modelFunctionDropped = F2(
-	function (model, func) {
-		var oldMouse = model.mouseState;
-		var newProgram = $author$project$Update$programDropped(model);
-		var newMouse = _Utils_update(
-			oldMouse,
-			{
-				mouseSelection: $author$project$Model$FunctionNameSelected(func.id)
-			});
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{mouseState: newMouse, program: newProgram}),
-			$author$project$Update$focusInputCommand(
-				$author$project$Update$headerNameId(func.id)));
-	});
-var $author$project$Update$modelMouseRelease = function (model) {
-	var _v0 = model.mouseState.mouseSelection;
-	switch (_v0.$) {
-		case 'BlockSelected':
-			var funcId = _v0.a;
-			var call = _v0.b;
-			return A2($author$project$Update$modelBlockDropped, model, call);
-		case 'FunctionSelected':
-			var func = _v0.a;
-			var mouseOffset = _v0.b;
-			return A2($author$project$Update$modelFunctionDropped, model, func);
-		default:
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-	}
-};
-var $author$project$Model$ErrorBox = function (error) {
-	return {error: error};
-};
-var $author$project$Update$modelWithError = F2(
-	function (model, errorString) {
-		return _Utils_update(
-			model,
-			{
-				errorBoxMaybe: $elm$core$Maybe$Just(
-					$author$project$Model$ErrorBox(errorString))
-			});
-	});
-var $author$project$Compiler$CompModel$Begin = function (a) {
-	return {$: 'Begin', a: a};
-};
-var $author$project$Compiler$CompModel$VarDeclaration = F2(
-	function (a, b) {
-		return {$: 'VarDeclaration', a: a, b: b};
-	});
-var $author$project$Utils$splitLast = function (func) {
-	if (!func.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		if (!func.b.b) {
-			var a = func.a;
-			return $elm$core$Maybe$Just(
-				_Utils_Tuple2(_List_Nil, a));
-		} else {
-			var c = func.a;
-			var cs = func.b;
-			var _v1 = $author$project$Utils$splitLast(cs);
-			if (_v1.$ === 'Just') {
-				var _v2 = _v1.a;
-				var rest = _v2.a;
-				var _final = _v2.b;
-				return $elm$core$Maybe$Just(
-					_Utils_Tuple2(
-						A2($elm$core$List$cons, c, rest),
-						_final));
-			} else {
-				return $elm$core$Maybe$Nothing;
-			}
-		}
-	}
-};
-var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgument) {
-	switch (astArgument.$) {
-		case 'Empty':
-			return '';
-		case 'Lit':
-			var str = astArgument.a;
-			return str;
-		case 'Object':
-			var fields = astArgument.a;
-			return $author$project$Compiler$ASTToJavascript$javascriptObject(fields);
-		case 'CopySet':
-			var object = astArgument.a;
-			var fields = astArgument.b;
-			return A2($author$project$Compiler$ASTToJavascript$javascriptCopySet, object, fields);
-		case 'Get':
-			var object = astArgument.a;
-			var field = astArgument.b;
-			return A2($author$project$Compiler$ASTToJavascript$javascriptGet, object, field);
-		case 'Set':
-			var object = astArgument.a;
-			var field = astArgument.b;
-			var value = astArgument.c;
-			return A3($author$project$Compiler$ASTToJavascript$javascriptSet, object, field, value);
-		case 'Arr':
-			var elements = astArgument.a;
-			return $author$project$Compiler$ASTToJavascript$javascriptArray(elements);
-		case 'ArrRef':
-			var array = astArgument.a;
-			var pos = astArgument.b;
-			return A2($author$project$Compiler$ASTToJavascript$javascriptArrayRef, array, pos);
-		case 'Begin':
-			var commands = astArgument.a;
-			return $author$project$Compiler$ASTToJavascript$javascriptBegin(commands);
-		case 'Let':
-			var vars = astArgument.a;
-			var body = astArgument.b;
-			return A2($author$project$Compiler$ASTToJavascript$javascriptLet, vars, body);
-		case 'CallFunction':
-			var funcName = astArgument.a;
-			var args = astArgument.b;
-			return A2(
-				$elm$core$String$join,
-				'',
+				$elm$svg$Svg$rect,
 				_List_fromArray(
 					[
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(funcName),
-						'(',
-						$author$project$Compiler$ASTToJavascript$javascriptCommas(args),
-						')'
-					]));
-		case 'Function':
-			var argNames = astArgument.a;
-			var body = astArgument.b;
-			return A2($author$project$Compiler$ASTToJavascript$javascriptFunction, argNames, body);
-		case 'For':
-			var _var = astArgument.a;
-			var check = astArgument.b;
-			var increment = astArgument.c;
-			var body = astArgument.d;
-			return A4($author$project$Compiler$ASTToJavascript$javascriptFor, _var, check, increment, body);
-		case 'VarDeclaration':
-			var varName = astArgument.a;
-			var varBody = astArgument.b;
-			return A2(
-				$elm$core$String$join,
-				' ',
+						$elm$svg$Svg$Attributes$x('0'),
+						$elm$svg$Svg$Attributes$y('0'),
+						$elm$svg$Svg$Attributes$width('100'),
+						$elm$svg$Svg$Attributes$height('100'),
+						$elm$svg$Svg$Attributes$fill('red'),
+						$elm$svg$Svg$Attributes$stroke('red')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$text_,
 				_List_fromArray(
 					[
-						'let',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
-						'=',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
-					]));
-		case 'VarSet':
-			var varName = astArgument.a;
-			var varBody = astArgument.b;
-			return A2(
-				$elm$core$String$join,
-				' ',
+						$elm$svg$Svg$Attributes$x('0'),
+						$elm$svg$Svg$Attributes$y('50'),
+						$elm$svg$Svg$Attributes$fill('white'),
+						$elm$svg$Svg$Attributes$stroke('white'),
+						$elm$svg$Svg$Attributes$pointerEvents('none'),
+						$elm$svg$Svg$Attributes$cursor('default')
+					]),
 				_List_fromArray(
 					[
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
-						'=',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
-					]));
-		case 'CachePush':
-			var ast = astArgument.a;
-			return 'cache.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
-		case 'CacheUpdate':
-			var index = astArgument.a;
-			var ast = astArgument.b;
-			return A2(
-				$elm$core$String$join,
-				'',
-				_List_fromArray(
-					[
-						'cache[',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(index),
-						']',
-						' = ',
-						$author$project$Compiler$ASTToJavascript$aSTToJavascript(ast)
-					]));
-		case 'CacheRef':
-			var index = astArgument.a;
-			return 'cache[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
-		case 'If':
-			var cond = astArgument.a;
-			var thenCase = astArgument.b;
-			var elseCase = astArgument.c;
-			return A3($author$project$Compiler$ASTToJavascript$javascriptIf, cond, thenCase, elseCase);
-		case 'Unary':
-			var op = astArgument.a;
-			var args = astArgument.b;
-			return '(' + (A2(
-				$elm$core$String$join,
-				op,
-				A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args)) + ')');
-		default:
-			var op = astArgument.a;
-			var arg = astArgument.b;
-			return '(' + (op + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(arg) + ')'));
-	}
-};
-var $author$project$Compiler$ASTToJavascript$javascriptArray = function (elements) {
-	return '[' + (A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, elements)) + ']');
-};
-var $author$project$Compiler$ASTToJavascript$javascriptArrayRef = F2(
-	function (array, pos) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(array),
-					'[',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(pos),
-					']'
-				]));
-	});
-var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (commands) {
-	var _v1 = $author$project$Utils$splitLast(commands);
-	if (_v1.$ === 'Just') {
-		var _v2 = _v1.a;
-		var beforeFinal = _v2.a;
-		var _final = _v2.b;
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					'(function(){',
-					A2(
-					$elm$core$String$join,
-					';',
-					A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, beforeFinal)),
-					';',
-					function () {
-					switch (_final.$) {
-						case 'VarSet':
-							return '';
-						case 'VarDeclaration':
-							return '';
-						default:
-							return 'return ';
-					}
-				}(),
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_final),
-					'}())'
-				]));
-	} else {
-		return '';
-	}
-};
-var $author$project$Compiler$ASTToJavascript$javascriptCommas = function (args) {
-	return A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args));
-};
-var $author$project$Compiler$ASTToJavascript$javascriptCopyObject = function (objectAst) {
-	return A2(
-		$elm$core$String$join,
-		'',
-		_List_fromArray(
-			[
-				'Object.assign({},',
-				$author$project$Compiler$ASTToJavascript$aSTToJavascript(objectAst),
-				')'
+						$elm$svg$Svg$text(errorMsg)
+					]))
 			]));
 };
-var $author$project$Compiler$ASTToJavascript$javascriptCopySet = F2(
-	function (object, fields) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					'Object.assign(',
-					$author$project$Compiler$ASTToJavascript$javascriptCopyObject(object),
-					',',
-					$author$project$Compiler$ASTToJavascript$javascriptObject(fields),
-					')'
-				]));
-	});
-var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase) {
-	var _v0 = $author$project$Compiler$ASTToJavascript$aSTToJavascript(elseCase);
-	if (_v0 === '') {
-		return '';
-	} else {
-		var str = _v0;
-		return 'else { return ' + (str + '}');
-	}
+var $author$project$ViewVariables$nodeRadius = ($author$project$ViewVariables$blockHeight / 7) | 0;
+var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
+var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
 };
-var $author$project$Compiler$ASTToJavascript$javascriptField = function (field) {
-	return A2(
-		$elm$core$String$join,
-		':',
-		_List_fromArray(
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
+var $author$project$SvgDraw$createLeftDecoder = F3(
+	function (msgLeft, msgRight, button) {
+		switch (button) {
+			case 0:
+				return $elm$json$Json$Decode$succeed(msgLeft);
+			case 2:
+				return $elm$json$Json$Decode$succeed(msgRight);
+			default:
+				return $elm$json$Json$Decode$succeed(msgLeft);
+		}
+	});
+var $author$project$SvgDraw$checkLeftDecoder = F2(
+	function (msgLeft, msgRight) {
+		return A2(
+			$elm$json$Json$Decode$andThen,
+			A2($author$project$SvgDraw$createLeftDecoder, msgLeft, msgRight),
+			A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
+	});
+var $author$project$SvgDraw$svgClickPrevent = F2(
+	function (msgLeft, msgRight) {
+		return A2(
+			$elm$json$Json$Decode$map,
+			$author$project$SvgDraw$alwaysPreventDefault,
+			A2($author$project$SvgDraw$checkLeftDecoder, msgLeft, msgRight));
+	});
+var $author$project$SvgDraw$svgClickEvents = F2(
+	function (leftClickEvent, rightClickEvent) {
+		return _List_fromArray(
 			[
-				field.a,
-				$author$project$Compiler$ASTToJavascript$aSTToJavascript(field.b)
-			]));
-};
-var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
-	function (_var, check, increment, body) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					'(function() { for(',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_var),
-					';',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(check),
-					';',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(increment),
-					') {',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
-					'}}())'
-				]));
+				A2(
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'contextmenu',
+				A2(
+					$elm$json$Json$Decode$map,
+					$author$project$SvgDraw$alwaysPreventDefault,
+					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
+				A2(
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'mousedown',
+				A2($author$project$SvgDraw$svgClickPrevent, leftClickEvent, rightClickEvent))
+			]);
 	});
-var $author$project$Compiler$ASTToJavascript$javascriptFunction = F2(
-	function (argNames, body) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					'function(',
-					A2($elm$core$String$join, ',', argNames),
-					'){',
-					'return ',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
-					'}'
-				]));
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$SvgDraw$svgTranslate = F2(
+	function (xpos, ypos) {
+		return $elm$svg$Svg$Attributes$transform(
+			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
 	});
-var $author$project$Compiler$ASTToJavascript$javascriptGet = F2(
-	function (object, field) {
-		return A2(
-			$elm$core$String$join,
-			'.',
-			_List_fromArray(
-				[
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field)
-				]));
-	});
-var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
-	function (bool, thenCase, elseCase) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					'(function() { if(',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(bool),
-					') {',
-					'return ',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(thenCase),
-					'}',
-					$author$project$Compiler$ASTToJavascript$javascriptElse(elseCase),
-					'}())'
-				]));
-	});
-var $author$project$Compiler$ASTToJavascript$javascriptLet = F2(
-	function (vars, body) {
-		return $author$project$Compiler$ASTToJavascript$aSTToJavascript(
-			$author$project$Compiler$CompModel$Begin(
+var $author$project$SvgDraw$drawBlock = F2(
+	function (call, viewStructure) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			return A2(
+				$elm$svg$Svg$rect,
 				_Utils_ap(
-					A2(
-						$elm$core$List$map,
-						function (_var) {
-							return A2(
-								$author$project$Compiler$CompModel$VarDeclaration,
-								$author$project$Compiler$CompModel$Lit(_var.a),
-								_var.b);
-						},
-						vars),
-					_List_fromArray(
-						[body]))));
-	});
-var $author$project$Compiler$ASTToJavascript$javascriptObject = function (fields) {
-	return '{' + (A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$javascriptField, fields)) + '}');
-};
-var $author$project$Compiler$ASTToJavascript$javascriptSet = F3(
-	function (object, field, value) {
-		return A2(
-			$elm$core$String$join,
-			'',
-			_List_fromArray(
-				[
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
-					'.',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field),
-					' = ',
-					$author$project$Compiler$ASTToJavascript$aSTToJavascript(value)
-				]));
-	});
-var $author$project$Compiler$CompModel$CacheRef = function (a) {
-	return {$: 'CacheRef', a: a};
-};
-var $author$project$Compiler$CompModel$CacheUpdate = F2(
-	function (a, b) {
-		return {$: 'CacheUpdate', a: a, b: b};
-	});
-var $author$project$Compiler$CompModel$Function = F2(
-	function (a, b) {
-		return {$: 'Function', a: a, b: b};
-	});
-var $author$project$Compiler$CompileFunction$getValueFunctionAST = A2(
-	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('getValueAt'),
-	A2(
-		$author$project$Compiler$CompModel$Function,
-		_List_fromArray(
-			['cache', 'cacheI']),
-		A2(
-			$author$project$Compiler$CompModel$Let,
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'val',
-					A2(
-						$author$project$Compiler$CompModel$CallFunction,
-						$author$project$Compiler$CompModel$CacheRef(
-							$author$project$Compiler$CompModel$Lit('cacheI')),
-						_List_Nil))
-				]),
-			$author$project$Compiler$CompModel$Begin(
-				_List_fromArray(
-					[
+					viewStructure.isToolbar ? A2(
+						$author$project$SvgDraw$svgClickEvents,
 						A2(
-						$author$project$Compiler$CompModel$CacheUpdate,
-						$author$project$Compiler$CompModel$Lit('cacheI'),
+							$author$project$Model$SpawnBlock,
+							call.functionName,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
 						A2(
-							$author$project$Compiler$CompModel$Function,
-							_List_Nil,
-							$author$project$Compiler$CompModel$Lit('val'))),
-						$author$project$Compiler$CompModel$Lit('val')
-					])))));
-var $author$project$Compiler$CompModel$Object = function (a) {
-	return {$: 'Object', a: a};
-};
-var $author$project$Compiler$CompileToAST$globals = _List_fromArray(
-	[
-		A2(
-		$author$project$Compiler$CompModel$VarDeclaration,
-		$author$project$Compiler$CompModel$Lit('startTime'),
-		$author$project$Compiler$CompModel$Lit('getTime()')),
-		A2(
-		$author$project$Compiler$CompModel$VarDeclaration,
-		$author$project$Compiler$CompModel$Lit('functions'),
-		$author$project$Compiler$CompModel$Object(_List_Nil))
-	]);
-var $author$project$Compiler$CompModel$VarSet = F2(
-	function (a, b) {
-		return {$: 'VarSet', a: a, b: b};
-	});
-var $author$project$Compiler$CompileToAST$initialVariables = _List_fromArray(
-	[
-		A2(
-		$author$project$Compiler$CompModel$VarSet,
-		$author$project$Compiler$CompModel$Lit('time'),
-		A2(
-			$author$project$Compiler$CompModel$Unary,
-			'-',
-			_List_fromArray(
-				[
-					$author$project$Compiler$CompModel$Lit('getTime()'),
-					$author$project$Compiler$CompModel$Lit('startTime')
-				])))
-	]);
-var $author$project$Compiler$CompileToAST$varSetToVarDec = function (ast) {
-	if (ast.$ === 'VarSet') {
-		var a = ast.a;
-		var b = ast.b;
-		return A2($author$project$Compiler$CompModel$VarDeclaration, a, b);
-	} else {
-		return A2(
-			$author$project$Compiler$CompModel$VarDeclaration,
-			$author$project$Compiler$CompModel$Lit('bad'),
-			$author$project$Compiler$CompModel$Lit('shouldnothappen'));
-	}
-};
-var $author$project$Compiler$CompileToAST$initialVariablesDeclaration = A2($elm$core$List$map, $author$project$Compiler$CompileToAST$varSetToVarDec, $author$project$Compiler$CompileToAST$initialVariables);
-var $author$project$Compiler$CompModel$Arr = function (a) {
-	return {$: 'Arr', a: a};
-};
-var $author$project$Compiler$Song$litFunc = function (lit) {
-	return A2($author$project$Compiler$CompModel$Function, _List_Nil, lit);
-};
-var $author$project$Compiler$CompModel$maximum = function (args) {
-	return A2(
-		$author$project$Compiler$CompModel$CallFunction,
-		$author$project$Compiler$CompModel$Lit('Math.max'),
-		args);
-};
-var $author$project$Compiler$Song$songType = $author$project$Compiler$CompModel$Lit('\'song\'');
-var $author$project$Compiler$CompModel$sum = function (args) {
-	return A2($author$project$Compiler$CompModel$Unary, '+', args);
-};
-var $author$project$Compiler$Song$appendFunc = A2(
-	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('append'),
-	A2(
-		$author$project$Compiler$CompModel$Function,
-		_List_fromArray(
-			['song1', 'song2']),
-		$author$project$Compiler$CompModel$Object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
-					_Utils_Tuple2(
-					'children',
-					$author$project$Compiler$CompModel$Arr(
-						_List_fromArray(
-							[
-								$author$project$Compiler$Song$litFunc(
-								$author$project$Compiler$CompModel$Lit('song1')),
-								$author$project$Compiler$Song$litFunc(
-								A2(
-									$author$project$Compiler$CompModel$CopySet,
-									$author$project$Compiler$CompModel$Lit('song2'),
-									_List_fromArray(
-										[
-											_Utils_Tuple2(
-											'time',
-											$author$project$Compiler$CompModel$sum(
-												_List_fromArray(
-													[
-														A2(
-														$author$project$Compiler$CompModel$getLit,
-														$author$project$Compiler$CompModel$Lit('song2'),
-														'time'),
-														A2(
-														$author$project$Compiler$CompModel$getLit,
-														$author$project$Compiler$CompModel$Lit('song1'),
-														'anchor')
-													])))
-										])))
-							]))),
-					_Utils_Tuple2(
-					'time',
-					$author$project$Compiler$CompModel$litInt(0)),
-					_Utils_Tuple2(
-					'anchor',
-					$author$project$Compiler$CompModel$sum(
-						_List_fromArray(
-							[
-								A2(
-								$author$project$Compiler$CompModel$getLit,
-								$author$project$Compiler$CompModel$Lit('song1'),
-								'anchor'),
-								A2(
-								$author$project$Compiler$CompModel$getLit,
-								$author$project$Compiler$CompModel$Lit('song2'),
-								'anchor')
-							]))),
-					_Utils_Tuple2(
-					'duration',
-					$author$project$Compiler$CompModel$maximum(
-						_List_fromArray(
-							[
-								A2(
-								$author$project$Compiler$CompModel$getLit,
-								$author$project$Compiler$CompModel$Lit('song1'),
-								'duration'),
-								$author$project$Compiler$CompModel$sum(
-								_List_fromArray(
-									[
-										A2(
-										$author$project$Compiler$CompModel$getLit,
-										$author$project$Compiler$CompModel$Lit('song2'),
-										'duration'),
-										A2(
-										$author$project$Compiler$CompModel$getLit,
-										$author$project$Compiler$CompModel$Lit('song2'),
-										'time')
-									]))
-							])))
-				]))));
-var $author$project$Compiler$Song$joinFunc = A2(
-	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('join'),
-	A2(
-		$author$project$Compiler$CompModel$Function,
-		_List_fromArray(
-			['song1', 'song2']),
-		A3(
-			$author$project$Compiler$CompModel$If,
-			A2(
-				$author$project$Compiler$CompModel$Unary,
-				'>',
-				_List_fromArray(
-					[
-						$author$project$Compiler$Song$getAnchor(
-						$author$project$Compiler$CompModel$Lit('song1')),
-						$author$project$Compiler$Song$getAnchor(
-						$author$project$Compiler$CompModel$Lit('song2'))
-					])),
-			A2(
-				$author$project$Compiler$Song$append,
-				A2(
-					$author$project$Compiler$CompModel$CopySet,
-					$author$project$Compiler$CompModel$Lit('song2'),
+							$author$project$Model$SpawnBlock,
+							call.functionName,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
+						$author$project$SvgDraw$svgClickEvents,
+						A3(
+							$author$project$Model$BlockClick,
+							call,
+							viewStructure.id,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
+						A3(
+							$author$project$Model$BlockClick,
+							call,
+							viewStructure.id,
+							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))),
 					_List_fromArray(
 						[
-							_Utils_Tuple2(
-							'anchor',
-							$author$project$Compiler$CompModel$litInt(0))
+							A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
+							$elm$svg$Svg$Attributes$x('0'),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromInt(blockPos.width)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
+							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$rx(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$ry(
+							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
 						])),
-				$author$project$Compiler$CompModel$Lit('song1')),
-			A2(
-				$author$project$Compiler$Song$append,
-				A2(
-					$author$project$Compiler$CompModel$CopySet,
-					$author$project$Compiler$CompModel$Lit('song1'),
-					_List_fromArray(
-						[
-							_Utils_Tuple2(
-							'anchor',
-							$author$project$Compiler$CompModel$litInt(0))
-						])),
-				$author$project$Compiler$CompModel$Lit('song2')))));
-var $author$project$Compiler$Note$noteType = $author$project$Compiler$CompModel$Lit('\'note\'');
-var $author$project$Compiler$Note$makeNote = F2(
-	function (frequency, volume) {
-		return $author$project$Compiler$CompModel$Object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2('type', $author$project$Compiler$Note$noteType),
-					_Utils_Tuple2('frequency', frequency),
-					_Utils_Tuple2('volume', volume)
-				]));
+				_List_Nil);
+		} else {
+			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
+		}
 	});
-var $author$project$Compiler$Song$noteSongFunc = A2(
-	$author$project$Compiler$CompModel$VarDeclaration,
-	$author$project$Compiler$CompModel$Lit('noteSong'),
-	A2(
-		$author$project$Compiler$CompModel$Function,
-		_List_fromArray(
-			['time', 'frequency', 'duration']),
-		$author$project$Compiler$CompModel$Object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
-					_Utils_Tuple2(
-					'children',
-					$author$project$Compiler$CompModel$Arr(
-						_List_fromArray(
-							[
-								$author$project$Compiler$Song$litFunc(
-								A2(
-									$author$project$Compiler$Note$makeNote,
-									$author$project$Compiler$CompModel$Lit('frequency'),
-									$author$project$Compiler$CompModel$litFloat(1)))
-							]))),
-					_Utils_Tuple2(
-					'time',
-					$author$project$Compiler$CompModel$Lit('time')),
-					_Utils_Tuple2(
-					'anchor',
-					$author$project$Compiler$CompModel$Lit('duration')),
-					_Utils_Tuple2(
-					'duration',
-					$author$project$Compiler$CompModel$Lit('duration'))
-				]))));
-var $author$project$Compiler$Song$javascriptFuncs = _List_fromArray(
-	[$author$project$Compiler$Song$appendFunc, $author$project$Compiler$Song$noteSongFunc, $author$project$Compiler$Song$joinFunc]);
-var $author$project$Compiler$CompileToAST$astHead = A2(
-	$elm$core$List$cons,
-	$author$project$Compiler$CompileFunction$getValueFunctionAST,
-	_Utils_ap(
-		$author$project$Compiler$CompileToAST$globals,
-		_Utils_ap($author$project$Compiler$CompileToAST$initialVariablesDeclaration, $author$project$Compiler$Song$javascriptFuncs)));
-var $author$project$Compiler$CompModel$Set = F3(
-	function (a, b, c) {
-		return {$: 'Set', a: a, b: b, c: c};
+var $author$project$SvgDraw$drawBuiltIn = F3(
+	function (call, index, viewStructure) {
+		return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
 	});
-var $author$project$Compiler$CompileFunction$buildArgs = function (method) {
-	return A2(
-		$elm$core$List$map,
-		function (index) {
-			return $author$project$Compiler$CompModel$argName(index);
-		},
-		A2($elm$core$List$range, 0, method.argCount - 1));
-};
-var $author$project$Compiler$CompModel$CachePush = function (a) {
-	return {$: 'CachePush', a: a};
-};
-var $author$project$Compiler$CompileFunction$compileExpr = F2(
-	function (expr, entireMethod) {
-		return $author$project$Compiler$CompModel$CachePush(
-			A2(
-				$author$project$Compiler$CompModel$Function,
-				_List_Nil,
-				function () {
-					var _v0 = expr.compileExprFunction;
-					var func = _v0.a;
-					return func(expr);
-				}()));
+var $author$project$DrawFunc$drawCall = F3(
+	function (call, counter, viewStructure) {
+		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
 	});
-var $author$project$Compiler$CompileFunction$functionEnd = function (method) {
-	return $author$project$Compiler$CompileFunction$getCacheValue(
-		$author$project$Compiler$CompModel$litInt(
-			$elm$core$List$length(method.exprs) - 1));
-};
-var $author$project$Compiler$CompileFunction$compileExprs = F2(
-	function (method, entireMethod) {
-		if (!method.b) {
+var $author$project$DrawFunc$drawFuncCalls = F3(
+	function (func, viewStructure, counter) {
+		if (!func.b) {
 			return _List_Nil;
 		} else {
-			if (!method.b.b) {
-				var expr = method.a;
-				return _List_fromArray(
-					[
-						A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
-						$author$project$Compiler$CompileFunction$functionEnd(entireMethod)
-					]);
-			} else {
-				var expr = method.a;
-				var exprs = method.b;
-				return A2(
-					$elm$core$List$cons,
-					A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
-					A2($author$project$Compiler$CompileFunction$compileExprs, exprs, entireMethod));
-			}
+			var call = func.a;
+			var calls = func.b;
+			return A2(
+				$elm$core$List$cons,
+				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
+				A3($author$project$DrawFunc$drawFuncCalls, calls, viewStructure, counter + 1));
 		}
 	});
-var $author$project$Compiler$CompileFunction$functionStart = function (method) {
-	return A2(
-		$author$project$Compiler$CompModel$VarDeclaration,
-		$author$project$Compiler$CompModel$Lit('cache'),
-		$author$project$Compiler$CompModel$Arr(_List_Nil));
-};
-var $author$project$Compiler$CompileFunction$compileFunction = function (method) {
-	return A2(
-		$author$project$Compiler$CompModel$Function,
-		$author$project$Compiler$CompileFunction$buildArgs(method),
-		$author$project$Compiler$CompModel$Begin(
-			A2(
-				$elm$core$List$cons,
-				$author$project$Compiler$CompileFunction$functionStart(method),
-				A2($author$project$Compiler$CompileFunction$compileExprs, method.exprs, method))));
-};
-var $author$project$Compiler$CompileToAST$compileOneFunction = function (funcTuple) {
-	return A3(
-		$author$project$Compiler$CompModel$Set,
-		$author$project$Compiler$CompModel$Lit('functions'),
-		$author$project$Compiler$CompModel$Lit(funcTuple.a),
-		$author$project$Compiler$CompileFunction$compileFunction(funcTuple.b));
-};
-var $author$project$Compiler$CompileToAST$compileFunctions = function (compModel) {
-	return A2(
-		$elm$core$List$map,
-		$author$project$Compiler$CompileToAST$compileOneFunction,
-		$elm$core$Dict$toList(compModel));
-};
-var $author$project$Compiler$CompModel$ArrRef = F2(
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $elm$svg$Svg$ellipse = $elm$svg$Svg$trustedNode('ellipse');
+var $author$project$ViewVariables$functionHeaderHeight = $author$project$ViewVariables$blockHeight;
+var $author$project$ViewVariables$functionHeaderSquareY = ($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$blockHeight) + $author$project$ViewVariables$nodeRadius;
+var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
+var $author$project$Model$HeaderClick = F2(
 	function (a, b) {
-		return {$: 'ArrRef', a: a, b: b};
+		return {$: 'HeaderClick', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$For = F4(
-	function (a, b, c, d) {
-		return {$: 'For', a: a, b: b, c: c, d: d};
+var $author$project$Model$SpawnFunction = F2(
+	function (a, b) {
+		return {$: 'SpawnFunction', a: a, b: b};
 	});
-var $author$project$Compiler$CompModel$while = F2(
-	function (condition, body) {
-		return A4($author$project$Compiler$CompModel$For, $author$project$Compiler$CompModel$Empty, condition, $author$project$Compiler$CompModel$Empty, body);
+var $author$project$SvgDraw$functionMouseOffset = F2(
+	function (_function, viewStructure) {
+		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
+		return _Utils_Tuple2(coordinates.a - viewStructure.headerPos.xpos, coordinates.b - viewStructure.headerPos.ypos);
 	});
-var $author$project$Compiler$CompileBuiltIn$handleContinuations = function (ast) {
-	return $author$project$Compiler$CompModel$Begin(
-		_List_fromArray(
-			[
-				A2(
-				$author$project$Compiler$CompModel$VarDeclaration,
-				$author$project$Compiler$CompModel$Lit('cont'),
-				ast),
-				A2(
-				$author$project$Compiler$CompModel$while,
-				A2(
-					$author$project$Compiler$CompModel$ArrRef,
-					$author$project$Compiler$CompModel$Lit('cont'),
-					$author$project$Compiler$CompModel$litInt(0)),
-				A2(
-					$author$project$Compiler$CompModel$VarSet,
-					$author$project$Compiler$CompModel$Lit('cont'),
+var $author$project$SvgDraw$headerBlockEvents = F2(
+	function (_function, viewStructure) {
+		return viewStructure.isToolbar ? A2(
+			$author$project$SvgDraw$svgClickEvents,
+			A2(
+				$author$project$Model$SpawnFunction,
+				'',
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$SpawnFunction,
+				'',
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
+			$author$project$SvgDraw$svgClickEvents,
+			A2(
+				$author$project$Model$HeaderClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
+			A2(
+				$author$project$Model$HeaderClick,
+				_function,
+				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)));
+	});
+var $author$project$SvgDraw$drawFuncHeader = F2(
+	function (_function, viewStructure) {
+		return A2(
+			$elm$svg$Svg$g,
+			A2($author$project$SvgDraw$headerBlockEvents, _function, viewStructure),
+			_List_fromArray(
+				[
 					A2(
-						$author$project$Compiler$CompModel$CallFunction,
-						A2(
-							$author$project$Compiler$CompModel$ArrRef,
-							$author$project$Compiler$CompModel$Lit('cont'),
-							$author$project$Compiler$CompModel$litInt(1)),
-						_List_Nil))),
-				A2(
-				$author$project$Compiler$CompModel$ArrRef,
-				$author$project$Compiler$CompModel$Lit('cont'),
-				$author$project$Compiler$CompModel$litInt(1))
-			]));
+					$elm$svg$Svg$ellipse,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$rx(
+							$elm$core$String$fromInt((viewStructure.headerPos.width / 2) | 0)),
+							$elm$svg$Svg$Attributes$ry(
+							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
+							$elm$svg$Svg$Attributes$cx(
+							$elm$core$String$fromInt((viewStructure.headerPos.width / 2) | 0)),
+							$elm$svg$Svg$Attributes$cy(
+							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
+							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor)
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x('0'),
+							$elm$svg$Svg$Attributes$y(
+							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
+							$elm$svg$Svg$Attributes$width(
+							$elm$core$String$fromInt(viewStructure.headerPos.width)),
+							$elm$svg$Svg$Attributes$height(
+							$elm$core$String$fromInt(($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$functionHeaderSquareY) - $author$project$ViewVariables$nodeRadius)),
+							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
+							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor)
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$DrawFunc$drawFuncHeader = F2(
+	function (func, viewStructure) {
+		return A2($author$project$SvgDraw$drawFuncHeader, func, viewStructure);
+	});
+var $author$project$DrawFunc$drawFunc = F3(
+	function (func, viewStructure, counter) {
+		return A2(
+			$elm$core$List$cons,
+			A2($author$project$DrawFunc$drawFuncHeader, func, viewStructure),
+			A3($author$project$DrawFunc$drawFuncCalls, func.calls, viewStructure, counter));
+	});
+var $author$project$Model$OutputClick = function (a) {
+	return {$: 'OutputClick', a: a};
 };
-var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$Begin(
-	_Utils_ap(
-		$author$project$Compiler$CompileToAST$initialVariables,
-		_List_fromArray(
-			[
-				A2(
-				$author$project$Compiler$CompModel$CallFunction,
-				$author$project$Compiler$CompModel$Lit('onTick'),
-				_List_fromArray(
-					[
-						$author$project$Compiler$CompModel$Lit('state')
-					])),
-				A2(
-				$author$project$Compiler$CompModel$CallFunction,
-				$author$project$Compiler$CompModel$Lit('update'),
-				_List_fromArray(
-					[
-						$author$project$Compiler$CompModel$Lit('state'),
-						$author$project$Compiler$CompileBuiltIn$handleContinuations(
-						A2(
-							$author$project$Compiler$CompModel$CallFunction,
+var $author$project$Model$OutputRightClick = function (a) {
+	return {$: 'OutputRightClick', a: a};
+};
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $author$project$ViewVariables$holeGrey = 'rgb(200, 200, 200)';
+var $author$project$ViewVariables$hollowNodeOutlineProportion = 0.25;
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $author$project$SvgDraw$drawNode = F6(
+	function (xpos, inputPosition, ypos, events, isHighlighted, isHollow) {
+		var outerCircle = A2(
+			$elm$svg$Svg$circle,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$r(
+					$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
+					$elm$svg$Svg$Attributes$cx(
+					$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+					$elm$svg$Svg$Attributes$cy(
+					$elm$core$String$fromInt(ypos)),
+					$elm$svg$Svg$Attributes$fill(
+					isHighlighted ? 'blue' : 'black')
+				]),
+			_List_Nil);
+		return A2(
+			$elm$svg$Svg$g,
+			events,
+			function () {
+				if (isHollow) {
+					var innerR = $elm$core$Basics$floor((inputPosition.b * 0.5) * (1 - $author$project$ViewVariables$hollowNodeOutlineProportion));
+					return _List_fromArray(
+						[
+							outerCircle,
 							A2(
-								$author$project$Compiler$CompModel$Get,
-								$author$project$Compiler$CompModel$Lit('functions'),
-								$author$project$Compiler$CompModel$Lit('main')),
-							_List_Nil)),
-						$author$project$Compiler$CompModel$Lit('time')
-					]))
-			])));
-var $author$project$Compiler$CompileToAST$loopAST = A2(
-	$author$project$Compiler$CompModel$while,
-	$author$project$Compiler$CompModel$Lit('true'),
-	$author$project$Compiler$CompileToAST$loopFunctionBody);
-var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
-	return $author$project$Compiler$CompModel$Begin(
-		_Utils_ap(
-			$author$project$Compiler$CompileToAST$astHead,
-			_Utils_ap(
-				$author$project$Compiler$CompileToAST$compileFunctions(compModel),
-				_List_fromArray(
-					[$author$project$Compiler$CompileToAST$loopAST]))));
-};
-var $elm$core$Debug$log = _Debug_log;
-var $author$project$Compiler$Compile$compile = function (compModel) {
-	return A2(
-		$elm$core$Debug$log,
-		'Running Program',
-		$author$project$Compiler$ASTToJavascript$aSTToJavascript(
-			$author$project$Compiler$CompileToAST$compileToAST(compModel)));
-};
-var $elm$core$Result$andThen = F2(
-	function (callback, result) {
-		if (result.$ === 'Ok') {
-			var value = result.a;
-			return callback(value);
+							$elm$svg$Svg$circle,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$r(
+									$elm$core$String$fromInt(innerR)),
+									$elm$svg$Svg$Attributes$cx(
+									$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
+									$elm$svg$Svg$Attributes$cy(
+									$elm$core$String$fromInt(ypos)),
+									$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$holeGrey)
+								]),
+							_List_Nil)
+						]);
+				} else {
+					return _List_fromArray(
+						[outerCircle]);
+				}
+			}());
+	});
+var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
+var $author$project$DrawFunc$drawCallEnding = F2(
+	function (call, viewStructure) {
+		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
+		if (_v0.$ === 'Just') {
+			var blockPos = _v0.a;
+			var isOutputHighlighted = function () {
+				var _v1 = viewStructure.mouseState.mouseSelection;
+				if (_v1.$ === 'OutputSelected') {
+					var outputId = _v1.a;
+					return _Utils_eq(outputId, call.id);
+				} else {
+					return false;
+				}
+			}();
+			var events = viewStructure.isToolbar ? A2(
+				$author$project$SvgDraw$svgClickEvents,
+				A2(
+					$author$project$Model$SpawnBlock,
+					call.functionName,
+					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
+				A2(
+					$author$project$Model$SpawnBlock,
+					call.functionName,
+					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
+				$author$project$SvgDraw$svgClickEvents,
+				$author$project$Model$OutputClick(call.id),
+				$author$project$Model$OutputRightClick(call.id));
+			return A6(
+				$author$project$SvgDraw$drawNode,
+				blockPos.xpos,
+				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
+				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
+				events,
+				isOutputHighlighted,
+				false);
 		} else {
-			var msg = result.a;
-			return $elm$core$Result$Err(msg);
+			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
 		}
 	});
-var $author$project$Compiler$CompModel$Method = F2(
-	function (argCount, exprs) {
-		return {argCount: argCount, exprs: exprs};
-	});
-var $author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall = function (expr) {
-	return A2(
-		$author$project$Compiler$CompModel$CallFunction,
-		A2(
-			$author$project$Compiler$CompModel$getLit,
-			$author$project$Compiler$CompModel$Lit('functions'),
-			expr.functionName),
-		A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children));
-};
-var $author$project$Compiler$CompileBuiltIn$buildFuncCall = function (expr) {
-	return $author$project$Compiler$CompileBuiltIn$handleContinuations(
-		$author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall(expr));
-};
-var $author$project$Compiler$CompModel$Expr = F4(
-	function (functionName, id, children, compileExprFunction) {
-		return {children: children, compileExprFunction: compileExprFunction, functionName: functionName, id: id};
-	});
-var $author$project$Compiler$OnionToExpr$dropFinalHole = function (argList) {
-	if (!argList.b) {
-		return _List_Nil;
-	} else {
-		if (!argList.b.b) {
-			var finalArg = argList.a;
-			if (finalArg.$ === 'Hole') {
-				return _List_Nil;
-			} else {
-				return argList;
-			}
+var $author$project$DrawFunc$drawFuncEndings = F2(
+	function (func, viewStructure) {
+		if (!func.b) {
+			return _List_Nil;
 		} else {
-			var arg = argList.a;
-			var args = argList.b;
+			var call = func.a;
+			var calls = func.b;
 			return A2(
 				$elm$core$List$cons,
-				arg,
-				$author$project$Compiler$OnionToExpr$dropFinalHole(args));
-		}
-	}
-};
-var $author$project$Compiler$OnionToExpr$argumentSubset = F2(
-	function (argList, inputs) {
-		if (argList.$ === 'Finite') {
-			var args = argList.a;
-			return inputs;
-		} else {
-			var args = argList.a;
-			var othername = argList.b;
-			return $author$project$Compiler$OnionToExpr$dropFinalHole(inputs);
+				A2($author$project$DrawFunc$drawCallEnding, call, viewStructure),
+				A2($author$project$DrawFunc$drawFuncEndings, calls, viewStructure));
 		}
 	});
-var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
-	function (argList, inputs) {
-		if (argList.$ === 'Finite') {
-			var args = argList.a;
-			return _Utils_cmp(
-				$elm$core$List$length(inputs),
-				$elm$core$List$length(args)) > -1;
-		} else {
-			var args = argList.a;
-			var othername = argList.b;
-			return _Utils_cmp(
-				$elm$core$List$length(inputs),
-				$elm$core$List$length(args)) > -1;
-		}
-	});
-var $author$project$Compiler$CompModel$FArg = function (a) {
-	return {$: 'FArg', a: a};
+var $author$project$Model$OutputHighlight = function (a) {
+	return {$: 'OutputHighlight', a: a};
 };
-var $author$project$Compiler$CompModel$ScriptVariable = function (a) {
-	return {$: 'ScriptVariable', a: a};
+var $author$project$Model$BlockNameHighlight = function (a) {
+	return {$: 'BlockNameHighlight', a: a};
 };
-var $author$project$Compiler$CompModel$StackIndex = function (a) {
-	return {$: 'StackIndex', a: a};
-};
-var $author$project$BuiltIn$Number = function (a) {
-	return {$: 'Number', a: a};
-};
-var $author$project$BuiltIn$makeBuiltInNumber = function (pair) {
-	return _Utils_Tuple2(
-		pair.a,
-		$author$project$BuiltIn$Number(pair.b));
-};
-var $author$project$BuiltIn$JavaScript = function (a) {
-	return {$: 'JavaScript', a: a};
-};
-var $author$project$BuiltIn$makeJavascriptBuiltIn = function (pair) {
-	return _Utils_Tuple2(
-		pair.a,
-		$author$project$BuiltIn$JavaScript(pair.b));
-};
-var $author$project$Utils$dictAppend = F3(
-	function (dict, key, val) {
-		return A3(
-			$elm$core$Dict$update,
-			key,
-			function (maybeoldlist) {
-				if (maybeoldlist.$ === 'Just') {
-					var oldlist = maybeoldlist.a;
-					return $elm$core$Maybe$Just(
-						A2($elm$core$List$cons, val, oldlist));
-				} else {
-					return $elm$core$Maybe$Just(
-						_List_fromArray(
-							[val]));
-				}
-			},
-			dict);
-	});
-var $author$project$Utils$dictAppendAll = F2(
-	function (dict, list) {
-		if (!list.b) {
-			return dict;
-		} else {
-			var ele = list.a;
-			var eles = list.b;
-			return A3(
-				$author$project$Utils$dictAppend,
-				A2($author$project$Utils$dictAppendAll, dict, eles),
-				ele.a,
-				ele.b);
-		}
-	});
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $author$project$MusicTheory$getThisFlats = F2(
-	function (index, letter) {
-		return _Utils_Tuple2(
-			A2($elm$core$Basics$modBy, 12, index - 1),
-			letter + 'b');
-	});
-var $author$project$MusicTheory$getThisSharps = F2(
-	function (index, letter) {
-		return _Utils_Tuple2(
-			A2($elm$core$Basics$modBy, 12, index + 1),
-			letter + 's');
-	});
-var $author$project$MusicTheory$addSharpsFlats = F2(
-	function (dict, index) {
-		if (index < 12) {
-			var _v0 = A2($elm$core$Dict$get, index, dict);
-			if (_v0.$ === 'Just') {
-				var letters = _v0.a;
-				return A2(
-					$author$project$Utils$dictAppendAll,
-					A2(
-						$author$project$Utils$dictAppendAll,
-						A2($author$project$MusicTheory$addSharpsFlats, dict, index + 1),
-						A2(
-							$elm$core$List$map,
-							$author$project$MusicTheory$getThisSharps(index),
-							letters)),
-					A2(
-						$elm$core$List$map,
-						$author$project$MusicTheory$getThisFlats(index),
-						letters));
-			} else {
-				return A2($elm$core$Debug$log, 'bad sharps flats', dict);
-			}
-		} else {
-			return dict;
-		}
-	});
-var $author$project$MusicTheory$letterDict = $elm$core$Dict$fromList(
-	_List_fromArray(
-		[
-			_Utils_Tuple2(
-			0,
-			_List_fromArray(
-				['C'])),
-			_Utils_Tuple2(1, _List_Nil),
-			_Utils_Tuple2(
-			2,
-			_List_fromArray(
-				['D'])),
-			_Utils_Tuple2(3, _List_Nil),
-			_Utils_Tuple2(
-			4,
-			_List_fromArray(
-				['E'])),
-			_Utils_Tuple2(
-			5,
-			_List_fromArray(
-				['F'])),
-			_Utils_Tuple2(6, _List_Nil),
-			_Utils_Tuple2(
-			7,
-			_List_fromArray(
-				['G'])),
-			_Utils_Tuple2(8, _List_Nil),
-			_Utils_Tuple2(
-			9,
-			_List_fromArray(
-				['A'])),
-			_Utils_Tuple2(10, _List_Nil),
-			_Utils_Tuple2(
-			11,
-			_List_fromArray(
-				['B']))
-		]));
-var $author$project$MusicTheory$letterDictWithSharpsFlats = A2($author$project$MusicTheory$addSharpsFlats, $author$project$MusicTheory$letterDict, 0);
-var $elm$core$Basics$pow = _Basics_pow;
-var $author$project$MusicTheory$offsetToFrequency = function (offset) {
-	return 440.0 * A2($elm$core$Basics$pow, 2.0, (offset - ((4 * 12) + 9)) / 12.0);
-};
-var $author$project$MusicTheory$offsetToOctave = function (offset) {
-	return (offset / 12) | 0;
-};
-var $author$project$MusicTheory$tupleReversed = F2(
+var $author$project$Model$BlockNameUpdate = F2(
 	function (a, b) {
-		return _Utils_Tuple2(b, a);
+		return {$: 'BlockNameUpdate', a: a, b: b};
 	});
-var $author$project$MusicTheory$namedFrequenciesForOffset = function (offset) {
-	var octave = $elm$core$String$fromInt(
-		$author$project$MusicTheory$offsetToOctave(offset));
-	var maybeLetters = A2(
-		$elm$core$Dict$get,
-		A2($elm$core$Basics$modBy, 12, offset),
-		$author$project$MusicTheory$letterDictWithSharpsFlats);
-	var frequency = $author$project$MusicTheory$offsetToFrequency(offset);
-	if (maybeLetters.$ === 'Just') {
-		var letters = maybeLetters.a;
+var $author$project$Model$BlockNameClick = F3(
+	function (a, b, c) {
+		return {$: 'BlockNameClick', a: a, b: b, c: c};
+	});
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
 		return A2(
-			$elm$core$List$map,
-			$author$project$MusicTheory$tupleReversed(frequency),
-			A2(
-				$elm$core$List$map,
-				function (letter) {
-					return _Utils_ap(letter, octave);
-				},
-				letters));
-	} else {
-		return A2($elm$core$Debug$log, 'bad get names music', _List_Nil);
-	}
-};
-var $author$project$MusicTheory$offsetLimit = 12 * 8;
-var $author$project$MusicTheory$namedFrequencies = A2(
-	$elm$core$List$concatMap,
-	$author$project$MusicTheory$namedFrequenciesForOffset,
-	A2($elm$core$List$range, 0, $author$project$MusicTheory$offsetLimit));
-var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
-	[
-		_Utils_Tuple2('time', 'time'),
-		_Utils_Tuple2('mouseX', 'window.mouseXPos'),
-		_Utils_Tuple2('mouseY', 'window.mouseYPos')
-	]);
-var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
-	_Utils_ap(
-		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
-		A2($elm$core$List$map, $author$project$BuiltIn$makeJavascriptBuiltIn, $author$project$Compiler$CompModel$systemValues)));
-var $elm$core$String$toFloat = _String_toFloat;
-var $author$project$Compiler$OnionToExpr$inputToValue = F2(
-	function (input, idToIndex) {
-		switch (input.$) {
-			case 'Output':
-				var output = input.a;
-				var _v1 = A2($elm$core$Dict$get, output, idToIndex);
-				if (_v1.$ === 'Just') {
-					var index = _v1.a;
-					return $elm$core$Result$Ok(
-						$author$project$Compiler$CompModel$StackIndex(index));
-				} else {
-					return $elm$core$Result$Err('Invalid input found');
-				}
-			case 'Text':
-				var text = input.a;
-				var _v2 = A2($elm$core$Dict$get, text, $author$project$BuiltIn$builtInVariables);
-				if (_v2.$ === 'Nothing') {
-					var _v3 = $elm$core$String$toFloat(text);
-					if (_v3.$ === 'Nothing') {
-						return $elm$core$Result$Err('Could not parse number');
-					} else {
-						var _float = _v3.a;
-						return $elm$core$Result$Ok(
-							$author$project$Compiler$CompModel$ConstV(_float));
-					}
-				} else {
-					switch (_v2.a.$) {
-						case 'Number':
-							var value = _v2.a.a;
-							return $elm$core$Result$Ok(
-								$author$project$Compiler$CompModel$ConstV(value));
-						case 'StackReference':
-							var index = _v2.a.a;
-							return $elm$core$Result$Ok(
-								$author$project$Compiler$CompModel$StackIndex(index));
-						default:
-							var varName = _v2.a.a;
-							return $elm$core$Result$Ok(
-								$author$project$Compiler$CompModel$ScriptVariable(varName));
-					}
-				}
-			case 'FunctionArg':
-				var index = input.a;
-				return $elm$core$Result$Ok(
-					$author$project$Compiler$CompModel$FArg(index));
-			default:
-				return $elm$core$Result$Err('No argument supplied to a function call');
-		}
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
-var $elm$core$Result$map2 = F3(
-	function (func, ra, rb) {
-		if (ra.$ === 'Err') {
-			var x = ra.a;
-			return $elm$core$Result$Err(x);
-		} else {
-			var a = ra.a;
-			if (rb.$ === 'Err') {
-				var x = rb.a;
-				return $elm$core$Result$Err(x);
-			} else {
-				var b = rb.a;
-				return $elm$core$Result$Ok(
-					A2(func, a, b));
-			}
-		}
-	});
-var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
-	function (inputs, idToIndex) {
-		if (!inputs.b) {
-			return $elm$core$Result$Ok(_List_Nil);
-		} else {
-			var input = inputs.a;
-			var rest = inputs.b;
-			return A3(
-				$elm$core$Result$map2,
-				$elm$core$List$cons,
-				A2($author$project$Compiler$OnionToExpr$inputToValue, input, idToIndex),
-				A2($author$project$Compiler$OnionToExpr$inputsToValues, rest, idToIndex));
-		}
-	});
-var $author$project$Compiler$OnionToExpr$callToExprWith = F4(
-	function (call, idToIndex, argList, compileExprFunction) {
-		var filteredInputs = A2($author$project$Compiler$OnionToExpr$argumentSubset, argList, call.inputs);
-		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, argList, filteredInputs)) {
-			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, filteredInputs, idToIndex);
-			if (_v0.$ === 'Ok') {
-				var children = _v0.a;
-				return $elm$core$Result$Ok(
-					A4($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children, compileExprFunction));
-			} else {
-				var e = _v0.a;
-				return $elm$core$Result$Err(e);
-			}
-		} else {
-			return $elm$core$Result$Err('Wrong number of arguments');
-		}
-	});
-var $author$project$Compiler$OnionToExpr$callToExpr = F3(
-	function (call, idToIndex, onionMap) {
-		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
-		if (_v0.$ === 'Just') {
-			var builtIn = _v0.a;
-			return A4($author$project$Compiler$OnionToExpr$callToExprWith, call, idToIndex, builtIn.argList, builtIn.compileExprFunction);
-		} else {
-			var _v1 = A2($elm$core$Dict$get, call.functionName, onionMap);
-			if (_v1.$ === 'Just') {
-				var func = _v1.a;
-				return A4(
-					$author$project$Compiler$OnionToExpr$callToExprWith,
-					call,
-					idToIndex,
-					$author$project$ModelHelpers$funcToArgList(func),
-					$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildFuncCall));
-			} else {
-				return $elm$core$Result$Err('Not a function name');
-			}
-		}
-	});
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $author$project$Utils$resultMap = F2(
-	function (func, list) {
-		if (!list.b) {
-			return $elm$core$Result$Ok(_List_Nil);
-		} else {
-			var first = list.a;
-			var rest = list.b;
-			return A3(
-				$elm$core$Result$map2,
-				$elm$core$List$cons,
-				func(first),
-				A2($author$project$Utils$resultMap, func, rest));
-		}
-	});
-var $elm$core$Array$length = function (_v0) {
-	var len = _v0.a;
-	return len;
-};
-var $author$project$Compiler$CompModel$false = $author$project$Compiler$CompModel$Lit('false');
-var $author$project$Compiler$HandleTailRecursion$buildCont = function (expr) {
-	var _v0 = expr.compileExprFunction;
-	var func = _v0.a;
-	return $author$project$Compiler$CompModel$CompileExprFunction(
-		function (e) {
-			return $author$project$Compiler$CompModel$Arr(
-				_List_fromArray(
-					[
-						$author$project$Compiler$CompModel$false,
-						func(e)
-					]));
-		});
-};
-var $author$project$Compiler$HandleTailRecursion$normalTail = F3(
-	function (exprArr, pos, expr) {
-		return A3(
-			$elm$core$Array$set,
-			pos,
-			_Utils_update(
-				expr,
-				{
-					compileExprFunction: $author$project$Compiler$HandleTailRecursion$buildCont(expr)
-				}),
-			exprArr);
-	});
-var $author$project$Compiler$CompModel$true = $author$project$Compiler$CompModel$Lit('true');
-var $author$project$Compiler$CompileBuiltIn$buildTailFuncCall = function (expr) {
-	return $author$project$Compiler$CompModel$Arr(
-		_List_fromArray(
+var $elm$svg$Svg$Events$on = $elm$html$Html$Events$on;
+var $author$project$SvgDraw$svgClickWithDefault = F2(
+	function (leftClickEvent, rightClickEvent) {
+		return _List_fromArray(
 			[
-				$author$project$Compiler$CompModel$true,
 				A2(
-				$author$project$Compiler$CompModel$Function,
-				_List_Nil,
-				$author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall(expr))
-			]));
-};
-var $author$project$Compiler$HandleTailRecursion$tailFunc = F4(
-	function (exprArr, pos, expr, numRefs) {
-		var _v0 = A2($elm$core$Array$get, pos, numRefs);
-		if (_v0.$ === 'Just') {
-			var n = _v0.a;
-			return (n < 2) ? A3(
-				$elm$core$Array$set,
-				pos,
-				_Utils_update(
-					expr,
-					{
-						compileExprFunction: $author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildTailFuncCall)
-					}),
-				exprArr) : A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
-		} else {
-			return A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
-		}
-	});
-var $author$project$Compiler$HandleTailRecursion$makeContinuations = F4(
-	function (exprArr, numRefs, pos, onionMap) {
-		makeContinuations:
-		while (true) {
-			var _v0 = A2($elm$core$Array$get, pos, exprArr);
-			if (_v0.$ === 'Nothing') {
-				return exprArr;
-			} else {
-				var expr = _v0.a;
-				var _v1 = expr.functionName;
-				if (_v1 === 'if') {
-					var _v2 = expr.children;
-					if (((_v2.b && _v2.b.b) && _v2.b.b.b) && (!_v2.b.b.b.b)) {
-						var cond = _v2.a;
-						var _v3 = _v2.b;
-						var left = _v3.a;
-						var _v4 = _v3.b;
-						var right = _v4.a;
-						var leftRecur = function () {
-							if (left.$ === 'StackIndex') {
-								var p = left.a;
-								return A4($author$project$Compiler$HandleTailRecursion$makeContinuations, exprArr, numRefs, p, onionMap);
-							} else {
-								return exprArr;
-							}
-						}();
-						if (right.$ === 'StackIndex') {
-							var p = right.a;
-							var $temp$exprArr = leftRecur,
-								$temp$numRefs = numRefs,
-								$temp$pos = p,
-								$temp$onionMap = onionMap;
-							exprArr = $temp$exprArr;
-							numRefs = $temp$numRefs;
-							pos = $temp$pos;
-							onionMap = $temp$onionMap;
-							continue makeContinuations;
-						} else {
-							return leftRecur;
-						}
-					} else {
-						return exprArr;
-					}
-				} else {
-					var other = _v1;
-					var _v7 = A2($elm$core$Dict$get, other, onionMap);
-					if (_v7.$ === 'Just') {
-						var func = _v7.a;
-						return A4($author$project$Compiler$HandleTailRecursion$tailFunc, exprArr, pos, expr, numRefs);
-					} else {
-						return A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
-					}
-				}
-			}
-		}
-	});
-var $author$project$Compiler$HandleTailRecursion$arrayIncrement = F2(
-	function (arr, index) {
-		return A3(
-			$elm$core$Array$set,
-			index,
-			1 + A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2($elm$core$Array$get, index, arr)),
-			arr);
-	});
-var $author$project$Compiler$HandleTailRecursion$addChildren = F2(
-	function (children, numRefs) {
-		addChildren:
-		while (true) {
-			if (!children.b) {
-				return numRefs;
-			} else {
-				var child = children.a;
-				var rest = children.b;
-				if (child.$ === 'StackIndex') {
-					var i = child.a;
-					var $temp$children = rest,
-						$temp$numRefs = A2($author$project$Compiler$HandleTailRecursion$arrayIncrement, numRefs, i);
-					children = $temp$children;
-					numRefs = $temp$numRefs;
-					continue addChildren;
-				} else {
-					var $temp$children = rest,
-						$temp$numRefs = numRefs;
-					children = $temp$children;
-					numRefs = $temp$numRefs;
-					continue addChildren;
-				}
-			}
-		}
-	});
-var $author$project$Compiler$HandleTailRecursion$makeNumRefs = F2(
-	function (exprs, numRefs) {
-		makeNumRefs:
-		while (true) {
-			if (!exprs.b) {
-				return numRefs;
-			} else {
-				var expr = exprs.a;
-				var rest = exprs.b;
-				var $temp$exprs = rest,
-					$temp$numRefs = A2($author$project$Compiler$HandleTailRecursion$addChildren, expr.children, numRefs);
-				exprs = $temp$exprs;
-				numRefs = $temp$numRefs;
-				continue makeNumRefs;
-			}
-		}
-	});
-var $elm$core$Array$repeat = F2(
-	function (n, e) {
-		return A2(
-			$elm$core$Array$initialize,
-			n,
-			function (_v0) {
-				return e;
-			});
-	});
-var $author$project$Compiler$HandleTailRecursion$returnContinuation = F2(
-	function (onionMap, exprs) {
-		var exprArr = $elm$core$Array$fromList(exprs);
-		var numRefs = A2(
-			$author$project$Compiler$HandleTailRecursion$makeNumRefs,
-			exprs,
-			A2(
-				$elm$core$Array$repeat,
-				$elm$core$Array$length(exprArr),
-				0));
-		return $elm$core$Array$toList(
-			A4(
-				$author$project$Compiler$HandleTailRecursion$makeContinuations,
-				exprArr,
-				numRefs,
-				$elm$core$Array$length(exprArr) - 1,
-				onionMap));
-	});
-var $author$project$Compiler$OnionToExpr$callsToExprs = F3(
-	function (calls, onionMap, idToIndex) {
-		return A2(
-			$elm$core$Result$map,
-			$author$project$Compiler$HandleTailRecursion$returnContinuation(onionMap),
-			A2(
-				$author$project$Utils$resultMap,
-				function (call) {
-					return A3($author$project$Compiler$OnionToExpr$callToExpr, call, idToIndex, onionMap);
-				},
-				calls));
-	});
-var $author$project$Compiler$OnionToExpr$checkName = function (func) {
-	return $elm$core$String$isEmpty(func.name) ? $elm$core$Result$Err('Empty function name') : (A2($elm$core$String$contains, ' ', func.name) ? $elm$core$Result$Err('No whitespace allowed in function name') : $elm$core$Result$Ok(func.name));
-};
-var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
-	function (func, dict, index) {
-		makeIdToIndex:
-		while (true) {
-			if (!func.b) {
-				return dict;
-			} else {
-				var e = func.a;
-				var es = func.b;
-				var $temp$func = es,
-					$temp$dict = A3($elm$core$Dict$insert, e.id, index, dict),
-					$temp$index = index + 1;
-				func = $temp$func;
-				dict = $temp$dict;
-				index = $temp$index;
-				continue makeIdToIndex;
-			}
-		}
-	});
-var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
-	function (onionMap, func) {
-		var idToPos = A3($author$project$Compiler$OnionToExpr$makeIdToIndex, func.calls, $elm$core$Dict$empty, 0);
-		var funcName = $author$project$Compiler$OnionToExpr$checkName(func);
-		return A3(
-			$elm$core$Result$map2,
-			F2(
-				function (exprs, name) {
-					return _Utils_Tuple2(
-						name,
-						A2(
-							$author$project$Compiler$CompModel$Method,
-							$elm$core$List$length(func.args),
-							exprs));
-				}),
-			A3($author$project$Compiler$OnionToExpr$callsToExprs, func.calls, onionMap, idToPos),
-			funcName);
-	});
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $author$project$ModelHelpers$makeOnionMap = function (onion) {
-	if (!onion.b) {
-		return $elm$core$Result$Ok($elm$core$Dict$empty);
-	} else {
-		var func = onion.a;
-		var funcs = onion.b;
-		return A2(
-			$elm$core$Result$andThen,
-			function (currentMap) {
-				return A2($elm$core$Dict$member, func.name, currentMap) ? $elm$core$Result$Err('Cannot define two functions with the name ' + func.name) : $elm$core$Result$Ok(
-					A3($elm$core$Dict$insert, func.name, func, currentMap));
-			},
-			$author$project$ModelHelpers$makeOnionMap(funcs));
-	}
-};
-var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
-	return A2(
-		$elm$core$Result$andThen,
-		function (onionMap) {
-			return A2(
-				$elm$core$Result$map,
-				$elm$core$Dict$fromList,
+				$elm$svg$Svg$Events$preventDefaultOn,
+				'contextmenu',
 				A2(
-					$author$project$Utils$resultMap,
-					$author$project$Compiler$OnionToExpr$functionToMethod(onionMap),
-					onion));
-		},
-		$author$project$ModelHelpers$makeOnionMap(onion));
-};
-var $author$project$Compiler$Compile$compileOnion = function (onion) {
-	var _v0 = $author$project$Compiler$OnionToExpr$onionToCompModel(onion);
-	if (_v0.$ === 'Ok') {
-		var compModel = _v0.a;
-		return $elm$core$Result$Ok(
-			$author$project$Compiler$Compile$compile(compModel));
-	} else {
-		var e = _v0.a;
-		return $elm$core$Result$Err(e);
-	}
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Update$evalJavascript = _Platform_outgoingPort('evalJavascript', $elm$json$Json$Encode$string);
-var $author$project$Update$playOnionResult = F2(
-	function (model, onion) {
-		var _v0 = $author$project$Compiler$Compile$compileOnion(onion);
-		if (_v0.$ === 'Err') {
-			var e = _v0.a;
-			return _Utils_Tuple2(
-				A2($author$project$Update$modelWithError, model, e),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			var s = _v0.a;
-			return _Utils_Tuple2(
-				model,
-				$author$project$Update$evalJavascript(s));
-		}
+					$elm$json$Json$Decode$map,
+					$author$project$SvgDraw$alwaysPreventDefault,
+					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
+				A2(
+				$elm$svg$Svg$Events$on,
+				'mousedown',
+				A2($author$project$SvgDraw$checkLeftDecoder, leftClickEvent, rightClickEvent))
+			]);
 	});
-var $elm$json$Json$Encode$null = _Json_encodeNull;
-var $author$project$Update$stopJavascript = _Platform_outgoingPort(
-	'stopJavascript',
-	function ($) {
-		return $elm$json$Json$Encode$null;
+var $author$project$SvgDraw$blockNameEvents = F2(
+	function (call, viewStructure) {
+		var coordinates = A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure);
+		return viewStructure.isToolbar ? A2(
+			$author$project$SvgDraw$svgClickEvents,
+			A2($author$project$Model$SpawnBlock, call.functionName, coordinates),
+			A2($author$project$Model$SpawnBlock, call.functionName, coordinates)) : A2(
+			$author$project$SvgDraw$svgClickWithDefault,
+			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates),
+			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates));
 	});
-var $author$project$Update$stopSoundResult = function (model) {
-	return _Utils_Tuple2(
-		model,
-		$author$project$Update$stopJavascript(_Utils_Tuple0));
-};
-var $author$project$Update$updateWindow = F2(
-	function (msg, model) {
-		switch (msg.$) {
-			case 'NoOp':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'SilentDomError':
-				var dom_error = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'SetError':
-				var errorString = msg.a;
-				return _Utils_Tuple2(
-					A2($author$project$Update$modelWithError, model, errorString),
-					$elm$core$Platform$Cmd$none);
-			case 'PlayOnion':
-				var onion = msg.a;
-				return A2($author$project$Update$playOnionResult, model, onion);
-			case 'StopSound':
-				return $author$project$Update$stopSoundResult(model);
-			case 'MouseRelease':
-				return $author$project$Update$modelMouseRelease(model);
-			case 'MouseMoved':
-				var pos = msg.a;
-				var oldMouse = model.mouseState;
-				var newMouse = _Utils_update(
-					oldMouse,
-					{mouseX: pos.x, mouseY: pos.y});
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{mouseState: newMouse}),
-					$elm$core$Platform$Cmd$none);
-			case 'ScrollChange':
-				var pos = msg.a;
-				var oldMouse = model.mouseState;
-				var newMouse = _Utils_update(
-					oldMouse,
-					{scrollX: pos.xpos, scrollY: pos.ypos});
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{mouseState: newMouse}),
-					$elm$core$Platform$Cmd$none);
-			case 'FpsChange':
-				var newFps = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{fps: newFps}),
-					$elm$core$Platform$Cmd$none);
-			case 'RunningChange':
-				var isRunning = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{isRunning: isRunning}),
-					$elm$core$Platform$Cmd$none);
-			case 'KeyboardInput':
-				var keyevent = msg.a;
-				return A2($author$project$Update$keyboardUpdate, model, keyevent);
-			case 'WindowResize':
-				var newWidth = msg.a;
-				var newHeight = msg.b;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{windowHeight: newHeight, windowWidth: newWidth}),
-					$elm$core$Platform$Cmd$none);
-			case 'LinkClicked':
-				var urlRequest = msg.a;
-				if (urlRequest.$ === 'Internal') {
-					var url = urlRequest.a;
-					return A2(
-						$author$project$Update$changeByName,
-						model,
-						$author$project$Model$urlToPageName(url));
-				} else {
-					var href = urlRequest.a;
-					return _Utils_Tuple2(
-						model,
-						$elm$browser$Browser$Navigation$load(href));
-				}
-			case 'PageChange':
-				var pageName = msg.a;
-				return A2($author$project$Update$changeByName, model, pageName);
-			case 'UrlChanged':
-				var url = msg.a;
-				return _Utils_Tuple2(
-					A2(
-						$author$project$Update$changeByName,
-						model,
-						$author$project$Model$urlToPageName(url)).a,
-					$elm$core$Platform$Cmd$none);
-			case 'MouseOver':
-				var pageName = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{highlightedButton: pageName}),
-					$elm$core$Platform$Cmd$none);
-			case 'MouseLeave':
-				var pageName = msg.a;
-				return _Utils_eq(pageName, model.highlightedButton) ? _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{highlightedButton: 'none'}),
-					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
-	});
-var $author$project$Update$updateProgram = F2(
-	function (msg, model) {
-		switch (msg.$) {
-			case 'BlockClick':
-				var call = msg.a;
-				var funcId = msg.b;
-				var mouseOffset = msg.c;
-				return A4($author$project$Update$blockClickModel, model, call, funcId, mouseOffset);
-			case 'BlockNameClick':
-				var call = msg.a;
-				var funcId = msg.b;
-				var mouseOffset = msg.c;
-				return A4($author$project$Update$blockNameClickModel, model, call, funcId, mouseOffset);
-			case 'HeaderOutputHighlight':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$headerHighlightModel, model, id, index);
-			case 'HeaderOutputUpdate':
-				var id = msg.a;
-				var index = msg.b;
-				var str = msg.c;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'HeaderOutputClick':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$headerOutputClickModel, model, id, index);
-			case 'HeaderOutputRightClick':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$headerOutputRightClickModel, model, id, index);
-			case 'HeaderNameClick':
-				var id = msg.a;
-				var mouseOffset = msg.b;
-				return A3($author$project$Update$headerNameClickModel, model, id, mouseOffset);
-			case 'HeaderClick':
-				var func = msg.a;
-				var mouseOffset = msg.b;
-				return A3($author$project$Update$headerClickModel, model, func, mouseOffset);
-			case 'HeaderNameHighlight':
-				var id = msg.a;
-				return A2($author$project$Update$headerNameHighlightModel, model, id);
-			case 'HeaderNameUpdate':
-				var id = msg.a;
-				var str = msg.b;
-				return A3($author$project$Update$headerNameUpdateModel, model, id, str);
-			case 'HeaderAddOutput':
-				var id = msg.a;
-				var inputCounter = msg.b;
-				return A3($author$project$Update$headerAddOutputModel, model, id, inputCounter);
-			case 'HeaderAddOutputRightClick':
-				var id = msg.a;
-				var inputCounter = msg.b;
-				return A3($author$project$Update$headerAddOutputRightClickModel, model, id, inputCounter);
-			case 'InputHighlight':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$inputHighlightModel, model, id, index);
-			case 'OutputHighlight':
-				var id = msg.a;
-				return A2($author$project$Update$outputHighlightModel, model, id);
-			case 'InputClick':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$inputClickModel, model, id, index);
-			case 'InputUpdate':
-				var id = msg.a;
-				var index = msg.b;
-				var str = msg.c;
-				return A4($author$project$Update$inputUpdateModel, model, id, index, str);
-			case 'OutputClick':
-				var id = msg.a;
-				return A2($author$project$Update$outputClickModel, model, id);
-			case 'InputRightClick':
-				var id = msg.a;
-				var index = msg.b;
-				return A3($author$project$Update$inputRightClickModel, model, id, index);
-			case 'OutputRightClick':
-				var id = msg.a;
-				return A2($author$project$Update$outputRightClickModel, model, id);
-			case 'BlockNameHighlight':
-				var id = msg.a;
-				return A2($author$project$Update$blockNameHighlightModel, model, id);
-			case 'BlockNameUpdate':
-				var id = msg.a;
-				var str = msg.b;
-				return A3($author$project$Update$blockNameUpdateModel, model, id, str);
-			case 'SpawnBlock':
-				var name = msg.a;
-				var mouseOffset = msg.b;
-				return A3($author$project$Update$spawnBlockModel, model, name, mouseOffset);
-			case 'SpawnFunction':
-				var name = msg.a;
-				var mouseOffset = msg.b;
-				return A3($author$project$Update$spawnFuncModel, model, name, mouseOffset);
-			default:
-				return A2($author$project$Update$updateWindow, msg, model);
-		}
-	});
-var $author$project$Update$update = F2(
-	function (msg, model) {
-		return A2($elm$core$List$member, model.currentPage, $author$project$Model$docpages) ? A2($author$project$Update$updateWindow, msg, model) : A2($author$project$Update$updateProgram, msg, model);
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
-	return {$: 'Unstyled', a: a};
-};
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
-	return $rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
-		$elm$virtual_dom$VirtualDom$text(str));
-};
-var $rtfeldman$elm_css$Html$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
-var $author$project$View$makeDocsPage = function (model) {
-	return $rtfeldman$elm_css$Html$Styled$text('hello');
-};
+var $author$project$ViewVariables$blockTextInputHeight = $author$project$ViewVariables$blockHeight - (4 * $author$project$ViewVariables$nodeRadius);
+var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
+var $author$project$ViewVariables$charOverestimatePercent = 0.6;
+var $author$project$ViewVariables$inputFontSizePercent = 0.80;
+var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
+var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
+var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
 var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
 	return {$: 'AppendProperty', a: a};
 };
@@ -11189,8 +8493,14 @@ var $rtfeldman$elm_css$Css$property = F2(
 var $rtfeldman$elm_css$Css$backgroundColor = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'background-color', c.value);
 };
-var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
-var $rtfeldman$elm_css$Css$block = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'block'};
+var $rtfeldman$elm_css$Css$prop1 = F2(
+	function (key, arg) {
+		return A2($rtfeldman$elm_css$Css$property, key, arg.value);
+	});
+var $rtfeldman$elm_css$Css$border = $rtfeldman$elm_css$Css$prop1('border');
+var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
+var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
+var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
 var $rtfeldman$elm_css$VirtualDom$Styled$Attribute = F3(
 	function (a, b, c) {
 		return {$: 'Attribute', a: a, b: b, c: c};
@@ -11198,6 +8508,7 @@ var $rtfeldman$elm_css$VirtualDom$Styled$Attribute = F3(
 var $rtfeldman$elm_css$Css$Structure$UniversalSelectorSequence = function (a) {
 	return {$: 'UniversalSelectorSequence', a: a};
 };
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
 		return !A2(
@@ -11284,6 +8595,14 @@ var $rtfeldman$elm_css$Css$Structure$compactHelp = F2(
 var $rtfeldman$elm_css$Css$Structure$Keyframes = function (a) {
 	return {$: 'Keyframes', a: a};
 };
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
 var $rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations = F2(
 	function (keyframesByName, compactedDeclarations) {
 		return A2(
@@ -11314,6 +8633,16 @@ var $rtfeldman$elm_css$Css$Structure$compactStylesheet = function (_v0) {
 	var finalDeclarations = A2($rtfeldman$elm_css$Css$Structure$withKeyframeDeclarations, keyframesByName, compactedDeclarations);
 	return {charset: charset, declarations: finalDeclarations, imports: imports, namespaces: namespaces};
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $rtfeldman$elm_css$Css$Structure$Output$charsetToString = function (charset) {
 	return A2(
 		$elm$core$Maybe$withDefault,
@@ -11623,6 +8952,14 @@ var $rtfeldman$elm_css$Css$Structure$Output$prettyPrint = function (_v0) {
 					A2($elm$core$List$map, $rtfeldman$elm_css$Css$Structure$Output$prettyPrintDeclaration, declarations))
 				])));
 };
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
 var $rtfeldman$elm_css$Css$Structure$CounterStyle = function (a) {
 	return {$: 'CounterStyle', a: a};
 };
@@ -12010,6 +9347,9 @@ var $Skinney$murmur3$Murmur3$HashData = F4(
 	});
 var $Skinney$murmur3$Murmur3$c1 = 3432918353;
 var $Skinney$murmur3$Murmur3$c2 = 461845907;
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var $Skinney$murmur3$Murmur3$multiplyBy = F2(
 	function (b, a) {
 		return ((a & 65535) * b) + ((((a >>> 16) * b) & 65535) << 16);
@@ -12077,6 +9417,7 @@ var $Skinney$murmur3$Murmur3$hashString = F2(
 	});
 var $rtfeldman$elm_css$Hash$murmurSeed = 15739;
 var $elm$core$String$fromList = _String_fromList;
+var $elm$core$Basics$modBy = _Basics_modBy;
 var $rtfeldman$elm_hex$Hex$unsafeToDigit = function (num) {
 	unsafeToDigit:
 	while (true) {
@@ -12754,6 +10095,7 @@ var $elm$virtual_dom$VirtualDom$property = F2(
 			_VirtualDom_noInnerHtmlOrFormAction(key),
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
+var $elm$json$Json$Encode$string = _Json_wrap;
 var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 	var classname = $rtfeldman$elm_css$VirtualDom$Styled$getClassname(styles);
 	var classProperty = A2(
@@ -12763,18 +10105,10 @@ var $rtfeldman$elm_css$Html$Styled$Internal$css = function (styles) {
 	return A3($rtfeldman$elm_css$VirtualDom$Styled$Attribute, classProperty, styles, classname);
 };
 var $rtfeldman$elm_css$Html$Styled$Attributes$css = $rtfeldman$elm_css$Html$Styled$Internal$css;
-var $rtfeldman$elm_css$Css$prop1 = F2(
-	function (key, arg) {
-		return A2($rtfeldman$elm_css$Css$property, key, arg.value);
-	});
-var $rtfeldman$elm_css$Css$display = $rtfeldman$elm_css$Css$prop1('display');
-var $rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
-	function (a, b, c) {
-		return {$: 'Node', a: a, b: b, c: c};
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$Node;
-var $rtfeldman$elm_css$Html$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$node;
-var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
+var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
+var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
+var $elm$svg$Svg$foreignObject = $elm$svg$Svg$trustedNode('foreignObject');
+var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
 var $rtfeldman$elm_css$VirtualDom$Styled$property = F2(
 	function (key, value) {
 		return A3(
@@ -12790,101 +10124,15 @@ var $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty = F2(
 			key,
 			$elm$json$Json$Encode$string(string));
 	});
-var $rtfeldman$elm_css$Html$Styled$Attributes$href = function (url) {
-	return A2($rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'href', url);
-};
-var $author$project$Model$PageChange = function (a) {
-	return {$: 'PageChange', a: a};
-};
-var $author$project$TitleBar$buttonSpacing = 50;
-var $rtfeldman$elm_css$Css$stringsToValue = function (list) {
-	return $elm$core$List$isEmpty(list) ? {value: 'none'} : {
-		value: A2(
-			$elm$core$String$join,
-			', ',
-			A2(
-				$elm$core$List$map,
-				function (s) {
-					return s;
-				},
-				list))
-	};
-};
-var $rtfeldman$elm_css$Css$fontFamilies = A2(
-	$elm$core$Basics$composeL,
-	$rtfeldman$elm_css$Css$prop1('font-family'),
-	$rtfeldman$elm_css$Css$stringsToValue);
-var $rtfeldman$elm_css$Css$fontSize = $rtfeldman$elm_css$Css$prop1('font-size');
-var $rtfeldman$elm_css$Css$inlineBlock = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-block'};
-var $author$project$Model$MouseLeave = function (a) {
-	return {$: 'MouseLeave', a: a};
-};
-var $author$project$Model$MouseOver = function (a) {
-	return {$: 'MouseOver', a: a};
-};
-var $rtfeldman$elm_css$Css$border = $rtfeldman$elm_css$Css$prop1('border');
-var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
-var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
-var $author$project$Utils$darkenInt = F2(
-	function (amount, _int) {
-		return A2(
-			$elm$core$Basics$min,
-			A2($elm$core$Basics$max, 0, _int - amount),
-			255);
+var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
+var $rtfeldman$elm_css$VirtualDom$Styled$Node = F3(
+	function (a, b, c) {
+		return {$: 'Node', a: a, b: b, c: c};
 	});
-var $rtfeldman$elm_css$Css$cssFunction = F2(
-	function (funcName, args) {
-		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
-	});
-var $rtfeldman$elm_css$Css$rgba = F4(
-	function (r, g, b, alpha) {
-		return {
-			alpha: alpha,
-			blue: b,
-			color: $rtfeldman$elm_css$Css$Structure$Compatible,
-			green: g,
-			red: r,
-			value: A2(
-				$rtfeldman$elm_css$Css$cssFunction,
-				'rgba',
-				_Utils_ap(
-					A2(
-						$elm$core$List$map,
-						$elm$core$String$fromInt,
-						_List_fromArray(
-							[r, g, b])),
-					_List_fromArray(
-						[
-							$elm$core$String$fromFloat(alpha)
-						])))
-		};
-	});
-var $author$project$Utils$darken = F2(
-	function (amount, color) {
-		return A4(
-			$rtfeldman$elm_css$Css$rgba,
-			A2($author$project$Utils$darkenInt, amount, color.red),
-			A2($author$project$Utils$darkenInt, amount, color.green),
-			A2($author$project$Utils$darkenInt, amount, color.blue),
-			color.alpha);
-	});
-var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
-	function (a, b) {
-		return {$: 'ExtendSelector', a: a, b: b};
-	});
-var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
-	return {$: 'PseudoClassSelector', a: a};
-};
-var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
-	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
-		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
-};
-var $rtfeldman$elm_css$Css$hover = $rtfeldman$elm_css$Css$pseudoClass('hover');
-var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $rtfeldman$elm_css$VirtualDom$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$Node;
+var $rtfeldman$elm_css$Html$Styled$node = $rtfeldman$elm_css$VirtualDom$Styled$node;
+var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
+var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
 var $rtfeldman$elm_css$VirtualDom$Styled$on = F2(
 	function (eventName, handler) {
 		return A3(
@@ -12900,28 +10148,45 @@ var $rtfeldman$elm_css$Html$Styled$Events$on = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
-var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
+var $rtfeldman$elm_css$Html$Styled$Events$onFocus = function (msg) {
 	return A2(
 		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'click',
+		'focus',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $rtfeldman$elm_css$Html$Styled$Events$onMouseLeave = function (msg) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'mouseleave',
-		$elm$json$Json$Decode$succeed(msg));
+var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
 };
-var $rtfeldman$elm_css$Html$Styled$Events$onMouseOver = function (msg) {
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$rtfeldman$elm_css$VirtualDom$Styled$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
 	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'mouseover',
-		$elm$json$Json$Decode$succeed(msg));
+		$rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
 };
 var $rtfeldman$elm_css$Css$padding = $rtfeldman$elm_css$Css$prop1('padding');
-var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
-var $rtfeldman$elm_css$Css$paddingRight = $rtfeldman$elm_css$Css$prop1('padding-right');
-var $rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
+var $rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
 var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 	function (units, unitLabel, numericValue) {
 		return {
@@ -12946,60 +10211,31 @@ var $rtfeldman$elm_css$Css$Internal$lengthConverter = F3(
 				unitLabel)
 		};
 	});
-var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PxUnits, 'px');
-var $author$project$TitleBar$makeIconButton = F4(
-	function (icon, textString, event, color) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$button,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Events$onClick(event),
-					$rtfeldman$elm_css$Html$Styled$Events$onMouseOver(
-					$author$project$Model$MouseOver(textString)),
-					$rtfeldman$elm_css$Html$Styled$Events$onMouseLeave(
-					$author$project$Model$MouseLeave(textString)),
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$fontFamilies(
-							_List_fromArray(
-								['monospace'])),
-							$rtfeldman$elm_css$Css$fontSize(
-							$rtfeldman$elm_css$Css$px(24)),
-							$rtfeldman$elm_css$Css$padding(
-							$rtfeldman$elm_css$Css$px(10)),
-							$rtfeldman$elm_css$Css$paddingLeft(
-							$rtfeldman$elm_css$Css$px(20)),
-							$rtfeldman$elm_css$Css$paddingRight(
-							$rtfeldman$elm_css$Css$px(20)),
-							$rtfeldman$elm_css$Css$marginLeft(
-							$rtfeldman$elm_css$Css$px($author$project$TitleBar$buttonSpacing)),
-							$rtfeldman$elm_css$Css$border(
-							$rtfeldman$elm_css$Css$px(0)),
-							$rtfeldman$elm_css$Css$borderRadius(
-							$rtfeldman$elm_css$Css$px(5)),
-							$rtfeldman$elm_css$Css$hover(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$backgroundColor(
-									A2($author$project$Utils$darken, 10, color))
-								])),
-							$rtfeldman$elm_css$Css$backgroundColor(color)
-						]))
-				]),
-			_List_fromArray(
-				[
-					icon,
-					$rtfeldman$elm_css$Html$Styled$text(textString)
-				]));
-	});
-var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
-var $rtfeldman$elm_css$Css$PercentageUnits = {$: 'PercentageUnits'};
 var $rtfeldman$elm_css$Css$pct = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PercentageUnits, '%');
-var $author$project$Model$PlayOnion = function (a) {
-	return {$: 'PlayOnion', a: a};
+var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
+var $rtfeldman$elm_css$Css$PxUnits = {$: 'PxUnits'};
+var $rtfeldman$elm_css$Css$px = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$PxUnits, 'px');
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
+	function (key, value) {
+		return A3(
+			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
+			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
+			_List_Nil,
+			'');
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
+	return A2(
+		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
 };
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $rtfeldman$elm_css$Css$Preprocess$ApplyStyles = function (a) {
 	return {$: 'ApplyStyles', a: a};
 };
@@ -13065,897 +10301,6 @@ var $rtfeldman$elm_css$Css$Internal$getOverloadedProperty = F3(
 	});
 var $rtfeldman$elm_css$Css$Internal$IncompatibleUnits = {$: 'IncompatibleUnits'};
 var $rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty = A3($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$Internal$IncompatibleUnits, '', 0);
-var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
-	return A3(
-		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
-		'alignSelf',
-		'align-self',
-		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
-};
-var $rtfeldman$elm_css$Css$center = $rtfeldman$elm_css$Css$prop1('center');
-var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
-var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
-var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
-var $rtfeldman$elm_css$Html$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
-var $rtfeldman$elm_css$Css$height = $rtfeldman$elm_css$Css$prop1('height');
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $rtfeldman$elm_css$Css$inlineFlex = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-flex'};
-var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
-var $rtfeldman$elm_css$Css$position = $rtfeldman$elm_css$Css$prop1('position');
-var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
-var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$TitleBar$makeIcon = function (polygonAttrs) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$div,
-		_List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$em(1)),
-						$rtfeldman$elm_css$Css$height(
-						$rtfeldman$elm_css$Css$em(1)),
-						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
-						$rtfeldman$elm_css$Css$alignSelf($rtfeldman$elm_css$Css$center),
-						$rtfeldman$elm_css$Css$top(
-						$rtfeldman$elm_css$Css$em(0.125)),
-						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative),
-						$rtfeldman$elm_css$Css$marginRight(
-						$rtfeldman$elm_css$Css$px(10))
-					]))
-			]),
-		_List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$fromUnstyled(
-				A2(
-					$elm$svg$Svg$svg,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$width('24px'),
-							$elm$svg$Svg$Attributes$height('24px')
-						]),
-					_List_fromArray(
-						[
-							A2($elm$svg$Svg$polygon, polygonAttrs, _List_Nil)
-						])))
-			]));
-};
-var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
-var $author$project$TitleBar$playIcon = $author$project$TitleBar$makeIcon(
-	_List_fromArray(
-		[
-			$elm$svg$Svg$Attributes$points('0,0 0,24 24,12'),
-			$elm$svg$Svg$Attributes$fill('rgb(67, 194, 60)')
-		]));
-var $rtfeldman$elm_css$Css$rgb = F3(
-	function (r, g, b) {
-		return {
-			alpha: 1,
-			blue: b,
-			color: $rtfeldman$elm_css$Css$Structure$Compatible,
-			green: g,
-			red: r,
-			value: A2(
-				$rtfeldman$elm_css$Css$cssFunction,
-				'rgb',
-				A2(
-					$elm$core$List$map,
-					$elm$core$String$fromInt,
-					_List_fromArray(
-						[r, g, b])))
-		};
-	});
-var $author$project$TitleBar$playButton = function (onion) {
-	return A4(
-		$author$project$TitleBar$makeIconButton,
-		$author$project$TitleBar$playIcon,
-		'Play',
-		$author$project$Model$PlayOnion(onion),
-		A3($rtfeldman$elm_css$Css$rgb, 168, 255, 163));
-};
-var $author$project$Model$StopSound = {$: 'StopSound'};
-var $author$project$ViewVariables$disabledGrey = A3($rtfeldman$elm_css$Css$rgb, 220, 220, 220);
-var $author$project$ViewVariables$holeGrey = 'rgb(200, 200, 200)';
-var $author$project$TitleBar$stopIcon = function (isRunning) {
-	return $author$project$TitleBar$makeIcon(
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$points('0,0 0,24 24,24, 24,0'),
-				$elm$svg$Svg$Attributes$fill(
-				isRunning ? 'rgb(214, 36, 36)' : $author$project$ViewVariables$holeGrey)
-			]));
-};
-var $author$project$TitleBar$stopButton = function (model) {
-	return A4(
-		$author$project$TitleBar$makeIconButton,
-		$author$project$TitleBar$stopIcon(model.isRunning),
-		'Stop',
-		$author$project$Model$StopSound,
-		model.isRunning ? A3($rtfeldman$elm_css$Css$rgb, 232, 93, 93) : $author$project$ViewVariables$disabledGrey);
-};
-var $author$project$TitleBar$makeTitle = function (model) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$div,
-		_List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
-						$rtfeldman$elm_css$Css$width(
-						$rtfeldman$elm_css$Css$pct(100)),
-						$rtfeldman$elm_css$Css$margin(
-						$rtfeldman$elm_css$Css$px(20))
-					]))
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$rtfeldman$elm_css$Html$Styled$div,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$fontFamilies(
-								_List_fromArray(
-									['monospace'])),
-								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
-								$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$px(32)),
-								$rtfeldman$elm_css$Css$top(
-								$rtfeldman$elm_css$Css$px(10))
-							]))
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text('Sonic Onion')
-					])),
-				$author$project$TitleBar$playButton(model.program),
-				$author$project$TitleBar$stopButton(model),
-				A2(
-				$rtfeldman$elm_css$Html$Styled$div,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$fontFamilies(
-								_List_fromArray(
-									['monospace'])),
-								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
-								$rtfeldman$elm_css$Css$fontSize(
-								$rtfeldman$elm_css$Css$px(24)),
-								$rtfeldman$elm_css$Css$marginLeft(
-								$rtfeldman$elm_css$Css$px($author$project$TitleBar$buttonSpacing))
-							]))
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text(
-						'fps: ' + ((!model.isRunning) ? '' : $elm$core$String$fromInt(model.fps)))
-					])),
-				A4(
-				$author$project$TitleBar$makeIconButton,
-				$rtfeldman$elm_css$Html$Styled$text(''),
-				'Tutorial',
-				$author$project$Model$PageChange('Tutorial'),
-				A3($rtfeldman$elm_css$Css$rgb, 212, 214, 67))
-			]));
-};
-var $author$project$ViewVariables$pageColor = A3($rtfeldman$elm_css$Css$rgb, 247, 247, 222);
-var $rtfeldman$elm_css$Css$borderBottomColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'border-bottom-color', c.value);
-};
-var $rtfeldman$elm_css$Css$borderColor = function (c) {
-	return A2($rtfeldman$elm_css$Css$property, 'border-color', c.value);
-};
-var $rtfeldman$elm_css$Css$borderStyle = $rtfeldman$elm_css$Css$prop1('border-style');
-var $rtfeldman$elm_css$Css$borderTopLeftRadius = $rtfeldman$elm_css$Css$prop1('border-top-left-radius');
-var $rtfeldman$elm_css$Css$borderTopRightRadius = $rtfeldman$elm_css$Css$prop1('border-top-right-radius');
-var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
-var $rtfeldman$elm_css$Css$none = {backgroundImage: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, display: $rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, outline: $rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, resize: $rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, textTransform: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, transform: $rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
-var $rtfeldman$elm_css$Css$outline = $rtfeldman$elm_css$Css$prop1('outline');
-var $author$project$ViewVariables$pageBackgroundColor = A3($rtfeldman$elm_css$Css$rgb, 229, 229, 208);
-var $rtfeldman$elm_css$Css$solid = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationStyle: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'solid'};
-var $author$project$View$pagebutton = F2(
-	function (pageName, model) {
-		var buttonPageColor = _Utils_eq(pageName, model.currentPage) ? $author$project$ViewVariables$pageColor : $author$project$ViewVariables$pageBackgroundColor;
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$button,
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$Events$onClick(
-					$author$project$Model$PageChange(pageName)),
-					$rtfeldman$elm_css$Html$Styled$Events$onMouseOver(
-					$author$project$Model$MouseOver(pageName)),
-					$rtfeldman$elm_css$Html$Styled$Events$onMouseLeave(
-					$author$project$Model$MouseLeave(pageName)),
-					$rtfeldman$elm_css$Html$Styled$Attributes$css(
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Css$width(
-							$rtfeldman$elm_css$Css$pct(20)),
-							$rtfeldman$elm_css$Css$height(
-							$rtfeldman$elm_css$Css$px($author$project$ViewVariables$buttonHeight)),
-							$rtfeldman$elm_css$Css$marginTop(
-							$rtfeldman$elm_css$Css$px(10)),
-							$rtfeldman$elm_css$Css$marginRight(
-							$rtfeldman$elm_css$Css$px(10)),
-							$rtfeldman$elm_css$Css$borderTopLeftRadius(
-							$rtfeldman$elm_css$Css$px(8)),
-							$rtfeldman$elm_css$Css$borderTopRightRadius(
-							$rtfeldman$elm_css$Css$px(8)),
-							_Utils_eq(pageName, model.highlightedButton) ? $rtfeldman$elm_css$Css$border(
-							$rtfeldman$elm_css$Css$px(2)) : $rtfeldman$elm_css$Css$border(
-							$rtfeldman$elm_css$Css$px(0)),
-							$rtfeldman$elm_css$Css$borderColor(
-							A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0)),
-							$rtfeldman$elm_css$Css$borderBottomColor(buttonPageColor),
-							$rtfeldman$elm_css$Css$outline($rtfeldman$elm_css$Css$none),
-							$rtfeldman$elm_css$Css$borderStyle($rtfeldman$elm_css$Css$solid),
-							$rtfeldman$elm_css$Css$backgroundColor(buttonPageColor),
-							$rtfeldman$elm_css$Css$fontFamilies(
-							_List_fromArray(
-								['Raleway'])),
-							$rtfeldman$elm_css$Css$fontSize(
-							$rtfeldman$elm_css$Css$px(20))
-						]))
-				]),
-			_List_fromArray(
-				[
-					$rtfeldman$elm_css$Html$Styled$text(pageName)
-				]));
-	});
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $rtfeldman$elm_css$VirtualDom$Styled$attribute = F2(
-	function (key, value) {
-		return A3(
-			$rtfeldman$elm_css$VirtualDom$Styled$Attribute,
-			A2($elm$virtual_dom$VirtualDom$attribute, key, value),
-			_List_Nil,
-			'');
-	});
-var $rtfeldman$elm_css$Html$Styled$Attributes$rel = $rtfeldman$elm_css$VirtualDom$Styled$attribute('rel');
-var $author$project$View$pageWrapper = F2(
-	function (page, model) {
-		return A2(
-			$rtfeldman$elm_css$Html$Styled$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A3(
-					$rtfeldman$elm_css$Html$Styled$node,
-					'link',
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$rel('stylesheet'),
-							$rtfeldman$elm_css$Html$Styled$Attributes$href('https://fonts.googleapis.com/css?family=Tangerine')
-						]),
-					_List_Nil),
-					A3(
-					$rtfeldman$elm_css$Html$Styled$node,
-					'link',
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$rel('stylesheet'),
-							$rtfeldman$elm_css$Html$Styled$Attributes$href('https://fonts.googleapis.com/css?family=Raleway')
-						]),
-					_List_Nil),
-					$author$project$TitleBar$makeTitle(model),
-					A2($author$project$View$pagebutton, 'Home', model),
-					A2($author$project$View$pagebutton, 'Unused', model),
-					A2(
-					$rtfeldman$elm_css$Html$Styled$div,
-					_List_fromArray(
-						[
-							$rtfeldman$elm_css$Html$Styled$Attributes$css(
-							_List_fromArray(
-								[
-									$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$block),
-									$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$pageColor)
-								]))
-						]),
-					_List_fromArray(
-						[page]))
-				]));
-	});
-var $author$project$ViewVariables$errorColor = A3($rtfeldman$elm_css$Css$rgb, 255, 150, 150);
-var $rtfeldman$elm_css$Css$fixed = {backgroundAttachment: $rtfeldman$elm_css$Css$Structure$Compatible, position: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'fixed'};
-var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
-var $rtfeldman$elm_css$Css$int = function (val) {
-	return {
-		fontWeight: $rtfeldman$elm_css$Css$Structure$Compatible,
-		intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible,
-		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
-		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
-		number: $rtfeldman$elm_css$Css$Structure$Compatible,
-		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
-		numericValue: val,
-		unitLabel: '',
-		units: $rtfeldman$elm_css$Css$UnitlessInteger,
-		value: $elm$core$String$fromInt(val)
-	};
-};
-var $rtfeldman$elm_css$Css$UnitlessFloat = {$: 'UnitlessFloat'};
-var $rtfeldman$elm_css$Css$num = function (val) {
-	return {
-		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
-		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
-		number: $rtfeldman$elm_css$Css$Structure$Compatible,
-		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
-		numericValue: val,
-		unitLabel: '',
-		units: $rtfeldman$elm_css$Css$UnitlessFloat,
-		value: $elm$core$String$fromFloat(val)
-	};
-};
-var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
-var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
-var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
-var $author$project$View$drawErrorBox = function (errorBox) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$div,
-		_List_fromArray(
-			[
-				$rtfeldman$elm_css$Html$Styled$Attributes$css(
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Css$zIndex(
-						$rtfeldman$elm_css$Css$int(2)),
-						$rtfeldman$elm_css$Css$borderRadius(
-						$rtfeldman$elm_css$Css$px(15)),
-						$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$errorColor),
-						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$fixed),
-						$rtfeldman$elm_css$Css$opacity(
-						$rtfeldman$elm_css$Css$num(0.75)),
-						$rtfeldman$elm_css$Css$pointerEvents($rtfeldman$elm_css$Css$none)
-					]))
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$rtfeldman$elm_css$Html$Styled$div,
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$Attributes$css(
-						_List_fromArray(
-							[
-								$rtfeldman$elm_css$Css$margin(
-								$rtfeldman$elm_css$Css$px(10))
-							]))
-					]),
-				_List_fromArray(
-					[
-						$rtfeldman$elm_css$Html$Styled$text(errorBox.error)
-					]))
-			]));
-};
-var $author$project$DrawToolbar$ToolResult = F3(
-	function (width, height, svg) {
-		return {height: height, svg: svg, width: width};
-	});
-var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
-var $author$project$Model$BlockClick = F3(
-	function (a, b, c) {
-		return {$: 'BlockClick', a: a, b: b, c: c};
-	});
-var $author$project$Model$SpawnBlock = F2(
-	function (a, b) {
-		return {$: 'SpawnBlock', a: a, b: b};
-	});
-var $author$project$ViewVariables$blockColor = 'rgb(50, 214, 232)';
-var $author$project$SvgDraw$viewStructureToMouse = function (viewStructure) {
-	return A5($author$project$ViewStructure$mouseToSvgCoordinates, viewStructure.mouseState, viewStructure.svgWidth, viewStructure.svgHeight, 0, 0);
-};
-var $author$project$SvgDraw$blockMouseOffset = F2(
-	function (call, viewStructure) {
-		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
-		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			return _Utils_Tuple2((coordinates.a - blockPos.xpos) - viewStructure.headerPos.xpos, (coordinates.b - blockPos.ypos) - viewStructure.headerPos.ypos);
-		} else {
-			return _Utils_Tuple2(0, 0);
-		}
-	});
-var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
-var $elm$virtual_dom$VirtualDom$nodeNS = function (tag) {
-	return _VirtualDom_nodeNS(
-		_VirtualDom_noScript(tag));
-};
-var $elm$svg$Svg$node = $elm$virtual_dom$VirtualDom$nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$Attributes$pointerEvents = _VirtualDom_attribute('pointer-events');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$SvgDraw$errorSvgNode = function (errorMsg) {
-	return A3(
-		$elm$svg$Svg$node,
-		'g',
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$rect,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x('0'),
-						$elm$svg$Svg$Attributes$y('0'),
-						$elm$svg$Svg$Attributes$width('100'),
-						$elm$svg$Svg$Attributes$height('100'),
-						$elm$svg$Svg$Attributes$fill('red'),
-						$elm$svg$Svg$Attributes$stroke('red')
-					]),
-				_List_Nil),
-				A2(
-				$elm$svg$Svg$text_,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x('0'),
-						$elm$svg$Svg$Attributes$y('50'),
-						$elm$svg$Svg$Attributes$fill('white'),
-						$elm$svg$Svg$Attributes$stroke('white'),
-						$elm$svg$Svg$Attributes$pointerEvents('none'),
-						$elm$svg$Svg$Attributes$cursor('default')
-					]),
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text(errorMsg)
-					]))
-			]));
-};
-var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
-var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
-var $author$project$SvgDraw$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$svg$Svg$Events$preventDefaultOn = $elm$html$Html$Events$preventDefaultOn;
-var $author$project$SvgDraw$createLeftDecoder = F3(
-	function (msgLeft, msgRight, button) {
-		switch (button) {
-			case 0:
-				return $elm$json$Json$Decode$succeed(msgLeft);
-			case 2:
-				return $elm$json$Json$Decode$succeed(msgRight);
-			default:
-				return $elm$json$Json$Decode$succeed(msgLeft);
-		}
-	});
-var $author$project$SvgDraw$checkLeftDecoder = F2(
-	function (msgLeft, msgRight) {
-		return A2(
-			$elm$json$Json$Decode$andThen,
-			A2($author$project$SvgDraw$createLeftDecoder, msgLeft, msgRight),
-			A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-	});
-var $author$project$SvgDraw$svgClickPrevent = F2(
-	function (msgLeft, msgRight) {
-		return A2(
-			$elm$json$Json$Decode$map,
-			$author$project$SvgDraw$alwaysPreventDefault,
-			A2($author$project$SvgDraw$checkLeftDecoder, msgLeft, msgRight));
-	});
-var $author$project$SvgDraw$svgClickEvents = F2(
-	function (leftClickEvent, rightClickEvent) {
-		return _List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$Events$preventDefaultOn,
-				'contextmenu',
-				A2(
-					$elm$json$Json$Decode$map,
-					$author$project$SvgDraw$alwaysPreventDefault,
-					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
-				A2(
-				$elm$svg$Svg$Events$preventDefaultOn,
-				'mousedown',
-				A2($author$project$SvgDraw$svgClickPrevent, leftClickEvent, rightClickEvent))
-			]);
-	});
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $author$project$SvgDraw$svgTranslate = F2(
-	function (xpos, ypos) {
-		return $elm$svg$Svg$Attributes$transform(
-			'translate(' + ($elm$core$String$fromInt(xpos) + (',' + ($elm$core$String$fromInt(ypos) + ')'))));
-	});
-var $author$project$SvgDraw$drawBlock = F2(
-	function (call, viewStructure) {
-		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			return A2(
-				$elm$svg$Svg$rect,
-				_Utils_ap(
-					viewStructure.isToolbar ? A2(
-						$author$project$SvgDraw$svgClickEvents,
-						A2(
-							$author$project$Model$SpawnBlock,
-							call.functionName,
-							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
-						A2(
-							$author$project$Model$SpawnBlock,
-							call.functionName,
-							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
-						$author$project$SvgDraw$svgClickEvents,
-						A3(
-							$author$project$Model$BlockClick,
-							call,
-							viewStructure.id,
-							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
-						A3(
-							$author$project$Model$BlockClick,
-							call,
-							viewStructure.id,
-							A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))),
-					_List_fromArray(
-						[
-							A2($author$project$SvgDraw$svgTranslate, blockPos.xpos, blockPos.ypos),
-							$elm$svg$Svg$Attributes$x('0'),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-							$elm$svg$Svg$Attributes$width(
-							$elm$core$String$fromInt(blockPos.width)),
-							$elm$svg$Svg$Attributes$height(
-							$elm$core$String$fromInt($author$project$ViewVariables$blockHeight - ($author$project$ViewVariables$nodeRadius * 2))),
-							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor),
-							$elm$svg$Svg$Attributes$rx(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius)),
-							$elm$svg$Svg$Attributes$ry(
-							$elm$core$String$fromInt($author$project$ViewVariables$nodeRadius))
-						])),
-				_List_Nil);
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('function call without block pos');
-		}
-	});
-var $author$project$SvgDraw$drawBuiltIn = F3(
-	function (call, index, viewStructure) {
-		return A2($author$project$SvgDraw$drawBlock, call, viewStructure);
-	});
-var $author$project$DrawFunc$drawCall = F3(
-	function (call, counter, viewStructure) {
-		return A3($author$project$SvgDraw$drawBuiltIn, call, counter, viewStructure);
-	});
-var $author$project$DrawFunc$drawFuncCalls = F3(
-	function (func, viewStructure, counter) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A3($author$project$DrawFunc$drawCall, call, counter, viewStructure),
-				A3($author$project$DrawFunc$drawFuncCalls, calls, viewStructure, counter + 1));
-		}
-	});
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$ellipse = $elm$svg$Svg$trustedNode('ellipse');
-var $author$project$ViewVariables$functionHeaderSquareY = ($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$blockHeight) + $author$project$ViewVariables$nodeRadius;
-var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
-var $author$project$Model$HeaderClick = F2(
-	function (a, b) {
-		return {$: 'HeaderClick', a: a, b: b};
-	});
-var $author$project$Model$SpawnFunction = F2(
-	function (a, b) {
-		return {$: 'SpawnFunction', a: a, b: b};
-	});
-var $author$project$SvgDraw$functionMouseOffset = F2(
-	function (_function, viewStructure) {
-		var coordinates = $author$project$SvgDraw$viewStructureToMouse(viewStructure);
-		return _Utils_Tuple2(coordinates.a - viewStructure.headerPos.xpos, coordinates.b - viewStructure.headerPos.ypos);
-	});
-var $author$project$SvgDraw$headerBlockEvents = F2(
-	function (_function, viewStructure) {
-		return viewStructure.isToolbar ? A2(
-			$author$project$SvgDraw$svgClickEvents,
-			A2(
-				$author$project$Model$SpawnFunction,
-				'',
-				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
-			A2(
-				$author$project$Model$SpawnFunction,
-				'',
-				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure))) : A2(
-			$author$project$SvgDraw$svgClickEvents,
-			A2(
-				$author$project$Model$HeaderClick,
-				_function,
-				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)),
-			A2(
-				$author$project$Model$HeaderClick,
-				_function,
-				A2($author$project$SvgDraw$functionMouseOffset, _function, viewStructure)));
-	});
-var $author$project$SvgDraw$drawFuncHeader = F2(
-	function (_function, viewStructure) {
-		return A2(
-			$elm$svg$Svg$g,
-			A2($author$project$SvgDraw$headerBlockEvents, _function, viewStructure),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$ellipse,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$rx(
-							$elm$core$String$fromInt((viewStructure.headerPos.width / 2) | 0)),
-							$elm$svg$Svg$Attributes$ry(
-							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
-							$elm$svg$Svg$Attributes$cx(
-							$elm$core$String$fromInt((viewStructure.headerPos.width / 2) | 0)),
-							$elm$svg$Svg$Attributes$cy(
-							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
-							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor)
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$rect,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x('0'),
-							$elm$svg$Svg$Attributes$y(
-							$elm$core$String$fromInt($author$project$ViewVariables$functionHeaderSquareY)),
-							$elm$svg$Svg$Attributes$width(
-							$elm$core$String$fromInt(viewStructure.headerPos.width)),
-							$elm$svg$Svg$Attributes$height(
-							$elm$core$String$fromInt(($author$project$ViewVariables$functionHeaderHeight - $author$project$ViewVariables$functionHeaderSquareY) - $author$project$ViewVariables$nodeRadius)),
-							$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$blockColor),
-							$elm$svg$Svg$Attributes$stroke($author$project$ViewVariables$blockColor)
-						]),
-					_List_Nil)
-				]));
-	});
-var $author$project$DrawFunc$drawFuncHeader = F2(
-	function (func, viewStructure) {
-		return A2($author$project$SvgDraw$drawFuncHeader, func, viewStructure);
-	});
-var $author$project$DrawFunc$drawFunc = F3(
-	function (func, viewStructure, counter) {
-		return A2(
-			$elm$core$List$cons,
-			A2($author$project$DrawFunc$drawFuncHeader, func, viewStructure),
-			A3($author$project$DrawFunc$drawFuncCalls, func.calls, viewStructure, counter));
-	});
-var $author$project$Model$OutputClick = function (a) {
-	return {$: 'OutputClick', a: a};
-};
-var $author$project$Model$OutputRightClick = function (a) {
-	return {$: 'OutputRightClick', a: a};
-};
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $author$project$ViewVariables$hollowNodeOutlineProportion = 0.25;
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$SvgDraw$drawNode = F6(
-	function (xpos, inputPosition, ypos, events, isHighlighted, isHollow) {
-		var outerCircle = A2(
-			$elm$svg$Svg$circle,
-			_List_fromArray(
-				[
-					$elm$svg$Svg$Attributes$r(
-					$elm$core$String$fromInt((inputPosition.b / 2) | 0)),
-					$elm$svg$Svg$Attributes$cx(
-					$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
-					$elm$svg$Svg$Attributes$cy(
-					$elm$core$String$fromInt(ypos)),
-					$elm$svg$Svg$Attributes$fill(
-					isHighlighted ? 'blue' : 'black')
-				]),
-			_List_Nil);
-		return A2(
-			$elm$svg$Svg$g,
-			events,
-			function () {
-				if (isHollow) {
-					var innerR = $elm$core$Basics$floor((inputPosition.b * 0.5) * (1 - $author$project$ViewVariables$hollowNodeOutlineProportion));
-					return _List_fromArray(
-						[
-							outerCircle,
-							A2(
-							$elm$svg$Svg$circle,
-							_List_fromArray(
-								[
-									$elm$svg$Svg$Attributes$r(
-									$elm$core$String$fromInt(innerR)),
-									$elm$svg$Svg$Attributes$cx(
-									$elm$core$String$fromInt((inputPosition.a + ((inputPosition.b / 2) | 0)) + xpos)),
-									$elm$svg$Svg$Attributes$cy(
-									$elm$core$String$fromInt(ypos)),
-									$elm$svg$Svg$Attributes$fill($author$project$ViewVariables$holeGrey)
-								]),
-							_List_Nil)
-						]);
-				} else {
-					return _List_fromArray(
-						[outerCircle]);
-				}
-			}());
-	});
-var $author$project$ViewVariables$outputNodeY = $author$project$ViewVariables$blockHeight - $author$project$ViewVariables$nodeRadius;
-var $author$project$DrawFunc$drawCallEnding = F2(
-	function (call, viewStructure) {
-		var _v0 = A2($elm$core$Dict$get, call.id, viewStructure.blockPositions);
-		if (_v0.$ === 'Just') {
-			var blockPos = _v0.a;
-			var isOutputHighlighted = function () {
-				var _v1 = viewStructure.mouseState.mouseSelection;
-				if (_v1.$ === 'OutputSelected') {
-					var outputId = _v1.a;
-					return _Utils_eq(outputId, call.id);
-				} else {
-					return false;
-				}
-			}();
-			var events = viewStructure.isToolbar ? A2(
-				$author$project$SvgDraw$svgClickEvents,
-				A2(
-					$author$project$Model$SpawnBlock,
-					call.functionName,
-					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure)),
-				A2(
-					$author$project$Model$SpawnBlock,
-					call.functionName,
-					A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure))) : A2(
-				$author$project$SvgDraw$svgClickEvents,
-				$author$project$Model$OutputClick(call.id),
-				$author$project$Model$OutputRightClick(call.id));
-			return A6(
-				$author$project$SvgDraw$drawNode,
-				blockPos.xpos,
-				_Utils_Tuple2(((blockPos.width / 2) | 0) - $author$project$ViewVariables$nodeRadius, $author$project$ViewVariables$nodeRadius * 2),
-				$author$project$ViewVariables$outputNodeY + blockPos.ypos,
-				events,
-				isOutputHighlighted,
-				false);
-		} else {
-			return $author$project$SvgDraw$errorSvgNode('Call without a block position when drawing endings');
-		}
-	});
-var $author$project$DrawFunc$drawFuncEndings = F2(
-	function (func, viewStructure) {
-		if (!func.b) {
-			return _List_Nil;
-		} else {
-			var call = func.a;
-			var calls = func.b;
-			return A2(
-				$elm$core$List$cons,
-				A2($author$project$DrawFunc$drawCallEnding, call, viewStructure),
-				A2($author$project$DrawFunc$drawFuncEndings, calls, viewStructure));
-		}
-	});
-var $author$project$Model$OutputHighlight = function (a) {
-	return {$: 'OutputHighlight', a: a};
-};
-var $author$project$Model$BlockNameHighlight = function (a) {
-	return {$: 'BlockNameHighlight', a: a};
-};
-var $author$project$Model$BlockNameUpdate = F2(
-	function (a, b) {
-		return {$: 'BlockNameUpdate', a: a, b: b};
-	});
-var $author$project$Model$BlockNameClick = F3(
-	function (a, b, c) {
-		return {$: 'BlockNameClick', a: a, b: b, c: c};
-	});
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$svg$Svg$Events$on = $elm$html$Html$Events$on;
-var $author$project$SvgDraw$svgClickWithDefault = F2(
-	function (leftClickEvent, rightClickEvent) {
-		return _List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$Events$preventDefaultOn,
-				'contextmenu',
-				A2(
-					$elm$json$Json$Decode$map,
-					$author$project$SvgDraw$alwaysPreventDefault,
-					$elm$json$Json$Decode$succeed($author$project$Model$NoOp))),
-				A2(
-				$elm$svg$Svg$Events$on,
-				'mousedown',
-				A2($author$project$SvgDraw$checkLeftDecoder, leftClickEvent, rightClickEvent))
-			]);
-	});
-var $author$project$SvgDraw$blockNameEvents = F2(
-	function (call, viewStructure) {
-		var coordinates = A2($author$project$SvgDraw$blockMouseOffset, call, viewStructure);
-		return viewStructure.isToolbar ? A2(
-			$author$project$SvgDraw$svgClickEvents,
-			A2($author$project$Model$SpawnBlock, call.functionName, coordinates),
-			A2($author$project$Model$SpawnBlock, call.functionName, coordinates)) : A2(
-			$author$project$SvgDraw$svgClickWithDefault,
-			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates),
-			A3($author$project$Model$BlockNameClick, call, viewStructure.id, coordinates));
-	});
-var $author$project$ViewVariables$blockTextInputYpos = $author$project$ViewVariables$nodeRadius * 2;
-var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
-var $rtfeldman$elm_css$Css$borderBox = {backgroundClip: $rtfeldman$elm_css$Css$Structure$Compatible, boxSizing: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'border-box'};
-var $rtfeldman$elm_css$Css$boxSizing = $rtfeldman$elm_css$Css$prop1('box-sizing');
-var $rtfeldman$elm_css$Css$fontFamily = $rtfeldman$elm_css$Css$prop1('font-family');
-var $elm$svg$Svg$foreignObject = $elm$svg$Svg$trustedNode('foreignObject');
-var $rtfeldman$elm_css$Html$Styled$Attributes$id = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('id');
-var $rtfeldman$elm_css$Html$Styled$input = $rtfeldman$elm_css$Html$Styled$node('input');
-var $rtfeldman$elm_css$Css$monospace = {fontFamily: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'monospace'};
-var $rtfeldman$elm_css$Html$Styled$Events$onFocus = function (msg) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$on,
-		'focus',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $rtfeldman$elm_css$Html$Styled$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$rtfeldman$elm_css$VirtualDom$Styled$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $rtfeldman$elm_css$Html$Styled$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $rtfeldman$elm_css$Html$Styled$Events$onInput = function (tagger) {
-	return A2(
-		$rtfeldman$elm_css$Html$Styled$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$rtfeldman$elm_css$Html$Styled$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $rtfeldman$elm_css$Html$Styled$Events$targetValue)));
-};
-var $rtfeldman$elm_css$Html$Styled$Attributes$tabindex = function (n) {
-	return A2(
-		$rtfeldman$elm_css$VirtualDom$Styled$attribute,
-		'tabIndex',
-		$elm$core$String$fromInt(n));
-};
 var $rtfeldman$elm_css$Css$textAlign = function (fn) {
 	return A3(
 		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
@@ -14441,6 +10786,7 @@ var $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled = function (vdom) {
 };
 var $rtfeldman$elm_css$Html$Styled$toUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$toUnstyled;
 var $rtfeldman$elm_css$Html$Styled$Attributes$value = $rtfeldman$elm_css$Html$Styled$Attributes$stringProperty('value');
+var $rtfeldman$elm_css$Css$width = $rtfeldman$elm_css$Css$prop1('width');
 var $author$project$SvgDraw$svgTextInput = function (str) {
 	return function (xpos) {
 		return function (ypos) {
@@ -14519,7 +10865,7 @@ var $author$project$SvgDraw$drawBlockNameInput = F3(
 			$author$project$Model$BlockNameHighlight(call.id))(
 			$author$project$Model$BlockNameUpdate(call.id))($rtfeldman$elm_css$Css$transparent)(
 			A2($author$project$SvgDraw$blockNameEvents, call, viewStructure))(
-			$author$project$Update$nodeNameId(call.id))(viewStructure);
+			$author$project$Model$nodeNameId(call.id))(viewStructure);
 	});
 var $author$project$Model$HeaderOutputClick = F2(
 	function (a, b) {
@@ -14529,6 +10875,7 @@ var $author$project$Model$InputHighlight = F2(
 	function (a, b) {
 		return {$: 'InputHighlight', a: a, b: b};
 	});
+var $rtfeldman$elm_css$Html$Styled$div = $rtfeldman$elm_css$Html$Styled$node('div');
 var $author$project$SvgDraw$nodeEvent = F7(
 	function (xpos, inputPos, ypos, event, domId, viewStructure, isTabable) {
 		return A2(
@@ -14570,6 +10917,39 @@ var $author$project$SvgDraw$drawNodeWithEvent = F9(
 					A6($author$project$SvgDraw$drawNode, xpos, inputPos, ypos, events, isHighlighted, isHollow)
 				]));
 	});
+var $author$project$ViewStructure$countOutputsBefore = F2(
+	function (inputs, threshhold) {
+		countOutputsBefore:
+		while (true) {
+			if (!threshhold) {
+				return 0;
+			} else {
+				if (!inputs.b) {
+					return 0;
+				} else {
+					var input = inputs.a;
+					var rest = inputs.b;
+					switch (input.$) {
+						case 'Output':
+							var id = input.a;
+							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
+						case 'FunctionArg':
+							var index = input.a;
+							return 1 + A2($author$project$ViewStructure$countOutputsBefore, rest, threshhold - 1);
+						default:
+							var $temp$inputs = rest,
+								$temp$threshhold = threshhold - 1;
+							inputs = $temp$inputs;
+							threshhold = $temp$threshhold;
+							continue countOutputsBefore;
+					}
+				}
+			}
+		}
+	});
+var $author$project$ViewVariables$blockSpacing = ($author$project$ViewVariables$blockHeight / 6) | 0;
+var $author$project$ViewVariables$lineSpaceBeforeBlock = (($author$project$ViewVariables$blockSpacing * 3) / 2) | 0;
+var $author$project$ViewVariables$lineXSpace = ($author$project$ViewVariables$blockHeight / 2) | 0;
 var $author$project$ViewVariables$lineWidth = '4';
 var $author$project$Utils$listToStringListRest = function (l) {
 	if (!l.b) {
@@ -14591,6 +10971,7 @@ var $author$project$Utils$listToStringList = function (l) {
 			$author$project$Utils$listToStringListRest(is));
 	}
 };
+var $elm$svg$Svg$Attributes$points = _VirtualDom_attribute('points');
 var $elm$svg$Svg$polyline = $elm$svg$Svg$trustedNode('polyline');
 var $elm$svg$Svg$Attributes$strokeLinecap = _VirtualDom_attribute('stroke-linecap');
 var $elm$svg$Svg$Attributes$strokeLinejoin = _VirtualDom_attribute('stroke-linejoin');
@@ -14645,6 +11026,44 @@ var $elm$core$Maybe$andThen = F2(
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
+	});
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
+		while (true) {
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
+			} else {
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
+			}
+		}
+	});
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
 var $author$project$DrawFunc$getInputRouting = F3(
 	function (call, inputCounter, viewStructure) {
@@ -14709,6 +11128,576 @@ var $author$project$DrawFunc$drawOutputLine = F8(
 var $author$project$Model$InputUpdate = F3(
 	function (a, b, c) {
 		return {$: 'InputUpdate', a: a, b: b, c: c};
+	});
+var $author$project$BuiltIn$Number = function (a) {
+	return {$: 'Number', a: a};
+};
+var $author$project$BuiltIn$makeBuiltInNumber = function (pair) {
+	return _Utils_Tuple2(
+		pair.a,
+		$author$project$BuiltIn$Number(pair.b));
+};
+var $author$project$BuiltIn$JavaScript = function (a) {
+	return {$: 'JavaScript', a: a};
+};
+var $author$project$BuiltIn$makeJavascriptBuiltIn = function (pair) {
+	return _Utils_Tuple2(
+		pair.a,
+		$author$project$BuiltIn$JavaScript(pair.b));
+};
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Utils$dictAppend = F3(
+	function (dict, key, val) {
+		return A3(
+			$elm$core$Dict$update,
+			key,
+			function (maybeoldlist) {
+				if (maybeoldlist.$ === 'Just') {
+					var oldlist = maybeoldlist.a;
+					return $elm$core$Maybe$Just(
+						A2($elm$core$List$cons, val, oldlist));
+				} else {
+					return $elm$core$Maybe$Just(
+						_List_fromArray(
+							[val]));
+				}
+			},
+			dict);
+	});
+var $author$project$Utils$dictAppendAll = F2(
+	function (dict, list) {
+		if (!list.b) {
+			return dict;
+		} else {
+			var ele = list.a;
+			var eles = list.b;
+			return A3(
+				$author$project$Utils$dictAppend,
+				A2($author$project$Utils$dictAppendAll, dict, eles),
+				ele.a,
+				ele.b);
+		}
+	});
+var $author$project$MusicTheory$getThisFlats = F2(
+	function (index, letter) {
+		return _Utils_Tuple2(
+			A2($elm$core$Basics$modBy, 12, index - 1),
+			letter + 'b');
+	});
+var $author$project$MusicTheory$getThisSharps = F2(
+	function (index, letter) {
+		return _Utils_Tuple2(
+			A2($elm$core$Basics$modBy, 12, index + 1),
+			letter + 's');
+	});
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$MusicTheory$addSharpsFlats = F2(
+	function (dict, index) {
+		if (index < 12) {
+			var _v0 = A2($elm$core$Dict$get, index, dict);
+			if (_v0.$ === 'Just') {
+				var letters = _v0.a;
+				return A2(
+					$author$project$Utils$dictAppendAll,
+					A2(
+						$author$project$Utils$dictAppendAll,
+						A2($author$project$MusicTheory$addSharpsFlats, dict, index + 1),
+						A2(
+							$elm$core$List$map,
+							$author$project$MusicTheory$getThisSharps(index),
+							letters)),
+					A2(
+						$elm$core$List$map,
+						$author$project$MusicTheory$getThisFlats(index),
+						letters));
+			} else {
+				return A2($elm$core$Debug$log, 'bad sharps flats', dict);
+			}
+		} else {
+			return dict;
+		}
+	});
+var $author$project$MusicTheory$letterDict = $elm$core$Dict$fromList(
+	_List_fromArray(
+		[
+			_Utils_Tuple2(
+			0,
+			_List_fromArray(
+				['C'])),
+			_Utils_Tuple2(1, _List_Nil),
+			_Utils_Tuple2(
+			2,
+			_List_fromArray(
+				['D'])),
+			_Utils_Tuple2(3, _List_Nil),
+			_Utils_Tuple2(
+			4,
+			_List_fromArray(
+				['E'])),
+			_Utils_Tuple2(
+			5,
+			_List_fromArray(
+				['F'])),
+			_Utils_Tuple2(6, _List_Nil),
+			_Utils_Tuple2(
+			7,
+			_List_fromArray(
+				['G'])),
+			_Utils_Tuple2(8, _List_Nil),
+			_Utils_Tuple2(
+			9,
+			_List_fromArray(
+				['A'])),
+			_Utils_Tuple2(10, _List_Nil),
+			_Utils_Tuple2(
+			11,
+			_List_fromArray(
+				['B']))
+		]));
+var $author$project$MusicTheory$letterDictWithSharpsFlats = A2($author$project$MusicTheory$addSharpsFlats, $author$project$MusicTheory$letterDict, 0);
+var $elm$core$Basics$pow = _Basics_pow;
+var $author$project$MusicTheory$offsetToFrequency = function (offset) {
+	return 440.0 * A2($elm$core$Basics$pow, 2.0, (offset - ((4 * 12) + 9)) / 12.0);
+};
+var $author$project$MusicTheory$offsetToOctave = function (offset) {
+	return (offset / 12) | 0;
+};
+var $author$project$MusicTheory$tupleReversed = F2(
+	function (a, b) {
+		return _Utils_Tuple2(b, a);
+	});
+var $author$project$MusicTheory$namedFrequenciesForOffset = function (offset) {
+	var octave = $elm$core$String$fromInt(
+		$author$project$MusicTheory$offsetToOctave(offset));
+	var maybeLetters = A2(
+		$elm$core$Dict$get,
+		A2($elm$core$Basics$modBy, 12, offset),
+		$author$project$MusicTheory$letterDictWithSharpsFlats);
+	var frequency = $author$project$MusicTheory$offsetToFrequency(offset);
+	if (maybeLetters.$ === 'Just') {
+		var letters = maybeLetters.a;
+		return A2(
+			$elm$core$List$map,
+			$author$project$MusicTheory$tupleReversed(frequency),
+			A2(
+				$elm$core$List$map,
+				function (letter) {
+					return _Utils_ap(letter, octave);
+				},
+				letters));
+	} else {
+		return A2($elm$core$Debug$log, 'bad get names music', _List_Nil);
+	}
+};
+var $author$project$MusicTheory$offsetLimit = 12 * 8;
+var $author$project$MusicTheory$namedFrequencies = A2(
+	$elm$core$List$concatMap,
+	$author$project$MusicTheory$namedFrequenciesForOffset,
+	A2($elm$core$List$range, 0, $author$project$MusicTheory$offsetLimit));
+var $author$project$Compiler$CompModel$systemValues = _List_fromArray(
+	[
+		_Utils_Tuple2('time', 'time'),
+		_Utils_Tuple2('mouseX', 'window.mouseXPos'),
+		_Utils_Tuple2('mouseY', 'window.mouseYPos')
+	]);
+var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
+	_Utils_ap(
+		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
+		A2($elm$core$List$map, $author$project$BuiltIn$makeJavascriptBuiltIn, $author$project$Compiler$CompModel$systemValues)));
+var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
+var $rtfeldman$elm_css$Css$cssFunction = F2(
+	function (funcName, args) {
+		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
+	});
+var $rtfeldman$elm_css$Css$rgb = F3(
+	function (r, g, b) {
+		return {
+			alpha: 1,
+			blue: b,
+			color: $rtfeldman$elm_css$Css$Structure$Compatible,
+			green: g,
+			red: r,
+			value: A2(
+				$rtfeldman$elm_css$Css$cssFunction,
+				'rgb',
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$fromInt,
+					_List_fromArray(
+						[r, g, b])))
+		};
 	});
 var $author$project$ViewVariables$textInputColor = A3($rtfeldman$elm_css$Css$rgb, 186, 232, 188);
 var $author$project$ViewVariables$textInputColorVariable = A3($rtfeldman$elm_css$Css$rgb, 108, 230, 113);
@@ -14780,7 +11769,7 @@ var $author$project$DrawFunc$drawInput = F5(
 			A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions));
 		var nodeEvents = A3($author$project$SvgDraw$nodeEvents, call, viewStructure, inputCounter);
 		var isInputHighlighted = A3($author$project$DrawFunc$inputHighlightedP, viewStructure, call, inputCounter);
-		var inputStringId = A2($author$project$Update$nodeInputId, call.id, inputCounter);
+		var inputStringId = A2($author$project$Model$nodeInputId, call.id, inputCounter);
 		var highlightEvent = A2($author$project$Model$InputHighlight, call.id, inputCounter);
 		var nodeWithEvent = function (isHollow) {
 			return A9($author$project$SvgDraw$drawNodeWithEvent, blockPos.xpos, nodePosition, blockPos.ypos + $author$project$ViewVariables$nodeRadius, nodeEvents, highlightEvent, inputStringId, isInputHighlighted, viewStructure, isHollow);
@@ -14886,7 +11875,7 @@ var $author$project$DrawFunc$drawInputLines = F5(
 					_Utils_Tuple2(0, 0),
 					blockPos.ypos + $author$project$ViewVariables$outputNodeY,
 					$author$project$Model$OutputHighlight(call.id),
-					$author$project$Update$nodeOutputId(call.id),
+					$author$project$Model$nodeOutputId(call.id),
 					viewStructure,
 					true)
 				]);
@@ -14986,7 +11975,7 @@ var $author$project$SvgDraw$drawHeaderNameInput = F2(
 			$author$project$Model$HeaderNameHighlight(viewStructure.id))(
 			$author$project$Model$HeaderNameUpdate(viewStructure.id))($rtfeldman$elm_css$Css$transparent)(
 			A2($author$project$SvgDraw$headerNameEvents, _function, viewStructure))(
-			$author$project$Update$headerNameId(viewStructure.id))(viewStructure);
+			$author$project$Model$headerNameId(viewStructure.id))(viewStructure);
 	});
 var $author$project$Model$HeaderAddOutput = F2(
 	function (a, b) {
@@ -15007,7 +11996,7 @@ var $author$project$DrawFunc$drawHeaderFinalOutput = F2(
 	function (viewStructure, inputCounter) {
 		var isInputHighlighted = false;
 		var events = A2($author$project$SvgDraw$headerEventsFinal, inputCounter, viewStructure);
-		var domId = A2($author$project$Update$headerNodeId, viewStructure.id, inputCounter);
+		var domId = A2($author$project$Model$headerNodeId, viewStructure.id, inputCounter);
 		var blockPos = viewStructure.headerPos;
 		var nodePos = function () {
 			var _v0 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
@@ -15062,7 +12051,7 @@ var $author$project$DrawFunc$drawHeaderOutput = F3(
 			}
 		}();
 		var events = A2($author$project$SvgDraw$headerEvents, inputCounter, viewStructure);
-		var domId = A2($author$project$Update$headerNodeId, viewStructure.id, inputCounter);
+		var domId = A2($author$project$Model$headerNodeId, viewStructure.id, inputCounter);
 		var blockPos = viewStructure.headerPos;
 		var nodePos = function () {
 			var _v1 = A2($elm$core$Dict$get, inputCounter, blockPos.inputPositions);
@@ -15140,6 +12129,3082 @@ var $author$project$DrawFunc$drawFuncWithConnections = function (viewStructure) 
 				A2($author$project$DrawFunc$drawFuncEndings, viewStructure.sortedFunc.calls, viewStructure))
 			]));
 };
+var $author$project$ViewStructure$ViewStructure = function (blockPositions) {
+	return function (lineRouting) {
+		return function (sortedFunc) {
+			return function (id) {
+				return function (headerPos) {
+					return function (funcBlockMaxWidth) {
+						return function (funcWidth) {
+							return function (funcHeight) {
+								return function (mouseState) {
+									return function (svgWidth) {
+										return function (svgHeight) {
+											return function (isToolbar) {
+												return {blockPositions: blockPositions, funcBlockMaxWidth: funcBlockMaxWidth, funcHeight: funcHeight, funcWidth: funcWidth, headerPos: headerPos, id: id, isToolbar: isToolbar, lineRouting: lineRouting, mouseState: mouseState, sortedFunc: sortedFunc, svgHeight: svgHeight, svgWidth: svgWidth};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$ViewStructure$fixLeftForMoveInfo = F3(
+	function (withoutLeft, maybeMove, leftW) {
+		if (maybeMove.$ === 'Nothing') {
+			return withoutLeft;
+		} else {
+			var moveInfo = maybeMove.a;
+			var _v1 = A2($elm$core$Dict$get, moveInfo.movedCall.id, withoutLeft);
+			if (_v1.$ === 'Just') {
+				var blockPos = _v1.a;
+				var newx = blockPos.xpos - leftW;
+				return A3(
+					$elm$core$Dict$insert,
+					moveInfo.movedCall.id,
+					_Utils_update(
+						blockPos,
+						{xpos: newx}),
+					withoutLeft);
+			} else {
+				return withoutLeft;
+			}
+		}
+	});
+var $author$project$ViewStructure$fixMoveInfo = F3(
+	function (xoffset, yoffset, maybeMove) {
+		if (maybeMove.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var moveInfo = maybeMove.a;
+			var newy = moveInfo.movedPos.b - yoffset;
+			var newx = moveInfo.movedPos.a - xoffset;
+			return $elm$core$Maybe$Just(
+				_Utils_update(
+					moveInfo,
+					{
+						movedPos: _Utils_Tuple2(newx, newy)
+					}));
+		}
+	});
+var $author$project$ViewVariables$blockSpace = $author$project$ViewVariables$blockHeight + $author$project$ViewVariables$blockSpacing;
+var $author$project$ViewStructure$countOutputs = function (inputs) {
+	return A2(
+		$author$project$ViewStructure$countOutputsBefore,
+		inputs,
+		$elm$core$List$length(inputs));
+};
+var $author$project$ViewStructure$callLinesSpace = function (call) {
+	return $author$project$ViewStructure$countOutputs(call.inputs) * $author$project$ViewVariables$lineSpaceBeforeBlock;
+};
+var $author$project$ViewStructure$BlockPosition = F4(
+	function (xpos, ypos, width, inputPositions) {
+		return {inputPositions: inputPositions, width: width, xpos: xpos, ypos: ypos};
+	});
+var $author$project$ViewVariables$callTextBlockSize = function (text) {
+	return $elm$core$Basics$floor(
+		$author$project$ViewVariables$blockCharacterOverestimate * $elm$core$String$length(text)) + (2 * $author$project$ViewVariables$blockTextXPadding);
+};
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $author$project$ViewStructure$inputPositionsMax = function (inputPositions) {
+	var _v0 = A2(
+		$elm$core$Dict$get,
+		$elm$core$Dict$size(inputPositions) - 1,
+		inputPositions);
+	if (_v0.$ === 'Just') {
+		var lastPos = _v0.a;
+		return (lastPos.a + lastPos.b) + $author$project$ViewVariables$blockTextXPadding;
+	} else {
+		return 0;
+	}
+};
+var $author$project$ViewStructure$getBlockWidth = F2(
+	function (call, inputPositions) {
+		return A2(
+			$elm$core$Basics$max,
+			$author$project$ViewStructure$inputPositionsMax(inputPositions),
+			$author$project$ViewVariables$callTextBlockSize(call.functionName));
+	});
+var $author$project$ViewVariables$inputPadding = $author$project$ViewVariables$nodeRadius * 3;
+var $author$project$ViewVariables$characterOverestimate = ($author$project$ViewVariables$inputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
+var $author$project$ViewVariables$numCharactersToInputWidth = function (numChars) {
+	return $elm$core$Basics$floor($author$project$ViewVariables$characterOverestimate * (numChars + 1));
+};
+var $author$project$ViewStructure$getInputWidth = function (input) {
+	if (input.$ === 'Text') {
+		var str = input.a;
+		return $author$project$ViewVariables$numCharactersToInputWidth(
+			$elm$core$String$length(str));
+	} else {
+		return $author$project$ViewVariables$nodeRadius * 2;
+	}
+};
+var $author$project$ViewVariables$inputSpacing = $author$project$ViewVariables$nodeRadius * 1;
+var $author$project$ViewStructure$inputPositionList = F4(
+	function (inputs, counter, currentX, shouldAddTail) {
+		if (!inputs.b) {
+			return shouldAddTail ? _List_fromArray(
+				[
+					_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(
+						currentX,
+						$author$project$ViewStructure$getInputWidth($author$project$Model$Hole)))
+				]) : _List_Nil;
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			var width = $author$project$ViewStructure$getInputWidth(input);
+			return A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(
+					counter,
+					_Utils_Tuple2(currentX, width)),
+				A4($author$project$ViewStructure$inputPositionList, rest, counter + 1, (currentX + width) + $author$project$ViewVariables$inputSpacing, shouldAddTail));
+		}
+	});
+var $author$project$ViewStructure$makeInputPositions = F2(
+	function (call, shouldAddTail) {
+		return $elm$core$Dict$fromList(
+			A4($author$project$ViewStructure$inputPositionList, call.inputs, 0, $author$project$ViewVariables$inputPadding, shouldAddTail));
+	});
+var $author$project$ViewStructure$makeBlockPosition = F5(
+	function (xpos, ypos, call, shouldCenter, shouldAddTail) {
+		var inputPositions = A2($author$project$ViewStructure$makeInputPositions, call, shouldAddTail);
+		var blockYpos = shouldCenter ? (ypos - (($author$project$ViewVariables$blockHeight / 2) | 0)) : ypos;
+		var blockW = A2($author$project$ViewStructure$getBlockWidth, call, inputPositions);
+		var blockXpos = shouldCenter ? (xpos - ((blockW / 2) | 0)) : xpos;
+		return A4($author$project$ViewStructure$BlockPosition, blockXpos, blockYpos, blockW, inputPositions);
+	});
+var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
+	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
+};
+var $author$project$ViewStructure$getAllBlockPositions = F3(
+	function (maybeMoveInfo, func, currentY) {
+		if (!func.b) {
+			if (maybeMoveInfo.$ === 'Nothing') {
+				return _Utils_Tuple2(_List_Nil, $elm$core$Dict$empty);
+			} else {
+				var moveInfo = maybeMoveInfo.a;
+				return _Utils_Tuple2(
+					_List_fromArray(
+						[moveInfo.movedCall]),
+					A3(
+						$elm$core$Dict$insert,
+						moveInfo.movedCall.id,
+						$author$project$ViewStructure$movedInfoBlockPos(moveInfo),
+						$elm$core$Dict$empty));
+			}
+		} else {
+			var call = func.a;
+			var rest = func.b;
+			var isMoved = function () {
+				if (maybeMoveInfo.$ === 'Nothing') {
+					return false;
+				} else {
+					var moveInfo = maybeMoveInfo.a;
+					return _Utils_cmp(moveInfo.movedPos.b, currentY + $author$project$ViewVariables$blockHeight) < 0;
+				}
+			}();
+			var newMoveInfo = isMoved ? $elm$core$Maybe$Nothing : maybeMoveInfo;
+			var newY = function () {
+				if (isMoved) {
+					if (maybeMoveInfo.$ === 'Just') {
+						var moveInfo = maybeMoveInfo.a;
+						return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall);
+					} else {
+						return 0;
+					}
+				} else {
+					return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(call);
+				}
+			}();
+			var restCall = isMoved ? func : rest;
+			var iteration = A3($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY);
+			var topCall = isMoved ? A2(
+				$elm$core$Maybe$withDefault,
+				call,
+				A2(
+					$elm$core$Maybe$map,
+					function ($) {
+						return $.movedCall;
+					},
+					maybeMoveInfo)) : call;
+			var blockPos = function () {
+				if (isMoved) {
+					if (maybeMoveInfo.$ === 'Just') {
+						var moveInfo = maybeMoveInfo.a;
+						return $author$project$ViewStructure$movedInfoBlockPos(moveInfo);
+					} else {
+						return A5($author$project$ViewStructure$makeBlockPosition, 0, 0, call, false, false);
+					}
+				} else {
+					return A5(
+						$author$project$ViewStructure$makeBlockPosition,
+						0,
+						currentY + $author$project$ViewStructure$callLinesSpace(call),
+						call,
+						false,
+						false);
+				}
+			}();
+			return _Utils_Tuple2(
+				A2($elm$core$List$cons, topCall, iteration.a),
+				A3($elm$core$Dict$insert, topCall.id, blockPos, iteration.b));
+		}
+	});
+var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
+	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
+};
+var $author$project$ViewStructure$getBlockPositions = F5(
+	function (func, mouseState, xoffset, yoffset, maybeMove) {
+		var fixedMoveInfo = A3($author$project$ViewStructure$fixMoveInfo, xoffset, yoffset, maybeMove);
+		var allPositions = A3(
+			$author$project$ViewStructure$getAllBlockPositions,
+			fixedMoveInfo,
+			func.calls,
+			$author$project$ViewStructure$getFuncHeaderHeight(func));
+		return _Utils_Tuple2(
+			_Utils_update(
+				func,
+				{calls: allPositions.a}),
+			allPositions.b);
+	});
+var $author$project$ViewStructure$getHeaderBlockPos = F3(
+	function (func, xoffset, yoffset) {
+		return A5(
+			$author$project$ViewStructure$makeBlockPosition,
+			xoffset,
+			yoffset,
+			A4($author$project$Model$Call, 0, func.args, func.name, ''),
+			false,
+			true);
+	});
+var $author$project$LineRouting$findMaxBurden = F4(
+	function (fArray, outputBurden, currentIndex, maxIndex) {
+		if (_Utils_cmp(currentIndex, maxIndex) > 0) {
+			return 0;
+		} else {
+			var callId = (currentIndex < 0) ? currentIndex : A2(
+				$elm$core$Maybe$withDefault,
+				-100,
+				A2(
+					$elm$core$Maybe$map,
+					function (call) {
+						return call.id;
+					},
+					A2($elm$core$Array$get, currentIndex, fArray)));
+			return A2(
+				$elm$core$Basics$max,
+				A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, currentIndex + 1, maxIndex),
+				A2(
+					$elm$core$Maybe$withDefault,
+					0,
+					A2($elm$core$Dict$get, callId, outputBurden)));
+		}
+	});
+var $author$project$LineRouting$findThisRouting = F4(
+	function (inputInfo, outputBurden, fArray, idToPos) {
+		var oIndex = function () {
+			var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var outputIndex = _v1.a;
+				return outputIndex;
+			} else {
+				return inputInfo.outputId;
+			}
+		}();
+		var cIndex = function () {
+			var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+			if (_v0.$ === 'Just') {
+				var callIndex = _v0.a;
+				return callIndex;
+			} else {
+				return 0;
+			}
+		}();
+		return A4($author$project$LineRouting$findMaxBurden, fArray, outputBurden, oIndex + 1, cIndex - 1) + 1;
+	});
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var $author$project$LineRouting$updateCallLineRoute = F3(
+	function (inputInfo, thisRouting, lineRoute) {
+		return $elm$core$Maybe$Just(
+			A3(
+				$elm$core$Array$set,
+				inputInfo.index,
+				$elm$core$Maybe$Just(thisRouting),
+				function () {
+					if (lineRoute.$ === 'Nothing') {
+						return A2(
+							$elm$core$Array$initialize,
+							$elm$core$List$length(inputInfo.call.inputs),
+							$elm$core$Basics$always($elm$core$Maybe$Nothing));
+					} else {
+						var route = lineRoute.a;
+						return route;
+					}
+				}()));
+	});
+var $author$project$LineRouting$setLineRouting = F4(
+	function (lineRouting, inputInfo, thisRouting, isLeft) {
+		var correctRouting = isLeft ? (-thisRouting) : thisRouting;
+		return A3(
+			$elm$core$Dict$update,
+			inputInfo.call.id,
+			A2($author$project$LineRouting$updateCallLineRoute, inputInfo, correctRouting),
+			lineRouting);
+	});
+var $author$project$LineRouting$updateOutputBurden = F2(
+	function (burden, otherBurden) {
+		if (otherBurden.$ === 'Just') {
+			var ob = otherBurden.a;
+			return $elm$core$Maybe$Just(
+				A2($elm$core$Basics$max, burden, ob));
+		} else {
+			return $elm$core$Maybe$Just(burden);
+		}
+	});
+var $author$project$LineRouting$setOutputBurden = F3(
+	function (outputBurden, id, burden) {
+		return A3(
+			$elm$core$Dict$update,
+			id,
+			$author$project$LineRouting$updateOutputBurden(burden),
+			outputBurden);
+	});
+var $author$project$LineRouting$addLineRouting = F6(
+	function (inputInfo, outputBurden, lineRouting, fArray, idToPos, isLeft) {
+		var thisRouting = A4($author$project$LineRouting$findThisRouting, inputInfo, outputBurden, fArray, idToPos);
+		return _Utils_Tuple2(
+			A3($author$project$LineRouting$setOutputBurden, outputBurden, inputInfo.outputId, thisRouting),
+			A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, thisRouting, isLeft));
+	});
+var $author$project$LineRouting$getOutputBurden = F2(
+	function (outputBurden, id) {
+		var _v0 = A2($elm$core$Dict$get, id, outputBurden);
+		if (_v0.$ === 'Nothing') {
+			return 0;
+		} else {
+			var burden = _v0.a;
+			return burden;
+		}
+	});
+var $author$project$LineRouting$existingBurdenOne = F4(
+	function (inputInfo, burden, lineRouting, isLeft) {
+		var _v0 = A2($author$project$LineRouting$getOutputBurden, burden, inputInfo.outputId);
+		if (!_v0) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var value = _v0;
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, value, isLeft));
+		}
+	});
+var $author$project$LineRouting$isDirectlyAbove = F2(
+	function (inputInfo, idToPos) {
+		var _v0 = A2($elm$core$Dict$get, inputInfo.call.id, idToPos);
+		if (_v0.$ === 'Just') {
+			var inputPos = _v0.a;
+			if (inputInfo.outputId < 0) {
+				return !inputPos;
+			} else {
+				var _v1 = A2($elm$core$Dict$get, inputInfo.outputId, idToPos);
+				if (_v1.$ === 'Just') {
+					var outputPos = _v1.a;
+					return _Utils_eq(inputPos, outputPos + 1);
+				} else {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+	});
+var $author$project$LineRouting$existingBurden = F5(
+	function (inputInfo, burdenLeft, burdenRight, lineRouting, idToPos) {
+		if (A2($author$project$LineRouting$isDirectlyAbove, inputInfo, idToPos)) {
+			return $elm$core$Maybe$Just(
+				A4($author$project$LineRouting$setLineRouting, lineRouting, inputInfo, 0, true));
+		} else {
+			var _v0 = A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenLeft, lineRouting, true);
+			if (_v0.$ === 'Just') {
+				var newRouting = _v0.a;
+				return $elm$core$Maybe$Just(newRouting);
+			} else {
+				return A4($author$project$LineRouting$existingBurdenOne, inputInfo, burdenRight, lineRouting, false);
+			}
+		}
+	});
+var $author$project$LineRouting$buildLineRouting = F7(
+	function (fArray, ordering, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos, isLeft) {
+		buildLineRouting:
+		while (true) {
+			if (!ordering.b) {
+				return lineRouting;
+			} else {
+				var inputInfo = ordering.a;
+				var rest = ordering.b;
+				var _v1 = A5($author$project$LineRouting$existingBurden, inputInfo, outputBurdenLeft, outputBurdenRight, lineRouting, idToPos);
+				if (_v1.$ === 'Just') {
+					var newLineRouting = _v1.a;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = outputBurdenLeft,
+						$temp$outputBurdenRight = outputBurdenRight,
+						$temp$lineRouting = newLineRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
+				} else {
+					var otherBurden = (!isLeft) ? outputBurdenLeft : outputBurdenRight;
+					var currentBurden = isLeft ? outputBurdenLeft : outputBurdenRight;
+					var _v2 = A6($author$project$LineRouting$addLineRouting, inputInfo, currentBurden, lineRouting, fArray, idToPos, isLeft);
+					var newBurden = _v2.a;
+					var newRouting = _v2.b;
+					var newLeft = isLeft ? newBurden : outputBurdenLeft;
+					var newRight = (!isLeft) ? newBurden : outputBurdenRight;
+					var $temp$fArray = fArray,
+						$temp$ordering = rest,
+						$temp$outputBurdenLeft = newLeft,
+						$temp$outputBurdenRight = newRight,
+						$temp$lineRouting = newRouting,
+						$temp$idToPos = idToPos,
+						$temp$isLeft = !isLeft;
+					fArray = $temp$fArray;
+					ordering = $temp$ordering;
+					outputBurdenLeft = $temp$outputBurdenLeft;
+					outputBurdenRight = $temp$outputBurdenRight;
+					lineRouting = $temp$lineRouting;
+					idToPos = $temp$idToPos;
+					isLeft = $temp$isLeft;
+					continue buildLineRouting;
+				}
+			}
+		}
+	});
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $author$project$LineRouting$byOutput = F2(
+	function (idToPos, element) {
+		var _v0 = A2($elm$core$Dict$get, element.call.id, idToPos);
+		if (_v0.$ === 'Just') {
+			var callPos = _v0.a;
+			var _v1 = A2($elm$core$Dict$get, element.outputId, idToPos);
+			if (_v1.$ === 'Just') {
+				var pos = _v1.a;
+				return _Utils_Tuple2(-pos, -callPos);
+			} else {
+				return _Utils_Tuple2(-element.outputId, -callPos);
+			}
+		} else {
+			return _Utils_Tuple2(1, 1);
+		}
+	});
+var $author$project$LineRouting$InputInfo = F3(
+	function (call, index, outputId) {
+		return {call: call, index: index, outputId: outputId};
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$LineRouting$getCallOrderedInputs = F2(
+	function (funcId, call) {
+		return A2(
+			$elm$core$List$filterMap,
+			function (inputPair) {
+				var _v0 = inputPair.a;
+				switch (_v0.$) {
+					case 'Output':
+						var outputId = _v0.a;
+						return $elm$core$Maybe$Just(
+							A3($author$project$LineRouting$InputInfo, call, inputPair.b, outputId));
+					case 'FunctionArg':
+						var index = _v0.a;
+						return $elm$core$Maybe$Just(
+							A3($author$project$LineRouting$InputInfo, call, inputPair.b, (-index) - 1));
+					default:
+						return $elm$core$Maybe$Nothing;
+				}
+			},
+			A3(
+				$elm$core$List$map2,
+				$elm$core$Tuple$pair,
+				call.inputs,
+				A2(
+					$elm$core$List$range,
+					0,
+					$elm$core$List$length(call.inputs) - 1)));
+	});
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$LineRouting$getOutputOrdering = F2(
+	function (func, idToPos) {
+		return A2(
+			$elm$core$List$sortBy,
+			$author$project$LineRouting$byOutput(idToPos),
+			A2(
+				$elm$core$List$concatMap,
+				$author$project$LineRouting$getCallOrderedInputs(func.id),
+				func.calls));
+	});
+var $author$project$LineRouting$getLineRouting = function (func) {
+	var idToPos = A3($author$project$ModelHelpers$idToPosition, func, $elm$core$Dict$empty, 0);
+	var ordering = A2($author$project$LineRouting$getOutputOrdering, func, idToPos);
+	var funcArray = $elm$core$Array$fromList(func.calls);
+	return A7($author$project$LineRouting$buildLineRouting, funcArray, ordering, $elm$core$Dict$empty, $elm$core$Dict$empty, $elm$core$Dict$empty, idToPos, true);
+};
+var $author$project$ViewStructure$getMaxBlockBottom = function (blockPositions) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, blockpos, acc) {
+				return A2($elm$core$Basics$max, blockpos.ypos + $author$project$ViewVariables$blockHeight, acc);
+			}),
+		0,
+		blockPositions);
+};
+var $author$project$ViewStructure$getMaxBlockWidth = F2(
+	function (blockPositions, topBlock) {
+		return A3(
+			$elm$core$Dict$foldr,
+			F3(
+				function (key, blockpos, acc) {
+					return A2($elm$core$Basics$max, blockpos.width, acc);
+				}),
+			topBlock.width,
+			blockPositions);
+	});
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$LineRouting$maybeMax = function (subroute) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$elm$core$List$maximum(
+			A2(
+				$elm$core$List$map,
+				$elm$core$Maybe$withDefault(0),
+				$elm$core$Array$toList(subroute))));
+};
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$LineRouting$getMaxLine = function (routing) {
+	return A2(
+		$elm$core$Basics$max,
+		0,
+		A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2(
+					$elm$core$List$map,
+					$author$project$LineRouting$maybeMax,
+					$elm$core$Dict$values(routing)))));
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$LineRouting$maybeMin = function (subroute) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$elm$core$List$minimum(
+			A2(
+				$elm$core$List$map,
+				$elm$core$Maybe$withDefault(0),
+				$elm$core$Array$toList(subroute))));
+};
+var $author$project$LineRouting$getMinLine = function (routing) {
+	return A2(
+		$elm$core$Basics$min,
+		0,
+		A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2(
+					$elm$core$List$map,
+					$author$project$LineRouting$maybeMin,
+					$elm$core$Dict$values(routing)))));
+};
+var $author$project$ViewStructure$getViewStructure = F8(
+	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, maybeMoveInfo, isToolbar) {
+		var blockTuple = A5($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo);
+		var sortedFunc = blockTuple.a;
+		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
+		var leftWidth = (-$author$project$LineRouting$getMinLine(lineRouting)) * $author$project$ViewVariables$lineXSpace;
+		var topBlockPosition = A3($author$project$ViewStructure$getHeaderBlockPos, func, xoffset + leftWidth, yoffset);
+		var rightWidth = $author$project$LineRouting$getMaxLine(lineRouting) * $author$project$ViewVariables$lineXSpace;
+		var blockPositionsWithoutLeftWidth = blockTuple.b;
+		var blockPositions = A3($author$project$ViewStructure$fixLeftForMoveInfo, blockPositionsWithoutLeftWidth, maybeMoveInfo, leftWidth);
+		var funcHeight = $author$project$ViewStructure$getMaxBlockBottom(blockPositions);
+		var maxWidth = A2($author$project$ViewStructure$getMaxBlockWidth, blockPositions, topBlockPosition);
+		var totalWidth = (leftWidth + rightWidth) + maxWidth;
+		return $author$project$ViewStructure$ViewStructure(blockPositions)(lineRouting)(sortedFunc)(sortedFunc.id)(topBlockPosition)(maxWidth)(totalWidth)(funcHeight)(mouseState)(svgScreenWidth)(svgScreenHeight)(isToolbar);
+	});
+var $author$project$DrawToolbar$drawToolbar = F4(
+	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
+		var viewStructure = A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, true);
+		return A3(
+			$author$project$DrawToolbar$ToolResult,
+			viewStructure.funcWidth,
+			viewStructure.funcHeight,
+			$author$project$DrawFunc$drawFuncWithConnections(viewStructure));
+	});
+var $author$project$ViewVariables$functionXSpacing = 25;
+var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$functionXSpacing;
+var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
+var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
+var $author$project$ViewPositions$selectedFunc = F5(
+	function (mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset) {
+		var view = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, false);
+		var oldPos = view.headerPos;
+		var mouseCoordinates = A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgWindowWidth, svgWindowHeight, 0, 0);
+		var xpos = mouseCoordinates.a - mouseOffset.a;
+		var ypos = mouseCoordinates.b - mouseOffset.b;
+		var newPos = _Utils_update(
+			oldPos,
+			{xpos: xpos, ypos: ypos});
+		return _Utils_update(
+			view,
+			{headerPos: newPos});
+	});
+var $author$project$ViewPositions$getSelected = F3(
+	function (mouseState, svgWindowWidth, svgWindowHeight) {
+		var _v0 = mouseState.mouseSelection;
+		if (_v0.$ === 'FunctionSelected') {
+			var func = _v0.a;
+			var mouseOffset = _v0.b;
+			return $elm$core$Maybe$Just(
+				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$ViewStructure$MovedBlockInfo = F2(
+	function (movedCall, movedPos) {
+		return {movedCall: movedCall, movedPos: movedPos};
+	});
+var $author$project$ViewStructure$maybeMovedInfo = F3(
+	function (mouseState, svgScreenWidth, svgScreenHeight) {
+		var _v0 = mouseState.mouseSelection;
+		if (_v0.$ === 'BlockSelected') {
+			var funcId = _v0.a;
+			var call = _v0.b;
+			var mouseOffset = _v0.c;
+			return $elm$core$Maybe$Just(
+				A2(
+					$author$project$ViewStructure$MovedBlockInfo,
+					call,
+					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$ViewPositions$getCurrentMoveInfo = F4(
+	function (maybeMoved, rest, xpos, testStructure) {
+		if (maybeMoved.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var moveI = maybeMoved.a;
+			if (!rest.b) {
+				return $elm$core$Maybe$Just(moveI);
+			} else {
+				return (_Utils_cmp(moveI.movedPos.a, xpos + testStructure.funcWidth) < 1) ? $elm$core$Maybe$Just(moveI) : $elm$core$Maybe$Nothing;
+			}
+		}
+	});
+var $author$project$ViewPositions$recursivePosition = F8(
+	function (xpos, ypos, maybeSelected, maybeMoved, mouseState, svgWindowWidth, svgWindowHeight, onion) {
+		if (!onion.b) {
+			if (maybeSelected.$ === 'Nothing') {
+				return _List_Nil;
+			} else {
+				var selected = maybeSelected.a;
+				return _List_fromArray(
+					[selected]);
+			}
+		} else {
+			var func = onion.a;
+			var rest = onion.b;
+			var testStructure = A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, $elm$core$Maybe$Nothing, false);
+			var newy = ypos;
+			var currentMoveInfo = A4($author$project$ViewPositions$getCurrentMoveInfo, maybeMoved, rest, xpos, testStructure);
+			var newMoveInfo = function () {
+				if (currentMoveInfo.$ === 'Nothing') {
+					return maybeMoved;
+				} else {
+					var moveInfo = currentMoveInfo.a;
+					return $elm$core$Maybe$Nothing;
+				}
+			}();
+			var newStructure = function () {
+				if (currentMoveInfo.$ === 'Nothing') {
+					return testStructure;
+				} else {
+					var moveInfo = currentMoveInfo.a;
+					return A8($author$project$ViewStructure$getViewStructure, func, mouseState, svgWindowWidth, svgWindowHeight, xpos, ypos, currentMoveInfo, false);
+				}
+			}();
+			var isSelected = function () {
+				if (maybeSelected.$ === 'Nothing') {
+					return false;
+				} else {
+					var selected = maybeSelected.a;
+					return _Utils_cmp(selected.headerPos.xpos, xpos + newStructure.funcWidth) < 1;
+				}
+			}();
+			var newMaybeSelected = isSelected ? $elm$core$Maybe$Nothing : maybeSelected;
+			var recurList = isSelected ? onion : rest;
+			var newW = function () {
+				if (isSelected) {
+					if (maybeSelected.$ === 'Just') {
+						var selected = maybeSelected.a;
+						return selected.funcWidth;
+					} else {
+						return 0;
+					}
+				} else {
+					return newStructure.funcWidth;
+				}
+			}();
+			var newx = (xpos + newW) + $author$project$ViewVariables$functionXSpacing;
+			var recurrance = A8($author$project$ViewPositions$recursivePosition, newx, newy, newMaybeSelected, newMoveInfo, mouseState, svgWindowWidth, svgWindowHeight, recurList);
+			if (isSelected) {
+				if (maybeSelected.$ === 'Just') {
+					var selected = maybeSelected.a;
+					return A2($elm$core$List$cons, selected, recurrance);
+				} else {
+					return recurrance;
+				}
+			} else {
+				return A2($elm$core$List$cons, newStructure, recurrance);
+			}
+		}
+	});
+var $author$project$ViewPositions$getViewStructures = F6(
+	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
+		var selected = A3($author$project$ViewPositions$getSelected, mouseState, svgWindowWidth, svgWindowHeight);
+		var moved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
+		return A8($author$project$ViewPositions$recursivePosition, $author$project$ViewVariables$funcInitialX + xoffset, $author$project$ViewVariables$funcInitialY + yoffset, selected, moved, mouseState, svgWindowWidth, svgWindowHeight, onion);
+	});
+var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
+	return (windowHeight - $author$project$ViewVariables$svgYpos) - $author$project$ViewVariables$buttonHeight;
+};
+var $author$project$ViewVariables$scrollbarWidth = 40;
+var $author$project$ViewVariables$toSvgWindowWidth = function (windowWidth) {
+	return windowWidth - ($author$project$ViewVariables$scrollbarWidth + 1);
+};
+var $author$project$Update$programDropped = function (model) {
+	var svgW = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
+	var svgH = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
+	var toolbar = A4($author$project$DrawToolbar$drawToolbar, model.program, model.mouseState, svgW, svgH);
+	var viewStructures = A6($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, toolbar.width, 0);
+	return A2(
+		$elm$core$List$map,
+		function ($) {
+			return $.sortedFunc;
+		},
+		viewStructures);
+};
+var $author$project$Update$modelBlockDropped = F2(
+	function (model, call) {
+		var oldMouse = model.mouseState;
+		var newProgram = $author$project$ModelHelpers$fixAllInvalidInputs(
+			$author$project$Update$programDropped(model));
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$NameSelected(call.id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Model$nodeNameId(call.id)));
+	});
+var $author$project$Update$modelFunctionDropped = F2(
+	function (model, func) {
+		var oldMouse = model.mouseState;
+		var newProgram = $author$project$Update$programDropped(model);
+		var newMouse = _Utils_update(
+			oldMouse,
+			{
+				mouseSelection: $author$project$Model$FunctionNameSelected(func.id)
+			});
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{mouseState: newMouse, program: newProgram}),
+			$author$project$Update$focusInputCommand(
+				$author$project$Model$headerNameId(func.id)));
+	});
+var $author$project$Update$modelMouseRelease = function (model) {
+	var _v0 = model.mouseState.mouseSelection;
+	switch (_v0.$) {
+		case 'BlockSelected':
+			var funcId = _v0.a;
+			var call = _v0.b;
+			return A2($author$project$Update$modelBlockDropped, model, call);
+		case 'FunctionSelected':
+			var func = _v0.a;
+			var mouseOffset = _v0.b;
+			return A2($author$project$Update$modelFunctionDropped, model, func);
+		default:
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Model$ErrorBox = function (error) {
+	return {error: error};
+};
+var $author$project$Update$modelWithError = F2(
+	function (model, errorString) {
+		return _Utils_update(
+			model,
+			{
+				errorBoxMaybe: $elm$core$Maybe$Just(
+					$author$project$Model$ErrorBox(errorString))
+			});
+	});
+var $author$project$Compiler$CompModel$Begin = function (a) {
+	return {$: 'Begin', a: a};
+};
+var $author$project$Compiler$CompModel$VarDeclaration = F2(
+	function (a, b) {
+		return {$: 'VarDeclaration', a: a, b: b};
+	});
+var $author$project$Utils$splitLast = function (func) {
+	if (!func.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		if (!func.b.b) {
+			var a = func.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(_List_Nil, a));
+		} else {
+			var c = func.a;
+			var cs = func.b;
+			var _v1 = $author$project$Utils$splitLast(cs);
+			if (_v1.$ === 'Just') {
+				var _v2 = _v1.a;
+				var rest = _v2.a;
+				var _final = _v2.b;
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$List$cons, c, rest),
+						_final));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		}
+	}
+};
+var $author$project$Compiler$ASTToJavascript$aSTToJavascript = function (astArgument) {
+	switch (astArgument.$) {
+		case 'Empty':
+			return '';
+		case 'Lit':
+			var str = astArgument.a;
+			return str;
+		case 'Object':
+			var fields = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptObject(fields);
+		case 'CopySet':
+			var object = astArgument.a;
+			var fields = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptCopySet, object, fields);
+		case 'Get':
+			var object = astArgument.a;
+			var field = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptGet, object, field);
+		case 'Set':
+			var object = astArgument.a;
+			var field = astArgument.b;
+			var value = astArgument.c;
+			return A3($author$project$Compiler$ASTToJavascript$javascriptSet, object, field, value);
+		case 'Arr':
+			var elements = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptArray(elements);
+		case 'ArrRef':
+			var array = astArgument.a;
+			var pos = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptArrayRef, array, pos);
+		case 'Begin':
+			var commands = astArgument.a;
+			return $author$project$Compiler$ASTToJavascript$javascriptBegin(commands);
+		case 'Let':
+			var vars = astArgument.a;
+			var body = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptLet, vars, body);
+		case 'CallFunction':
+			var funcName = astArgument.a;
+			var args = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(funcName),
+						'(',
+						$author$project$Compiler$ASTToJavascript$javascriptCommas(args),
+						')'
+					]));
+		case 'Function':
+			var argNames = astArgument.a;
+			var body = astArgument.b;
+			return A2($author$project$Compiler$ASTToJavascript$javascriptFunction, argNames, body);
+		case 'For':
+			var _var = astArgument.a;
+			var check = astArgument.b;
+			var increment = astArgument.c;
+			var body = astArgument.d;
+			return A4($author$project$Compiler$ASTToJavascript$javascriptFor, _var, check, increment, body);
+		case 'VarDeclaration':
+			var varName = astArgument.a;
+			var varBody = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						'let',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
+						'=',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
+					]));
+		case 'VarSet':
+			var varName = astArgument.a;
+			var varBody = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				' ',
+				_List_fromArray(
+					[
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varName),
+						'=',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(varBody)
+					]));
+		case 'CachePush':
+			var ast = astArgument.a;
+			return 'cache.push(' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(ast) + ')');
+		case 'CacheUpdate':
+			var index = astArgument.a;
+			var ast = astArgument.b;
+			return A2(
+				$elm$core$String$join,
+				'',
+				_List_fromArray(
+					[
+						'cache[',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(index),
+						']',
+						' = ',
+						$author$project$Compiler$ASTToJavascript$aSTToJavascript(ast)
+					]));
+		case 'CacheRef':
+			var index = astArgument.a;
+			return 'cache[' + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(index) + ']');
+		case 'If':
+			var cond = astArgument.a;
+			var thenCase = astArgument.b;
+			var elseCase = astArgument.c;
+			return A3($author$project$Compiler$ASTToJavascript$javascriptIf, cond, thenCase, elseCase);
+		case 'Unary':
+			var op = astArgument.a;
+			var args = astArgument.b;
+			return '(' + (A2(
+				$elm$core$String$join,
+				op,
+				A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args)) + ')');
+		default:
+			var op = astArgument.a;
+			var arg = astArgument.b;
+			return '(' + (op + ($author$project$Compiler$ASTToJavascript$aSTToJavascript(arg) + ')'));
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptArray = function (elements) {
+	return '[' + (A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, elements)) + ']');
+};
+var $author$project$Compiler$ASTToJavascript$javascriptArrayRef = F2(
+	function (array, pos) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(array),
+					'[',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(pos),
+					']'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptBegin = function (commands) {
+	var _v1 = $author$project$Utils$splitLast(commands);
+	if (_v1.$ === 'Just') {
+		var _v2 = _v1.a;
+		var beforeFinal = _v2.a;
+		var _final = _v2.b;
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'(function(){',
+					A2(
+					$elm$core$String$join,
+					';',
+					A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, beforeFinal)),
+					';',
+					function () {
+					switch (_final.$) {
+						case 'VarSet':
+							return '';
+						case 'VarDeclaration':
+							return '';
+						default:
+							return 'return ';
+					}
+				}(),
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_final),
+					'}())'
+				]));
+	} else {
+		return '';
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptCommas = function (args) {
+	return A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$aSTToJavascript, args));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptCopyObject = function (objectAst) {
+	return A2(
+		$elm$core$String$join,
+		'',
+		_List_fromArray(
+			[
+				'Object.assign({},',
+				$author$project$Compiler$ASTToJavascript$aSTToJavascript(objectAst),
+				')'
+			]));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptCopySet = F2(
+	function (object, fields) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'Object.assign(',
+					$author$project$Compiler$ASTToJavascript$javascriptCopyObject(object),
+					',',
+					$author$project$Compiler$ASTToJavascript$javascriptObject(fields),
+					')'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptElse = function (elseCase) {
+	var _v0 = $author$project$Compiler$ASTToJavascript$aSTToJavascript(elseCase);
+	if (_v0 === '') {
+		return '';
+	} else {
+		var str = _v0;
+		return 'else { return ' + (str + '}');
+	}
+};
+var $author$project$Compiler$ASTToJavascript$javascriptField = function (field) {
+	return A2(
+		$elm$core$String$join,
+		':',
+		_List_fromArray(
+			[
+				field.a,
+				$author$project$Compiler$ASTToJavascript$aSTToJavascript(field.b)
+			]));
+};
+var $author$project$Compiler$ASTToJavascript$javascriptFor = F4(
+	function (_var, check, increment, body) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'(function() { for(',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(_var),
+					';',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(check),
+					';',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(increment),
+					') {',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
+					'}}())'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptFunction = F2(
+	function (argNames, body) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'function(',
+					A2($elm$core$String$join, ',', argNames),
+					'){',
+					'return ',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(body),
+					'}'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptGet = F2(
+	function (object, field) {
+		return A2(
+			$elm$core$String$join,
+			'.',
+			_List_fromArray(
+				[
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field)
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptIf = F3(
+	function (bool, thenCase, elseCase) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					'(function() { if(',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(bool),
+					') {',
+					'return ',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(thenCase),
+					'}',
+					$author$project$Compiler$ASTToJavascript$javascriptElse(elseCase),
+					'}())'
+				]));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptLet = F2(
+	function (vars, body) {
+		return $author$project$Compiler$ASTToJavascript$aSTToJavascript(
+			$author$project$Compiler$CompModel$Begin(
+				_Utils_ap(
+					A2(
+						$elm$core$List$map,
+						function (_var) {
+							return A2(
+								$author$project$Compiler$CompModel$VarDeclaration,
+								$author$project$Compiler$CompModel$Lit(_var.a),
+								_var.b);
+						},
+						vars),
+					_List_fromArray(
+						[body]))));
+	});
+var $author$project$Compiler$ASTToJavascript$javascriptObject = function (fields) {
+	return '{' + (A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $author$project$Compiler$ASTToJavascript$javascriptField, fields)) + '}');
+};
+var $author$project$Compiler$ASTToJavascript$javascriptSet = F3(
+	function (object, field, value) {
+		return A2(
+			$elm$core$String$join,
+			'',
+			_List_fromArray(
+				[
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(object),
+					'.',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(field),
+					' = ',
+					$author$project$Compiler$ASTToJavascript$aSTToJavascript(value)
+				]));
+	});
+var $author$project$Compiler$CompModel$CacheRef = function (a) {
+	return {$: 'CacheRef', a: a};
+};
+var $author$project$Compiler$CompModel$CacheUpdate = F2(
+	function (a, b) {
+		return {$: 'CacheUpdate', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$Function = F2(
+	function (a, b) {
+		return {$: 'Function', a: a, b: b};
+	});
+var $author$project$Compiler$CompileFunction$getValueFunctionAST = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('getValueAt'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['cache', 'cacheI']),
+		A2(
+			$author$project$Compiler$CompModel$Let,
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'val',
+					A2(
+						$author$project$Compiler$CompModel$CallFunction,
+						$author$project$Compiler$CompModel$CacheRef(
+							$author$project$Compiler$CompModel$Lit('cacheI')),
+						_List_Nil))
+				]),
+			$author$project$Compiler$CompModel$Begin(
+				_List_fromArray(
+					[
+						A2(
+						$author$project$Compiler$CompModel$CacheUpdate,
+						$author$project$Compiler$CompModel$Lit('cacheI'),
+						A2(
+							$author$project$Compiler$CompModel$Function,
+							_List_Nil,
+							$author$project$Compiler$CompModel$Lit('val'))),
+						$author$project$Compiler$CompModel$Lit('val')
+					])))));
+var $author$project$Compiler$CompModel$Object = function (a) {
+	return {$: 'Object', a: a};
+};
+var $author$project$Compiler$CompileToAST$globals = _List_fromArray(
+	[
+		A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Lit('startTime'),
+		$author$project$Compiler$CompModel$Lit('getTime()')),
+		A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Lit('functions'),
+		$author$project$Compiler$CompModel$Object(_List_Nil))
+	]);
+var $author$project$Compiler$CompModel$VarSet = F2(
+	function (a, b) {
+		return {$: 'VarSet', a: a, b: b};
+	});
+var $author$project$Compiler$CompileToAST$initialVariables = _List_fromArray(
+	[
+		A2(
+		$author$project$Compiler$CompModel$VarSet,
+		$author$project$Compiler$CompModel$Lit('time'),
+		A2(
+			$author$project$Compiler$CompModel$Unary,
+			'-',
+			_List_fromArray(
+				[
+					$author$project$Compiler$CompModel$Lit('getTime()'),
+					$author$project$Compiler$CompModel$Lit('startTime')
+				])))
+	]);
+var $author$project$Compiler$CompileToAST$varSetToVarDec = function (ast) {
+	if (ast.$ === 'VarSet') {
+		var a = ast.a;
+		var b = ast.b;
+		return A2($author$project$Compiler$CompModel$VarDeclaration, a, b);
+	} else {
+		return A2(
+			$author$project$Compiler$CompModel$VarDeclaration,
+			$author$project$Compiler$CompModel$Lit('bad'),
+			$author$project$Compiler$CompModel$Lit('shouldnothappen'));
+	}
+};
+var $author$project$Compiler$CompileToAST$initialVariablesDeclaration = A2($elm$core$List$map, $author$project$Compiler$CompileToAST$varSetToVarDec, $author$project$Compiler$CompileToAST$initialVariables);
+var $author$project$Compiler$Song$litFunc = function (lit) {
+	return A2($author$project$Compiler$CompModel$Function, _List_Nil, lit);
+};
+var $author$project$Compiler$CompModel$maximum = function (args) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		$author$project$Compiler$CompModel$Lit('Math.max'),
+		args);
+};
+var $author$project$Compiler$Song$songType = $author$project$Compiler$CompModel$Lit('\'song\'');
+var $author$project$Compiler$CompModel$sum = function (args) {
+	return A2($author$project$Compiler$CompModel$Unary, '+', args);
+};
+var $author$project$Compiler$Song$appendFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('append'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['song1', 'song2']),
+		$author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
+					_Utils_Tuple2(
+					'children',
+					$author$project$Compiler$CompModel$Arr(
+						_List_fromArray(
+							[
+								$author$project$Compiler$Song$litFunc(
+								$author$project$Compiler$CompModel$Lit('song1')),
+								$author$project$Compiler$Song$litFunc(
+								A2(
+									$author$project$Compiler$CompModel$CopySet,
+									$author$project$Compiler$CompModel$Lit('song2'),
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'time',
+											$author$project$Compiler$CompModel$sum(
+												_List_fromArray(
+													[
+														A2(
+														$author$project$Compiler$CompModel$getLit,
+														$author$project$Compiler$CompModel$Lit('song2'),
+														'time'),
+														A2(
+														$author$project$Compiler$CompModel$getLit,
+														$author$project$Compiler$CompModel$Lit('song1'),
+														'anchor')
+													])))
+										])))
+							]))),
+					_Utils_Tuple2(
+					'time',
+					$author$project$Compiler$CompModel$litInt(0)),
+					_Utils_Tuple2(
+					'anchor',
+					$author$project$Compiler$CompModel$sum(
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song1'),
+								'anchor'),
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song2'),
+								'anchor')
+							]))),
+					_Utils_Tuple2(
+					'duration',
+					$author$project$Compiler$CompModel$maximum(
+						_List_fromArray(
+							[
+								A2(
+								$author$project$Compiler$CompModel$getLit,
+								$author$project$Compiler$CompModel$Lit('song1'),
+								'duration'),
+								$author$project$Compiler$CompModel$sum(
+								_List_fromArray(
+									[
+										A2(
+										$author$project$Compiler$CompModel$getLit,
+										$author$project$Compiler$CompModel$Lit('song2'),
+										'duration'),
+										A2(
+										$author$project$Compiler$CompModel$getLit,
+										$author$project$Compiler$CompModel$Lit('song2'),
+										'time')
+									]))
+							])))
+				]))));
+var $author$project$Compiler$Song$joinFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('join'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['song1', 'song2']),
+		A3(
+			$author$project$Compiler$CompModel$If,
+			A2(
+				$author$project$Compiler$CompModel$Unary,
+				'>',
+				_List_fromArray(
+					[
+						$author$project$Compiler$Song$getAnchor(
+						$author$project$Compiler$CompModel$Lit('song1')),
+						$author$project$Compiler$Song$getAnchor(
+						$author$project$Compiler$CompModel$Lit('song2'))
+					])),
+			A2(
+				$author$project$Compiler$Song$append,
+				A2(
+					$author$project$Compiler$CompModel$CopySet,
+					$author$project$Compiler$CompModel$Lit('song2'),
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'anchor',
+							$author$project$Compiler$CompModel$litInt(0))
+						])),
+				$author$project$Compiler$CompModel$Lit('song1')),
+			A2(
+				$author$project$Compiler$Song$append,
+				A2(
+					$author$project$Compiler$CompModel$CopySet,
+					$author$project$Compiler$CompModel$Lit('song1'),
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'anchor',
+							$author$project$Compiler$CompModel$litInt(0))
+						])),
+				$author$project$Compiler$CompModel$Lit('song2')))));
+var $author$project$Compiler$Note$noteType = $author$project$Compiler$CompModel$Lit('\'note\'');
+var $author$project$Compiler$Note$makeNote = F2(
+	function (frequency, volume) {
+		return $author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Note$noteType),
+					_Utils_Tuple2('frequency', frequency),
+					_Utils_Tuple2('volume', volume)
+				]));
+	});
+var $author$project$Compiler$Song$noteSongFunc = A2(
+	$author$project$Compiler$CompModel$VarDeclaration,
+	$author$project$Compiler$CompModel$Lit('noteSong'),
+	A2(
+		$author$project$Compiler$CompModel$Function,
+		_List_fromArray(
+			['time', 'frequency', 'duration']),
+		$author$project$Compiler$CompModel$Object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2('type', $author$project$Compiler$Song$songType),
+					_Utils_Tuple2(
+					'children',
+					$author$project$Compiler$CompModel$Arr(
+						_List_fromArray(
+							[
+								$author$project$Compiler$Song$litFunc(
+								A2(
+									$author$project$Compiler$Note$makeNote,
+									$author$project$Compiler$CompModel$Lit('frequency'),
+									$author$project$Compiler$CompModel$litFloat(1)))
+							]))),
+					_Utils_Tuple2(
+					'time',
+					$author$project$Compiler$CompModel$Lit('time')),
+					_Utils_Tuple2(
+					'anchor',
+					$author$project$Compiler$CompModel$Lit('duration')),
+					_Utils_Tuple2(
+					'duration',
+					$author$project$Compiler$CompModel$Lit('duration'))
+				]))));
+var $author$project$Compiler$Song$javascriptFuncs = _List_fromArray(
+	[$author$project$Compiler$Song$appendFunc, $author$project$Compiler$Song$noteSongFunc, $author$project$Compiler$Song$joinFunc]);
+var $author$project$Compiler$CompileToAST$astHead = A2(
+	$elm$core$List$cons,
+	$author$project$Compiler$CompileFunction$getValueFunctionAST,
+	_Utils_ap(
+		$author$project$Compiler$CompileToAST$globals,
+		_Utils_ap($author$project$Compiler$CompileToAST$initialVariablesDeclaration, $author$project$Compiler$Song$javascriptFuncs)));
+var $author$project$Compiler$CompModel$Set = F3(
+	function (a, b, c) {
+		return {$: 'Set', a: a, b: b, c: c};
+	});
+var $author$project$Compiler$CompileFunction$buildArgs = function (method) {
+	return A2(
+		$elm$core$List$map,
+		function (index) {
+			return $author$project$Compiler$CompModel$argName(index);
+		},
+		A2($elm$core$List$range, 0, method.argCount - 1));
+};
+var $author$project$Compiler$CompModel$CachePush = function (a) {
+	return {$: 'CachePush', a: a};
+};
+var $author$project$Compiler$CompileFunction$compileExpr = F2(
+	function (expr, entireMethod) {
+		return $author$project$Compiler$CompModel$CachePush(
+			A2(
+				$author$project$Compiler$CompModel$Function,
+				_List_Nil,
+				function () {
+					var _v0 = expr.compileExprFunction;
+					var func = _v0.a;
+					return func(expr);
+				}()));
+	});
+var $author$project$Compiler$CompileFunction$functionEnd = function (method) {
+	return $author$project$Compiler$CompileFunction$getCacheValue(
+		$author$project$Compiler$CompModel$litInt(
+			$elm$core$List$length(method.exprs) - 1));
+};
+var $author$project$Compiler$CompileFunction$compileExprs = F2(
+	function (method, entireMethod) {
+		if (!method.b) {
+			return _List_Nil;
+		} else {
+			if (!method.b.b) {
+				var expr = method.a;
+				return _List_fromArray(
+					[
+						A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
+						$author$project$Compiler$CompileFunction$functionEnd(entireMethod)
+					]);
+			} else {
+				var expr = method.a;
+				var exprs = method.b;
+				return A2(
+					$elm$core$List$cons,
+					A2($author$project$Compiler$CompileFunction$compileExpr, expr, entireMethod),
+					A2($author$project$Compiler$CompileFunction$compileExprs, exprs, entireMethod));
+			}
+		}
+	});
+var $author$project$Compiler$CompileFunction$functionStart = function (method) {
+	return A2(
+		$author$project$Compiler$CompModel$VarDeclaration,
+		$author$project$Compiler$CompModel$Lit('cache'),
+		$author$project$Compiler$CompModel$Arr(_List_Nil));
+};
+var $author$project$Compiler$CompileFunction$compileFunction = function (method) {
+	return A2(
+		$author$project$Compiler$CompModel$Function,
+		$author$project$Compiler$CompileFunction$buildArgs(method),
+		$author$project$Compiler$CompModel$Begin(
+			A2(
+				$elm$core$List$cons,
+				$author$project$Compiler$CompileFunction$functionStart(method),
+				A2($author$project$Compiler$CompileFunction$compileExprs, method.exprs, method))));
+};
+var $author$project$Compiler$CompileToAST$compileOneFunction = function (funcTuple) {
+	return A3(
+		$author$project$Compiler$CompModel$Set,
+		$author$project$Compiler$CompModel$Lit('functions'),
+		$author$project$Compiler$CompModel$Lit(funcTuple.a),
+		$author$project$Compiler$CompileFunction$compileFunction(funcTuple.b));
+};
+var $author$project$Compiler$CompileToAST$compileFunctions = function (compModel) {
+	return A2(
+		$elm$core$List$map,
+		$author$project$Compiler$CompileToAST$compileOneFunction,
+		$elm$core$Dict$toList(compModel));
+};
+var $author$project$Compiler$CompModel$ArrRef = F2(
+	function (a, b) {
+		return {$: 'ArrRef', a: a, b: b};
+	});
+var $author$project$Compiler$CompModel$For = F4(
+	function (a, b, c, d) {
+		return {$: 'For', a: a, b: b, c: c, d: d};
+	});
+var $author$project$Compiler$CompModel$while = F2(
+	function (condition, body) {
+		return A4($author$project$Compiler$CompModel$For, $author$project$Compiler$CompModel$Empty, condition, $author$project$Compiler$CompModel$Empty, body);
+	});
+var $author$project$Compiler$CompileBuiltIn$handleContinuations = function (ast) {
+	return $author$project$Compiler$CompModel$Begin(
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Compiler$CompModel$VarDeclaration,
+				$author$project$Compiler$CompModel$Lit('cont'),
+				ast),
+				A2(
+				$author$project$Compiler$CompModel$while,
+				A2(
+					$author$project$Compiler$CompModel$ArrRef,
+					$author$project$Compiler$CompModel$Lit('cont'),
+					$author$project$Compiler$CompModel$litInt(0)),
+				A2(
+					$author$project$Compiler$CompModel$VarSet,
+					$author$project$Compiler$CompModel$Lit('cont'),
+					A2(
+						$author$project$Compiler$CompModel$CallFunction,
+						A2(
+							$author$project$Compiler$CompModel$ArrRef,
+							$author$project$Compiler$CompModel$Lit('cont'),
+							$author$project$Compiler$CompModel$litInt(1)),
+						_List_Nil))),
+				A2(
+				$author$project$Compiler$CompModel$ArrRef,
+				$author$project$Compiler$CompModel$Lit('cont'),
+				$author$project$Compiler$CompModel$litInt(1))
+			]));
+};
+var $author$project$Compiler$CompileToAST$loopFunctionBody = $author$project$Compiler$CompModel$Begin(
+	_Utils_ap(
+		$author$project$Compiler$CompileToAST$initialVariables,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit('sleep'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Lit('4')
+					])),
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit('onTick'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Lit('state')
+					])),
+				A2(
+				$author$project$Compiler$CompModel$CallFunction,
+				$author$project$Compiler$CompModel$Lit('update'),
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$Lit('state'),
+						$author$project$Compiler$CompileBuiltIn$handleContinuations(
+						A2(
+							$author$project$Compiler$CompModel$CallFunction,
+							A2(
+								$author$project$Compiler$CompModel$Get,
+								$author$project$Compiler$CompModel$Lit('functions'),
+								$author$project$Compiler$CompModel$Lit('main')),
+							_List_Nil)),
+						$author$project$Compiler$CompModel$Lit('time')
+					]))
+			])));
+var $author$project$Compiler$CompileToAST$loopAST = A2(
+	$author$project$Compiler$CompModel$while,
+	$author$project$Compiler$CompModel$Lit('true'),
+	$author$project$Compiler$CompileToAST$loopFunctionBody);
+var $author$project$Compiler$CompileToAST$compileToAST = function (compModel) {
+	return $author$project$Compiler$CompModel$Begin(
+		_Utils_ap(
+			$author$project$Compiler$CompileToAST$astHead,
+			_Utils_ap(
+				$author$project$Compiler$CompileToAST$compileFunctions(compModel),
+				_List_fromArray(
+					[$author$project$Compiler$CompileToAST$loopAST]))));
+};
+var $author$project$Compiler$Compile$compile = function (compModel) {
+	return A2(
+		$elm$core$Debug$log,
+		'Running Program',
+		$author$project$Compiler$ASTToJavascript$aSTToJavascript(
+			$author$project$Compiler$CompileToAST$compileToAST(compModel)));
+};
+var $elm$core$Result$andThen = F2(
+	function (callback, result) {
+		if (result.$ === 'Ok') {
+			var value = result.a;
+			return callback(value);
+		} else {
+			var msg = result.a;
+			return $elm$core$Result$Err(msg);
+		}
+	});
+var $author$project$Compiler$CompModel$Method = F2(
+	function (argCount, exprs) {
+		return {argCount: argCount, exprs: exprs};
+	});
+var $author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall = function (expr) {
+	return A2(
+		$author$project$Compiler$CompModel$CallFunction,
+		A2(
+			$author$project$Compiler$CompModel$getLit,
+			$author$project$Compiler$CompModel$Lit('functions'),
+			expr.functionName),
+		A2($elm$core$List$map, $author$project$Compiler$CompileBuiltIn$buildValue, expr.children));
+};
+var $author$project$Compiler$CompileBuiltIn$buildFuncCall = function (expr) {
+	return $author$project$Compiler$CompileBuiltIn$handleContinuations(
+		$author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall(expr));
+};
+var $author$project$Compiler$CompModel$Expr = F4(
+	function (functionName, id, children, compileExprFunction) {
+		return {children: children, compileExprFunction: compileExprFunction, functionName: functionName, id: id};
+	});
+var $author$project$Compiler$OnionToExpr$dropFinalHole = function (argList) {
+	if (!argList.b) {
+		return _List_Nil;
+	} else {
+		if (!argList.b.b) {
+			var finalArg = argList.a;
+			if (finalArg.$ === 'Hole') {
+				return _List_Nil;
+			} else {
+				return argList;
+			}
+		} else {
+			var arg = argList.a;
+			var args = argList.b;
+			return A2(
+				$elm$core$List$cons,
+				arg,
+				$author$project$Compiler$OnionToExpr$dropFinalHole(args));
+		}
+	}
+};
+var $author$project$Compiler$OnionToExpr$argumentSubset = F2(
+	function (argList, inputs) {
+		if (argList.$ === 'Finite') {
+			var args = argList.a;
+			return inputs;
+		} else {
+			var args = argList.a;
+			var othername = argList.b;
+			return $author$project$Compiler$OnionToExpr$dropFinalHole(inputs);
+		}
+	});
+var $author$project$Compiler$OnionToExpr$checkCorrectNumberArguments = F2(
+	function (argList, inputs) {
+		if (argList.$ === 'Finite') {
+			var args = argList.a;
+			return _Utils_cmp(
+				$elm$core$List$length(inputs),
+				$elm$core$List$length(args)) > -1;
+		} else {
+			var args = argList.a;
+			var othername = argList.b;
+			return _Utils_cmp(
+				$elm$core$List$length(inputs),
+				$elm$core$List$length(args)) > -1;
+		}
+	});
+var $author$project$Compiler$CompModel$FArg = function (a) {
+	return {$: 'FArg', a: a};
+};
+var $author$project$Compiler$CompModel$ScriptVariable = function (a) {
+	return {$: 'ScriptVariable', a: a};
+};
+var $author$project$Compiler$CompModel$StackIndex = function (a) {
+	return {$: 'StackIndex', a: a};
+};
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Compiler$OnionToExpr$inputToValue = F2(
+	function (input, idToIndex) {
+		switch (input.$) {
+			case 'Output':
+				var output = input.a;
+				var _v1 = A2($elm$core$Dict$get, output, idToIndex);
+				if (_v1.$ === 'Just') {
+					var index = _v1.a;
+					return $elm$core$Result$Ok(
+						$author$project$Compiler$CompModel$StackIndex(index));
+				} else {
+					return $elm$core$Result$Err('Invalid input found');
+				}
+			case 'Text':
+				var text = input.a;
+				var _v2 = A2($elm$core$Dict$get, text, $author$project$BuiltIn$builtInVariables);
+				if (_v2.$ === 'Nothing') {
+					var _v3 = $elm$core$String$toFloat(text);
+					if (_v3.$ === 'Nothing') {
+						return $elm$core$Result$Err('Could not parse number');
+					} else {
+						var _float = _v3.a;
+						return $elm$core$Result$Ok(
+							$author$project$Compiler$CompModel$ConstV(_float));
+					}
+				} else {
+					switch (_v2.a.$) {
+						case 'Number':
+							var value = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$ConstV(value));
+						case 'StackReference':
+							var index = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$StackIndex(index));
+						default:
+							var varName = _v2.a.a;
+							return $elm$core$Result$Ok(
+								$author$project$Compiler$CompModel$ScriptVariable(varName));
+					}
+				}
+			case 'FunctionArg':
+				var index = input.a;
+				return $elm$core$Result$Ok(
+					$author$project$Compiler$CompModel$FArg(index));
+			default:
+				return $elm$core$Result$Err('No argument supplied to a function call');
+		}
+	});
+var $elm$core$Result$map2 = F3(
+	function (func, ra, rb) {
+		if (ra.$ === 'Err') {
+			var x = ra.a;
+			return $elm$core$Result$Err(x);
+		} else {
+			var a = ra.a;
+			if (rb.$ === 'Err') {
+				var x = rb.a;
+				return $elm$core$Result$Err(x);
+			} else {
+				var b = rb.a;
+				return $elm$core$Result$Ok(
+					A2(func, a, b));
+			}
+		}
+	});
+var $author$project$Compiler$OnionToExpr$inputsToValues = F2(
+	function (inputs, idToIndex) {
+		if (!inputs.b) {
+			return $elm$core$Result$Ok(_List_Nil);
+		} else {
+			var input = inputs.a;
+			var rest = inputs.b;
+			return A3(
+				$elm$core$Result$map2,
+				$elm$core$List$cons,
+				A2($author$project$Compiler$OnionToExpr$inputToValue, input, idToIndex),
+				A2($author$project$Compiler$OnionToExpr$inputsToValues, rest, idToIndex));
+		}
+	});
+var $author$project$Compiler$OnionToExpr$callToExprWith = F4(
+	function (call, idToIndex, argList, compileExprFunction) {
+		var filteredInputs = A2($author$project$Compiler$OnionToExpr$argumentSubset, argList, call.inputs);
+		if (A2($author$project$Compiler$OnionToExpr$checkCorrectNumberArguments, argList, filteredInputs)) {
+			var _v0 = A2($author$project$Compiler$OnionToExpr$inputsToValues, filteredInputs, idToIndex);
+			if (_v0.$ === 'Ok') {
+				var children = _v0.a;
+				return $elm$core$Result$Ok(
+					A4($author$project$Compiler$CompModel$Expr, call.functionName, call.id, children, compileExprFunction));
+			} else {
+				var e = _v0.a;
+				return $elm$core$Result$Err(e);
+			}
+		} else {
+			return $elm$core$Result$Err('Wrong number of arguments');
+		}
+	});
+var $author$project$Compiler$OnionToExpr$callToExpr = F3(
+	function (call, idToIndex, onionMap) {
+		var _v0 = A2($elm$core$Dict$get, call.functionName, $author$project$BuiltIn$builtInFunctions);
+		if (_v0.$ === 'Just') {
+			var builtIn = _v0.a;
+			return A4($author$project$Compiler$OnionToExpr$callToExprWith, call, idToIndex, builtIn.argList, builtIn.compileExprFunction);
+		} else {
+			var _v1 = A2($elm$core$Dict$get, call.functionName, onionMap);
+			if (_v1.$ === 'Just') {
+				var func = _v1.a;
+				return A4(
+					$author$project$Compiler$OnionToExpr$callToExprWith,
+					call,
+					idToIndex,
+					$author$project$ModelHelpers$funcToArgList(func),
+					$author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildFuncCall));
+			} else {
+				return $elm$core$Result$Err('Not a function name');
+			}
+		}
+	});
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $author$project$Utils$resultMap = F2(
+	function (func, list) {
+		if (!list.b) {
+			return $elm$core$Result$Ok(_List_Nil);
+		} else {
+			var first = list.a;
+			var rest = list.b;
+			return A3(
+				$elm$core$Result$map2,
+				$elm$core$List$cons,
+				func(first),
+				A2($author$project$Utils$resultMap, func, rest));
+		}
+	});
+var $elm$core$Array$length = function (_v0) {
+	var len = _v0.a;
+	return len;
+};
+var $author$project$Compiler$HandleTailRecursion$buildCont = function (expr) {
+	var _v0 = expr.compileExprFunction;
+	var func = _v0.a;
+	return $author$project$Compiler$CompModel$CompileExprFunction(
+		function (e) {
+			return $author$project$Compiler$CompModel$Arr(
+				_List_fromArray(
+					[
+						$author$project$Compiler$CompModel$false,
+						func(e)
+					]));
+		});
+};
+var $author$project$Compiler$HandleTailRecursion$normalTail = F3(
+	function (exprArr, pos, expr) {
+		return A3(
+			$elm$core$Array$set,
+			pos,
+			_Utils_update(
+				expr,
+				{
+					compileExprFunction: $author$project$Compiler$HandleTailRecursion$buildCont(expr)
+				}),
+			exprArr);
+	});
+var $author$project$Compiler$CompModel$true = $author$project$Compiler$CompModel$Lit('true');
+var $author$project$Compiler$CompileBuiltIn$buildTailFuncCall = function (expr) {
+	return $author$project$Compiler$CompModel$Arr(
+		_List_fromArray(
+			[
+				$author$project$Compiler$CompModel$true,
+				A2(
+				$author$project$Compiler$CompModel$Function,
+				_List_Nil,
+				$author$project$Compiler$CompileBuiltIn$buildLiteralFuncCall(expr))
+			]));
+};
+var $author$project$Compiler$HandleTailRecursion$tailFunc = F4(
+	function (exprArr, pos, expr, numRefs) {
+		var _v0 = A2($elm$core$Array$get, pos, numRefs);
+		if (_v0.$ === 'Just') {
+			var n = _v0.a;
+			return (n < 2) ? A3(
+				$elm$core$Array$set,
+				pos,
+				_Utils_update(
+					expr,
+					{
+						compileExprFunction: $author$project$Compiler$CompModel$CompileExprFunction($author$project$Compiler$CompileBuiltIn$buildTailFuncCall)
+					}),
+				exprArr) : A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
+		} else {
+			return A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
+		}
+	});
+var $author$project$Compiler$HandleTailRecursion$makeContinuations = F4(
+	function (exprArr, numRefs, pos, onionMap) {
+		var _v0 = A2($elm$core$Array$get, pos, exprArr);
+		if (_v0.$ === 'Nothing') {
+			return exprArr;
+		} else {
+			var expr = _v0.a;
+			var _v1 = expr.functionName;
+			if (_v1 === 'if') {
+				var _v2 = expr.children;
+				if (((_v2.b && _v2.b.b) && _v2.b.b.b) && (!_v2.b.b.b.b)) {
+					var cond = _v2.a;
+					var _v3 = _v2.b;
+					var left = _v3.a;
+					var _v4 = _v3.b;
+					var right = _v4.a;
+					var rightWrap = function () {
+						if (right.$ === 'StackIndex') {
+							var p = right.a;
+							return false;
+						} else {
+							return true;
+						}
+					}();
+					var leftWrap = function () {
+						if (left.$ === 'StackIndex') {
+							var p = left.a;
+							return false;
+						} else {
+							return true;
+						}
+					}();
+					var leftRecur = function () {
+						if (left.$ === 'StackIndex') {
+							var p = left.a;
+							return A4($author$project$Compiler$HandleTailRecursion$makeContinuations, exprArr, numRefs, p, onionMap);
+						} else {
+							return exprArr;
+						}
+					}();
+					var rightRecur = function () {
+						if (right.$ === 'StackIndex') {
+							var p = right.a;
+							return A4($author$project$Compiler$HandleTailRecursion$makeContinuations, leftRecur, numRefs, p, onionMap);
+						} else {
+							return leftRecur;
+						}
+					}();
+					return A3(
+						$elm$core$Array$set,
+						pos,
+						_Utils_update(
+							expr,
+							{
+								compileExprFunction: $author$project$Compiler$CompModel$CompileExprFunction(
+									A2($author$project$Compiler$CompileBuiltIn$buildIf, leftWrap, rightWrap))
+							}),
+						rightRecur);
+				} else {
+					return exprArr;
+				}
+			} else {
+				var other = _v1;
+				var _v9 = A2($elm$core$Dict$get, other, onionMap);
+				if (_v9.$ === 'Just') {
+					var func = _v9.a;
+					return A4($author$project$Compiler$HandleTailRecursion$tailFunc, exprArr, pos, expr, numRefs);
+				} else {
+					return A3($author$project$Compiler$HandleTailRecursion$normalTail, exprArr, pos, expr);
+				}
+			}
+		}
+	});
+var $author$project$Compiler$HandleTailRecursion$arrayIncrement = F2(
+	function (arr, index) {
+		return A3(
+			$elm$core$Array$set,
+			index,
+			1 + A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($elm$core$Array$get, index, arr)),
+			arr);
+	});
+var $author$project$Compiler$HandleTailRecursion$addChildren = F2(
+	function (children, numRefs) {
+		addChildren:
+		while (true) {
+			if (!children.b) {
+				return numRefs;
+			} else {
+				var child = children.a;
+				var rest = children.b;
+				if (child.$ === 'StackIndex') {
+					var i = child.a;
+					var $temp$children = rest,
+						$temp$numRefs = A2($author$project$Compiler$HandleTailRecursion$arrayIncrement, numRefs, i);
+					children = $temp$children;
+					numRefs = $temp$numRefs;
+					continue addChildren;
+				} else {
+					var $temp$children = rest,
+						$temp$numRefs = numRefs;
+					children = $temp$children;
+					numRefs = $temp$numRefs;
+					continue addChildren;
+				}
+			}
+		}
+	});
+var $author$project$Compiler$HandleTailRecursion$makeNumRefs = F2(
+	function (exprs, numRefs) {
+		makeNumRefs:
+		while (true) {
+			if (!exprs.b) {
+				return numRefs;
+			} else {
+				var expr = exprs.a;
+				var rest = exprs.b;
+				var $temp$exprs = rest,
+					$temp$numRefs = A2($author$project$Compiler$HandleTailRecursion$addChildren, expr.children, numRefs);
+				exprs = $temp$exprs;
+				numRefs = $temp$numRefs;
+				continue makeNumRefs;
+			}
+		}
+	});
+var $elm$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			$elm$core$Array$initialize,
+			n,
+			function (_v0) {
+				return e;
+			});
+	});
+var $author$project$Compiler$HandleTailRecursion$returnContinuation = F2(
+	function (onionMap, exprs) {
+		var exprArr = $elm$core$Array$fromList(exprs);
+		var numRefs = A2(
+			$author$project$Compiler$HandleTailRecursion$makeNumRefs,
+			exprs,
+			A2(
+				$elm$core$Array$repeat,
+				$elm$core$Array$length(exprArr),
+				0));
+		return $elm$core$Array$toList(
+			A4(
+				$author$project$Compiler$HandleTailRecursion$makeContinuations,
+				exprArr,
+				numRefs,
+				$elm$core$Array$length(exprArr) - 1,
+				onionMap));
+	});
+var $author$project$Compiler$OnionToExpr$callsToExprs = F3(
+	function (calls, onionMap, idToIndex) {
+		return A2(
+			$elm$core$Result$map,
+			$author$project$Compiler$HandleTailRecursion$returnContinuation(onionMap),
+			A2(
+				$author$project$Utils$resultMap,
+				function (call) {
+					return A3($author$project$Compiler$OnionToExpr$callToExpr, call, idToIndex, onionMap);
+				},
+				calls));
+	});
+var $author$project$Compiler$OnionToExpr$checkName = function (func) {
+	return $elm$core$String$isEmpty(func.name) ? $elm$core$Result$Err('Empty function name') : (A2($elm$core$String$contains, ' ', func.name) ? $elm$core$Result$Err('No whitespace allowed in function name') : $elm$core$Result$Ok(func.name));
+};
+var $author$project$Compiler$OnionToExpr$makeIdToIndex = F3(
+	function (func, dict, index) {
+		makeIdToIndex:
+		while (true) {
+			if (!func.b) {
+				return dict;
+			} else {
+				var e = func.a;
+				var es = func.b;
+				var $temp$func = es,
+					$temp$dict = A3($elm$core$Dict$insert, e.id, index, dict),
+					$temp$index = index + 1;
+				func = $temp$func;
+				dict = $temp$dict;
+				index = $temp$index;
+				continue makeIdToIndex;
+			}
+		}
+	});
+var $author$project$Compiler$OnionToExpr$functionToMethod = F2(
+	function (onionMap, func) {
+		var idToPos = A3($author$project$Compiler$OnionToExpr$makeIdToIndex, func.calls, $elm$core$Dict$empty, 0);
+		var funcName = $author$project$Compiler$OnionToExpr$checkName(func);
+		return A3(
+			$elm$core$Result$map2,
+			F2(
+				function (exprs, name) {
+					return _Utils_Tuple2(
+						name,
+						A2(
+							$author$project$Compiler$CompModel$Method,
+							$elm$core$List$length(func.args),
+							exprs));
+				}),
+			A3($author$project$Compiler$OnionToExpr$callsToExprs, func.calls, onionMap, idToPos),
+			funcName);
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $author$project$ModelHelpers$makeOnionMap = function (onion) {
+	if (!onion.b) {
+		return $elm$core$Result$Ok($elm$core$Dict$empty);
+	} else {
+		var func = onion.a;
+		var funcs = onion.b;
+		return A2(
+			$elm$core$Result$andThen,
+			function (currentMap) {
+				return A2($elm$core$Dict$member, func.name, currentMap) ? $elm$core$Result$Err('Cannot define two functions with the name ' + func.name) : $elm$core$Result$Ok(
+					A3($elm$core$Dict$insert, func.name, func, currentMap));
+			},
+			$author$project$ModelHelpers$makeOnionMap(funcs));
+	}
+};
+var $author$project$Compiler$OnionToExpr$onionToCompModel = function (onion) {
+	return A2(
+		$elm$core$Result$andThen,
+		function (onionMap) {
+			return A2(
+				$elm$core$Result$map,
+				$elm$core$Dict$fromList,
+				A2(
+					$author$project$Utils$resultMap,
+					$author$project$Compiler$OnionToExpr$functionToMethod(onionMap),
+					onion));
+		},
+		$author$project$ModelHelpers$makeOnionMap(onion));
+};
+var $author$project$Compiler$Compile$compileOnion = function (onion) {
+	var _v0 = $author$project$Compiler$OnionToExpr$onionToCompModel(onion);
+	if (_v0.$ === 'Ok') {
+		var compModel = _v0.a;
+		return $elm$core$Result$Ok(
+			$author$project$Compiler$Compile$compile(compModel));
+	} else {
+		var e = _v0.a;
+		return $elm$core$Result$Err(e);
+	}
+};
+var $author$project$Update$evalJavascript = _Platform_outgoingPort('evalJavascript', $elm$json$Json$Encode$string);
+var $author$project$Update$playOnionResult = F2(
+	function (model, onion) {
+		var _v0 = $author$project$Compiler$Compile$compileOnion(onion);
+		if (_v0.$ === 'Err') {
+			var e = _v0.a;
+			return _Utils_Tuple2(
+				A2($author$project$Update$modelWithError, model, e),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			var s = _v0.a;
+			return _Utils_Tuple2(
+				model,
+				$author$project$Update$evalJavascript(s));
+		}
+	});
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Update$stopJavascript = _Platform_outgoingPort(
+	'stopJavascript',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
+var $author$project$Update$stopSoundResult = function (model) {
+	return _Utils_Tuple2(
+		model,
+		$author$project$Update$stopJavascript(_Utils_Tuple0));
+};
+var $author$project$Update$updateWindow = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'NoOp':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'SilentDomError':
+				var dom_error = msg.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'SetError':
+				var errorString = msg.a;
+				return _Utils_Tuple2(
+					A2($author$project$Update$modelWithError, model, errorString),
+					$elm$core$Platform$Cmd$none);
+			case 'PlayOnion':
+				var onion = msg.a;
+				return A2($author$project$Update$playOnionResult, model, onion);
+			case 'StopSound':
+				return $author$project$Update$stopSoundResult(model);
+			case 'MouseRelease':
+				return $author$project$Update$modelMouseRelease(model);
+			case 'MouseMoved':
+				var pos = msg.a;
+				var oldMouse = model.mouseState;
+				var newMouse = _Utils_update(
+					oldMouse,
+					{mouseX: pos.x, mouseY: pos.y});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{mouseState: newMouse}),
+					$elm$core$Platform$Cmd$none);
+			case 'ScrollChange':
+				var pos = msg.a;
+				var oldMouse = model.mouseState;
+				var newMouse = _Utils_update(
+					oldMouse,
+					{scrollX: pos.xpos, scrollY: pos.ypos});
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{mouseState: newMouse}),
+					$elm$core$Platform$Cmd$none);
+			case 'FpsChange':
+				var newFps = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fps: newFps}),
+					$elm$core$Platform$Cmd$none);
+			case 'RunningChange':
+				var isRunning = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{isRunning: isRunning}),
+					$elm$core$Platform$Cmd$none);
+			case 'KeyboardInput':
+				var keyevent = msg.a;
+				return A2($author$project$Update$keyboardUpdate, model, keyevent);
+			case 'WindowResize':
+				var newWidth = msg.a;
+				var newHeight = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{windowHeight: newHeight, windowWidth: newWidth}),
+					$elm$core$Platform$Cmd$none);
+			case 'LinkClicked':
+				var urlRequest = msg.a;
+				if (urlRequest.$ === 'Internal') {
+					var url = urlRequest.a;
+					return A2(
+						$author$project$Update$changeByName,
+						model,
+						$author$project$Model$urlToPageName(url));
+				} else {
+					var href = urlRequest.a;
+					return _Utils_Tuple2(
+						model,
+						$elm$browser$Browser$Navigation$load(href));
+				}
+			case 'PageChange':
+				var pageName = msg.a;
+				return A2($author$project$Update$changeByName, model, pageName);
+			case 'UrlChanged':
+				var url = msg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Update$changeByName,
+						model,
+						$author$project$Model$urlToPageName(url)).a,
+					$elm$core$Platform$Cmd$none);
+			case 'MouseOver':
+				var pageName = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{highlightedButton: pageName}),
+					$elm$core$Platform$Cmd$none);
+			case 'MouseLeave':
+				var pageName = msg.a;
+				return _Utils_eq(pageName, model.highlightedButton) ? _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{highlightedButton: 'none'}),
+					$elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Update$updateProgram = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'BlockClick':
+				var call = msg.a;
+				var funcId = msg.b;
+				var mouseOffset = msg.c;
+				return A4($author$project$Update$blockClickModel, model, call, funcId, mouseOffset);
+			case 'BlockNameClick':
+				var call = msg.a;
+				var funcId = msg.b;
+				var mouseOffset = msg.c;
+				return A4($author$project$Update$blockNameClickModel, model, call, funcId, mouseOffset);
+			case 'HeaderOutputHighlight':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$headerHighlightModel, model, id, index);
+			case 'HeaderOutputUpdate':
+				var id = msg.a;
+				var index = msg.b;
+				var str = msg.c;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'HeaderOutputClick':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$headerOutputClickModel, model, id, index);
+			case 'HeaderOutputRightClick':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$headerOutputRightClickModel, model, id, index);
+			case 'HeaderNameClick':
+				var id = msg.a;
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$headerNameClickModel, model, id, mouseOffset);
+			case 'HeaderClick':
+				var func = msg.a;
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$headerClickModel, model, func, mouseOffset);
+			case 'HeaderNameHighlight':
+				var id = msg.a;
+				return A2($author$project$Update$headerNameHighlightModel, model, id);
+			case 'HeaderNameUpdate':
+				var id = msg.a;
+				var str = msg.b;
+				return A3($author$project$Update$headerNameUpdateModel, model, id, str);
+			case 'HeaderAddOutput':
+				var id = msg.a;
+				var inputCounter = msg.b;
+				return A3($author$project$Update$headerAddOutputModel, model, id, inputCounter);
+			case 'HeaderAddOutputRightClick':
+				var id = msg.a;
+				var inputCounter = msg.b;
+				return A3($author$project$Update$headerAddOutputRightClickModel, model, id, inputCounter);
+			case 'InputHighlight':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$inputHighlightModel, model, id, index);
+			case 'OutputHighlight':
+				var id = msg.a;
+				return A2($author$project$Update$outputHighlightModel, model, id);
+			case 'InputClick':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$inputClickModel, model, id, index);
+			case 'InputUpdate':
+				var id = msg.a;
+				var index = msg.b;
+				var str = msg.c;
+				return A4($author$project$Update$inputUpdateModel, model, id, index, str);
+			case 'OutputClick':
+				var id = msg.a;
+				return A2($author$project$Update$outputClickModel, model, id);
+			case 'InputRightClick':
+				var id = msg.a;
+				var index = msg.b;
+				return A3($author$project$Update$inputRightClickModel, model, id, index);
+			case 'OutputRightClick':
+				var id = msg.a;
+				return A2($author$project$Update$outputRightClickModel, model, id);
+			case 'BlockNameHighlight':
+				var id = msg.a;
+				return A2($author$project$Update$blockNameHighlightModel, model, id);
+			case 'BlockNameUpdate':
+				var id = msg.a;
+				var str = msg.b;
+				return A3($author$project$Update$blockNameUpdateModel, model, id, str);
+			case 'SpawnBlock':
+				var name = msg.a;
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$spawnBlockModel, model, name, mouseOffset);
+			case 'SpawnFunction':
+				var name = msg.a;
+				var mouseOffset = msg.b;
+				return A3($author$project$Update$spawnFuncModel, model, name, mouseOffset);
+			default:
+				return A2($author$project$Update$updateWindow, msg, model);
+		}
+	});
+var $author$project$Update$update = F2(
+	function (msg, model) {
+		return A2($elm$core$List$member, model.currentPage, $author$project$Model$docpages) ? A2($author$project$Update$updateWindow, msg, model) : A2($author$project$Update$updateProgram, msg, model);
+	});
+var $rtfeldman$elm_css$VirtualDom$Styled$Unstyled = function (a) {
+	return {$: 'Unstyled', a: a};
+};
+var $rtfeldman$elm_css$VirtualDom$Styled$text = function (str) {
+	return $rtfeldman$elm_css$VirtualDom$Styled$Unstyled(
+		$elm$virtual_dom$VirtualDom$text(str));
+};
+var $rtfeldman$elm_css$Html$Styled$text = $rtfeldman$elm_css$VirtualDom$Styled$text;
+var $author$project$View$makeDocsPage = function (model) {
+	return $rtfeldman$elm_css$Html$Styled$text('hello');
+};
+var $rtfeldman$elm_css$Css$block = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'block'};
+var $rtfeldman$elm_css$Css$display = $rtfeldman$elm_css$Css$prop1('display');
+var $rtfeldman$elm_css$Html$Styled$Attributes$href = function (url) {
+	return A2($rtfeldman$elm_css$Html$Styled$Attributes$stringProperty, 'href', url);
+};
+var $author$project$Model$PageChange = function (a) {
+	return {$: 'PageChange', a: a};
+};
+var $author$project$TitleBar$buttonSpacing = 50;
+var $rtfeldman$elm_css$Css$stringsToValue = function (list) {
+	return $elm$core$List$isEmpty(list) ? {value: 'none'} : {
+		value: A2(
+			$elm$core$String$join,
+			', ',
+			A2(
+				$elm$core$List$map,
+				function (s) {
+					return s;
+				},
+				list))
+	};
+};
+var $rtfeldman$elm_css$Css$fontFamilies = A2(
+	$elm$core$Basics$composeL,
+	$rtfeldman$elm_css$Css$prop1('font-family'),
+	$rtfeldman$elm_css$Css$stringsToValue);
+var $rtfeldman$elm_css$Css$inlineBlock = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-block'};
+var $author$project$Model$MouseLeave = function (a) {
+	return {$: 'MouseLeave', a: a};
+};
+var $author$project$Model$MouseOver = function (a) {
+	return {$: 'MouseOver', a: a};
+};
+var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
+var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
+var $author$project$Utils$darkenInt = F2(
+	function (amount, _int) {
+		return A2(
+			$elm$core$Basics$min,
+			A2($elm$core$Basics$max, 0, _int - amount),
+			255);
+	});
+var $rtfeldman$elm_css$Css$rgba = F4(
+	function (r, g, b, alpha) {
+		return {
+			alpha: alpha,
+			blue: b,
+			color: $rtfeldman$elm_css$Css$Structure$Compatible,
+			green: g,
+			red: r,
+			value: A2(
+				$rtfeldman$elm_css$Css$cssFunction,
+				'rgba',
+				_Utils_ap(
+					A2(
+						$elm$core$List$map,
+						$elm$core$String$fromInt,
+						_List_fromArray(
+							[r, g, b])),
+					_List_fromArray(
+						[
+							$elm$core$String$fromFloat(alpha)
+						])))
+		};
+	});
+var $author$project$Utils$darken = F2(
+	function (amount, color) {
+		return A4(
+			$rtfeldman$elm_css$Css$rgba,
+			A2($author$project$Utils$darkenInt, amount, color.red),
+			A2($author$project$Utils$darkenInt, amount, color.green),
+			A2($author$project$Utils$darkenInt, amount, color.blue),
+			color.alpha);
+	});
+var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
+	function (a, b) {
+		return {$: 'ExtendSelector', a: a, b: b};
+	});
+var $rtfeldman$elm_css$Css$Structure$PseudoClassSelector = function (a) {
+	return {$: 'PseudoClassSelector', a: a};
+};
+var $rtfeldman$elm_css$Css$pseudoClass = function (_class) {
+	return $rtfeldman$elm_css$Css$Preprocess$ExtendSelector(
+		$rtfeldman$elm_css$Css$Structure$PseudoClassSelector(_class));
+};
+var $rtfeldman$elm_css$Css$hover = $rtfeldman$elm_css$Css$pseudoClass('hover');
+var $rtfeldman$elm_css$Css$marginLeft = $rtfeldman$elm_css$Css$prop1('margin-left');
+var $rtfeldman$elm_css$Html$Styled$Events$onClick = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $rtfeldman$elm_css$Html$Styled$Events$onMouseLeave = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'mouseleave',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $rtfeldman$elm_css$Html$Styled$Events$onMouseOver = function (msg) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$Events$on,
+		'mouseover',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $rtfeldman$elm_css$Css$paddingLeft = $rtfeldman$elm_css$Css$prop1('padding-left');
+var $rtfeldman$elm_css$Css$paddingRight = $rtfeldman$elm_css$Css$prop1('padding-right');
+var $author$project$TitleBar$makeIconButton = F4(
+	function (icon, textString, event, color) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$button,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Events$onClick(event),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseOver(
+					$author$project$Model$MouseOver(textString)),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseLeave(
+					$author$project$Model$MouseLeave(textString)),
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$fontFamilies(
+							_List_fromArray(
+								['monospace'])),
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$px(24)),
+							$rtfeldman$elm_css$Css$padding(
+							$rtfeldman$elm_css$Css$px(10)),
+							$rtfeldman$elm_css$Css$paddingLeft(
+							$rtfeldman$elm_css$Css$px(20)),
+							$rtfeldman$elm_css$Css$paddingRight(
+							$rtfeldman$elm_css$Css$px(20)),
+							$rtfeldman$elm_css$Css$marginLeft(
+							$rtfeldman$elm_css$Css$px($author$project$TitleBar$buttonSpacing)),
+							$rtfeldman$elm_css$Css$border(
+							$rtfeldman$elm_css$Css$px(0)),
+							$rtfeldman$elm_css$Css$borderRadius(
+							$rtfeldman$elm_css$Css$px(5)),
+							$rtfeldman$elm_css$Css$hover(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$backgroundColor(
+									A2($author$project$Utils$darken, 10, color))
+								])),
+							$rtfeldman$elm_css$Css$backgroundColor(color)
+						]))
+				]),
+			_List_fromArray(
+				[
+					icon,
+					$rtfeldman$elm_css$Html$Styled$text(textString)
+				]));
+	});
+var $rtfeldman$elm_css$Css$margin = $rtfeldman$elm_css$Css$prop1('margin');
+var $author$project$Model$PlayOnion = function (a) {
+	return {$: 'PlayOnion', a: a};
+};
+var $rtfeldman$elm_css$Css$alignSelf = function (fn) {
+	return A3(
+		$rtfeldman$elm_css$Css$Internal$getOverloadedProperty,
+		'alignSelf',
+		'align-self',
+		fn($rtfeldman$elm_css$Css$Internal$lengthForOverloadedProperty));
+};
+var $rtfeldman$elm_css$Css$EmUnits = {$: 'EmUnits'};
+var $rtfeldman$elm_css$Css$em = A2($rtfeldman$elm_css$Css$Internal$lengthConverter, $rtfeldman$elm_css$Css$EmUnits, 'em');
+var $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode = $rtfeldman$elm_css$VirtualDom$Styled$Unstyled;
+var $rtfeldman$elm_css$Html$Styled$fromUnstyled = $rtfeldman$elm_css$VirtualDom$Styled$unstyledNode;
+var $rtfeldman$elm_css$Css$inlineFlex = {display: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'inline-flex'};
+var $rtfeldman$elm_css$Css$marginRight = $rtfeldman$elm_css$Css$prop1('margin-right');
+var $elm$svg$Svg$polygon = $elm$svg$Svg$trustedNode('polygon');
+var $rtfeldman$elm_css$Css$relative = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'relative'};
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $rtfeldman$elm_css$Css$top = $rtfeldman$elm_css$Css$prop1('top');
+var $author$project$TitleBar$makeIcon = function (polygonAttrs) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$em(1)),
+						$rtfeldman$elm_css$Css$height(
+						$rtfeldman$elm_css$Css$em(1)),
+						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineFlex),
+						$rtfeldman$elm_css$Css$alignSelf($rtfeldman$elm_css$Css$center),
+						$rtfeldman$elm_css$Css$top(
+						$rtfeldman$elm_css$Css$em(0.125)),
+						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$relative),
+						$rtfeldman$elm_css$Css$marginRight(
+						$rtfeldman$elm_css$Css$px(10))
+					]))
+			]),
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$fromUnstyled(
+				A2(
+					$elm$svg$Svg$svg,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width('24px'),
+							$elm$svg$Svg$Attributes$height('24px')
+						]),
+					_List_fromArray(
+						[
+							A2($elm$svg$Svg$polygon, polygonAttrs, _List_Nil)
+						])))
+			]));
+};
+var $author$project$TitleBar$playIcon = $author$project$TitleBar$makeIcon(
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$points('0,0 0,24 24,12'),
+			$elm$svg$Svg$Attributes$fill('rgb(67, 194, 60)')
+		]));
+var $author$project$TitleBar$playButton = function (onion) {
+	return A4(
+		$author$project$TitleBar$makeIconButton,
+		$author$project$TitleBar$playIcon,
+		'Play',
+		$author$project$Model$PlayOnion(onion),
+		A3($rtfeldman$elm_css$Css$rgb, 168, 255, 163));
+};
+var $author$project$Model$StopSound = {$: 'StopSound'};
+var $author$project$ViewVariables$disabledGrey = A3($rtfeldman$elm_css$Css$rgb, 220, 220, 220);
+var $author$project$TitleBar$stopIcon = function (isRunning) {
+	return $author$project$TitleBar$makeIcon(
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$points('0,0 0,24 24,24, 24,0'),
+				$elm$svg$Svg$Attributes$fill(
+				isRunning ? 'rgb(214, 36, 36)' : $author$project$ViewVariables$holeGrey)
+			]));
+};
+var $author$project$TitleBar$stopButton = function (model) {
+	return A4(
+		$author$project$TitleBar$makeIconButton,
+		$author$project$TitleBar$stopIcon(model.isRunning),
+		'Stop',
+		$author$project$Model$StopSound,
+		model.isRunning ? A3($rtfeldman$elm_css$Css$rgb, 232, 93, 93) : $author$project$ViewVariables$disabledGrey);
+};
+var $author$project$TitleBar$makeTitle = function (model) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
+						$rtfeldman$elm_css$Css$width(
+						$rtfeldman$elm_css$Css$pct(100)),
+						$rtfeldman$elm_css$Css$margin(
+						$rtfeldman$elm_css$Css$px(20))
+					]))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$fontFamilies(
+								_List_fromArray(
+									['monospace'])),
+								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$px(32)),
+								$rtfeldman$elm_css$Css$top(
+								$rtfeldman$elm_css$Css$px(10))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text('Sonic Onion')
+					])),
+				$author$project$TitleBar$playButton(model.program),
+				$author$project$TitleBar$stopButton(model),
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$fontFamilies(
+								_List_fromArray(
+									['monospace'])),
+								$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$inlineBlock),
+								$rtfeldman$elm_css$Css$fontSize(
+								$rtfeldman$elm_css$Css$px(24)),
+								$rtfeldman$elm_css$Css$marginLeft(
+								$rtfeldman$elm_css$Css$px($author$project$TitleBar$buttonSpacing))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(
+						'fps: ' + ((!model.isRunning) ? '' : $elm$core$String$fromInt(model.fps)))
+					])),
+				A4(
+				$author$project$TitleBar$makeIconButton,
+				$rtfeldman$elm_css$Html$Styled$text(''),
+				'Tutorial',
+				$author$project$Model$PageChange('Tutorial'),
+				A3($rtfeldman$elm_css$Css$rgb, 212, 214, 67))
+			]));
+};
+var $author$project$ViewVariables$pageColor = A3($rtfeldman$elm_css$Css$rgb, 247, 247, 222);
+var $rtfeldman$elm_css$Css$borderBottomColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'border-bottom-color', c.value);
+};
+var $rtfeldman$elm_css$Css$borderColor = function (c) {
+	return A2($rtfeldman$elm_css$Css$property, 'border-color', c.value);
+};
+var $rtfeldman$elm_css$Css$borderStyle = $rtfeldman$elm_css$Css$prop1('border-style');
+var $rtfeldman$elm_css$Css$borderTopLeftRadius = $rtfeldman$elm_css$Css$prop1('border-top-left-radius');
+var $rtfeldman$elm_css$Css$borderTopRightRadius = $rtfeldman$elm_css$Css$prop1('border-top-right-radius');
+var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
+var $rtfeldman$elm_css$Css$none = {backgroundImage: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, display: $rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, outline: $rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, resize: $rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, textTransform: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, transform: $rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
+var $rtfeldman$elm_css$Css$outline = $rtfeldman$elm_css$Css$prop1('outline');
+var $author$project$ViewVariables$pageBackgroundColor = A3($rtfeldman$elm_css$Css$rgb, 229, 229, 208);
+var $rtfeldman$elm_css$Css$solid = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationStyle: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'solid'};
+var $author$project$View$pagebutton = F2(
+	function (pageName, model) {
+		var buttonPageColor = _Utils_eq(pageName, model.currentPage) ? $author$project$ViewVariables$pageColor : $author$project$ViewVariables$pageBackgroundColor;
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$button,
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$Events$onClick(
+					$author$project$Model$PageChange(pageName)),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseOver(
+					$author$project$Model$MouseOver(pageName)),
+					$rtfeldman$elm_css$Html$Styled$Events$onMouseLeave(
+					$author$project$Model$MouseLeave(pageName)),
+					$rtfeldman$elm_css$Html$Styled$Attributes$css(
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Css$width(
+							$rtfeldman$elm_css$Css$pct(20)),
+							$rtfeldman$elm_css$Css$height(
+							$rtfeldman$elm_css$Css$px($author$project$ViewVariables$buttonHeight)),
+							$rtfeldman$elm_css$Css$marginTop(
+							$rtfeldman$elm_css$Css$px(10)),
+							$rtfeldman$elm_css$Css$marginRight(
+							$rtfeldman$elm_css$Css$px(10)),
+							$rtfeldman$elm_css$Css$borderTopLeftRadius(
+							$rtfeldman$elm_css$Css$px(8)),
+							$rtfeldman$elm_css$Css$borderTopRightRadius(
+							$rtfeldman$elm_css$Css$px(8)),
+							_Utils_eq(pageName, model.highlightedButton) ? $rtfeldman$elm_css$Css$border(
+							$rtfeldman$elm_css$Css$px(2)) : $rtfeldman$elm_css$Css$border(
+							$rtfeldman$elm_css$Css$px(0)),
+							$rtfeldman$elm_css$Css$borderColor(
+							A3($rtfeldman$elm_css$Css$rgb, 0, 0, 0)),
+							$rtfeldman$elm_css$Css$borderBottomColor(buttonPageColor),
+							$rtfeldman$elm_css$Css$outline($rtfeldman$elm_css$Css$none),
+							$rtfeldman$elm_css$Css$borderStyle($rtfeldman$elm_css$Css$solid),
+							$rtfeldman$elm_css$Css$backgroundColor(buttonPageColor),
+							$rtfeldman$elm_css$Css$fontFamilies(
+							_List_fromArray(
+								['Raleway'])),
+							$rtfeldman$elm_css$Css$fontSize(
+							$rtfeldman$elm_css$Css$px(20))
+						]))
+				]),
+			_List_fromArray(
+				[
+					$rtfeldman$elm_css$Html$Styled$text(pageName)
+				]));
+	});
+var $rtfeldman$elm_css$Html$Styled$Attributes$rel = $rtfeldman$elm_css$VirtualDom$Styled$attribute('rel');
+var $author$project$View$pageWrapper = F2(
+	function (page, model) {
+		return A2(
+			$rtfeldman$elm_css$Html$Styled$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A3(
+					$rtfeldman$elm_css$Html$Styled$node,
+					'link',
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$rel('stylesheet'),
+							$rtfeldman$elm_css$Html$Styled$Attributes$href('https://fonts.googleapis.com/css?family=Tangerine')
+						]),
+					_List_Nil),
+					A3(
+					$rtfeldman$elm_css$Html$Styled$node,
+					'link',
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$rel('stylesheet'),
+							$rtfeldman$elm_css$Html$Styled$Attributes$href('https://fonts.googleapis.com/css?family=Raleway')
+						]),
+					_List_Nil),
+					$author$project$TitleBar$makeTitle(model),
+					A2($author$project$View$pagebutton, 'Home', model),
+					A2($author$project$View$pagebutton, 'Unused', model),
+					A2(
+					$rtfeldman$elm_css$Html$Styled$div,
+					_List_fromArray(
+						[
+							$rtfeldman$elm_css$Html$Styled$Attributes$css(
+							_List_fromArray(
+								[
+									$rtfeldman$elm_css$Css$display($rtfeldman$elm_css$Css$block),
+									$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$pageColor)
+								]))
+						]),
+					_List_fromArray(
+						[page]))
+				]));
+	});
+var $author$project$ViewVariables$errorColor = A3($rtfeldman$elm_css$Css$rgb, 255, 150, 150);
+var $rtfeldman$elm_css$Css$fixed = {backgroundAttachment: $rtfeldman$elm_css$Css$Structure$Compatible, position: $rtfeldman$elm_css$Css$Structure$Compatible, tableLayout: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'fixed'};
+var $rtfeldman$elm_css$Css$UnitlessInteger = {$: 'UnitlessInteger'};
+var $rtfeldman$elm_css$Css$int = function (val) {
+	return {
+		fontWeight: $rtfeldman$elm_css$Css$Structure$Compatible,
+		intOrAuto: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
+		number: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: $rtfeldman$elm_css$Css$UnitlessInteger,
+		value: $elm$core$String$fromInt(val)
+	};
+};
+var $rtfeldman$elm_css$Css$UnitlessFloat = {$: 'UnitlessFloat'};
+var $rtfeldman$elm_css$Css$num = function (val) {
+	return {
+		lengthOrNumber: $rtfeldman$elm_css$Css$Structure$Compatible,
+		lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible,
+		number: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numberOrInfinite: $rtfeldman$elm_css$Css$Structure$Compatible,
+		numericValue: val,
+		unitLabel: '',
+		units: $rtfeldman$elm_css$Css$UnitlessFloat,
+		value: $elm$core$String$fromFloat(val)
+	};
+};
+var $rtfeldman$elm_css$Css$opacity = $rtfeldman$elm_css$Css$prop1('opacity');
+var $rtfeldman$elm_css$Css$pointerEvents = $rtfeldman$elm_css$Css$prop1('pointer-events');
+var $rtfeldman$elm_css$Css$zIndex = $rtfeldman$elm_css$Css$prop1('z-index');
+var $author$project$View$drawErrorBox = function (errorBox) {
+	return A2(
+		$rtfeldman$elm_css$Html$Styled$div,
+		_List_fromArray(
+			[
+				$rtfeldman$elm_css$Html$Styled$Attributes$css(
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Css$zIndex(
+						$rtfeldman$elm_css$Css$int(2)),
+						$rtfeldman$elm_css$Css$borderRadius(
+						$rtfeldman$elm_css$Css$px(15)),
+						$rtfeldman$elm_css$Css$backgroundColor($author$project$ViewVariables$errorColor),
+						$rtfeldman$elm_css$Css$position($rtfeldman$elm_css$Css$fixed),
+						$rtfeldman$elm_css$Css$opacity(
+						$rtfeldman$elm_css$Css$num(0.75)),
+						$rtfeldman$elm_css$Css$pointerEvents($rtfeldman$elm_css$Css$none)
+					]))
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$rtfeldman$elm_css$Html$Styled$div,
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$Attributes$css(
+						_List_fromArray(
+							[
+								$rtfeldman$elm_css$Css$margin(
+								$rtfeldman$elm_css$Css$px(10))
+							]))
+					]),
+				_List_fromArray(
+					[
+						$rtfeldman$elm_css$Html$Styled$text(errorBox.error)
+					]))
+			]));
+};
+var $elm$svg$Svg$Attributes$display = _VirtualDom_attribute('display');
 var $author$project$DrawProgram$maxYOfStructures = function (positioned) {
 	return A2(
 		$elm$core$Maybe$withDefault,
@@ -15158,37 +15223,6 @@ var $author$project$DrawProgram$drawOnion = F6(
 		return _Utils_Tuple2(
 			$author$project$DrawProgram$maxYOfStructures(viewStructures),
 			A2($elm$core$List$map, $author$project$DrawFunc$drawFuncWithConnections, viewStructures));
-	});
-var $author$project$BuiltIn$callFromSpec = F2(
-	function (spec, id) {
-		return A2($author$project$BuiltIn$constructCall, id, spec.functionName);
-	});
-var $author$project$BuiltIn$makeAllFunction = F2(
-	function (builtInList, counter) {
-		if (!builtInList.b) {
-			return _List_Nil;
-		} else {
-			var spec = builtInList.a;
-			var specs = builtInList.b;
-			return A2(
-				$elm$core$List$cons,
-				A2($author$project$BuiltIn$callFromSpec, spec, counter),
-				A2($author$project$BuiltIn$makeAllFunction, specs, counter - 1));
-		}
-	});
-var $author$project$BuiltIn$allBuiltInAsFunction = A3(
-	$author$project$Model$makeFunc,
-	-1,
-	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100),
-	'function');
-var $author$project$DrawToolbar$drawToolbar = F4(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
-		var viewStructure = A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, true);
-		return A3(
-			$author$project$DrawToolbar$ToolResult,
-			viewStructure.funcWidth,
-			viewStructure.funcHeight,
-			$author$project$DrawFunc$drawFuncWithConnections(viewStructure));
 	});
 var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
 var $author$project$DrawProgram$drawProgram = F5(
@@ -15290,8 +15324,8 @@ var $author$project$Docs$Tutorial$wrapCenter = function (elements) {
 			]),
 		elements);
 };
-var $author$project$Docs$Tutorial$makeExampleCalls = F3(
-	function (calls, model, addPlayButton) {
+var $author$project$Docs$Tutorial$makeExampleProgram = F3(
+	function (onion, model, shouldAddPlayButton) {
 		return $author$project$Docs$Tutorial$wrapCenter(
 			_List_fromArray(
 				[
@@ -15311,16 +15345,13 @@ var $author$project$Docs$Tutorial$makeExampleCalls = F3(
 							[
 								A5(
 								$author$project$DrawProgram$drawProgram,
-								_List_fromArray(
-									[
-										A2($author$project$Model$makeMain, 1, calls)
-									]),
+								onion,
 								model.mouseState,
 								$author$project$Docs$Tutorial$pageWidth,
 								$author$project$ViewVariables$toSvgWindowHeight(model.windowHeight),
 								false)
 							]),
-						addPlayButton ? _List_fromArray(
+						shouldAddPlayButton ? _List_fromArray(
 							[
 								A2(
 								$rtfeldman$elm_css$Html$Styled$div,
@@ -15335,16 +15366,196 @@ var $author$project$Docs$Tutorial$makeExampleCalls = F3(
 									]),
 								_List_fromArray(
 									[
-										$author$project$TitleBar$playButton(
-										_List_fromArray(
-											[
-												A2($author$project$Model$makeMain, 1, calls)
-											])),
+										$author$project$TitleBar$playButton(onion),
 										$author$project$TitleBar$stopButton(model)
 									]))
 							]) : _List_Nil))
 				]));
 	});
+var $author$project$Docs$Tutorial$makeExampleCalls = F3(
+	function (calls, model, addPlayButton) {
+		return A3(
+			$author$project$Docs$Tutorial$makeExampleProgram,
+			_List_fromArray(
+				[
+					A2($author$project$Model$makeMain, 1, calls)
+				]),
+			model,
+			addPlayButton);
+	});
+var $author$project$Docs$Tutorial$appendExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('C4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(2),
+						$author$project$Model$Text('D4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				4,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(3),
+						$author$project$Model$Text('1')
+					]),
+				'+',
+				''),
+				A4(
+				$author$project$Model$Call,
+				5,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('E4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				6,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(5),
+						$author$project$Model$Text('F4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				7,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(4),
+						$author$project$Model$Output(6)
+					]),
+				'append',
+				'')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$coolBeepsSimple = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleProgram,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Model$makeMain,
+				1,
+				_List_fromArray(
+					[
+						A4($author$project$Model$Call, 2, _List_Nil, 'coolBeeps', '')
+					])),
+				A3(
+				$author$project$Model$makeFunc,
+				3,
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						4,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('0'),
+								$author$project$Model$Text('A4'),
+								$author$project$Model$Text('1')
+							]),
+						'note',
+						''),
+						A4(
+						$author$project$Model$Call,
+						5,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(4),
+								$author$project$Model$Text('B4'),
+								$author$project$Model$Text('1')
+							]),
+						'note',
+						'')
+					]),
+				'coolBeeps')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$coolBeepsWithArgument = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleProgram,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Model$makeMain,
+				1,
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						2,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('5')
+							]),
+						'coolBeeps',
+						'')
+					])),
+				A4(
+				$author$project$Model$Function,
+				'coolBeeps',
+				3,
+				_List_fromArray(
+					[$author$project$Model$Hole]),
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						4,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('0'),
+								$author$project$Model$Text('A4'),
+								$author$project$Model$FunctionArg(0)
+							]),
+						'note',
+						''),
+						A4(
+						$author$project$Model$Call,
+						5,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(4),
+								$author$project$Model$Text('B4'),
+								$author$project$Model$Text('1')
+							]),
+						'note',
+						'')
+					]))
+			]),
+		model,
+		true);
+};
 var $author$project$Docs$Tutorial$emptyNoteBlock = function (model) {
 	return A3(
 		$author$project$Docs$Tutorial$makeExampleCalls,
@@ -15354,6 +15565,228 @@ var $author$project$Docs$Tutorial$emptyNoteBlock = function (model) {
 			]),
 		model,
 		false);
+};
+var $author$project$Docs$Tutorial$ex1Addition = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('A4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(2),
+						$author$project$Model$Text('2')
+					]),
+				'+',
+				''),
+				A4(
+				$author$project$Model$Call,
+				4,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(3),
+						$author$project$Model$Text('B4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$ex2Addition = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('A4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('2'),
+						$author$project$Model$Output(2)
+					]),
+				'+',
+				''),
+				A4(
+				$author$project$Model$Call,
+				4,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(3),
+						$author$project$Model$Text('B4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$ifExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleProgram,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Model$makeMain,
+				1,
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						2,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('mouseY'),
+								$author$project$Model$Text('200')
+							]),
+						'>',
+						''),
+						A4(
+						$author$project$Model$Call,
+						4,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('0'),
+								$author$project$Model$Text('A4'),
+								$author$project$Model$Text('10')
+							]),
+						'note',
+						''),
+						A4(
+						$author$project$Model$Call,
+						5,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('0'),
+								$author$project$Model$Text('B4'),
+								$author$project$Model$Text('10')
+							]),
+						'note',
+						''),
+						A4(
+						$author$project$Model$Call,
+						3,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(2),
+								$author$project$Model$Output(4),
+								$author$project$Model$Output(5)
+							]),
+						'if',
+						'')
+					]))
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$joinExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('C4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('E4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				4,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(2),
+						$author$project$Model$Output(3)
+					]),
+				'join',
+				'')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$joinExampleZero = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('C4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(2),
+						$author$project$Model$Output(2)
+					]),
+				'-',
+				''),
+				A4(
+				$author$project$Model$Call,
+				4,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(3),
+						$author$project$Model$Text('E4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
 };
 var $author$project$Docs$Tutorial$options = {
 	defaultHighlighting: $elm$core$Maybe$Nothing,
@@ -15378,6 +15811,141 @@ var $author$project$Docs$Tutorial$makeMarkdown = function (str) {
 				A3($elm_explorations$markdown$Markdown$toHtmlWith, $author$project$Docs$Tutorial$options, _List_Nil, str))
 			]));
 };
+var $author$project$Docs$Tutorial$mouseXExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('mouseX'),
+						$author$project$Model$Text('10')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$recursiveExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleProgram,
+		_List_fromArray(
+			[
+				A2(
+				$author$project$Model$makeMain,
+				1,
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						2,
+						_List_fromArray(
+							[
+								$author$project$Model$Text('0')
+							]),
+						'beeps',
+						'')
+					])),
+				A4(
+				$author$project$Model$Function,
+				'beeps',
+				3,
+				_List_fromArray(
+					[$author$project$Model$Hole]),
+				_List_fromArray(
+					[
+						A4(
+						$author$project$Model$Call,
+						4,
+						_List_fromArray(
+							[
+								$author$project$Model$FunctionArg(0),
+								$author$project$Model$Text('0.2')
+							]),
+						'+',
+						''),
+						A4(
+						$author$project$Model$Call,
+						5,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(4),
+								$author$project$Model$Text('A4'),
+								$author$project$Model$Text('0.2')
+							]),
+						'note',
+						''),
+						A4(
+						$author$project$Model$Call,
+						6,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(5)
+							]),
+						'beeps',
+						''),
+						A4(
+						$author$project$Model$Call,
+						7,
+						_List_fromArray(
+							[
+								$author$project$Model$FunctionArg(0),
+								$author$project$Model$Text('5')
+							]),
+						'>',
+						''),
+						A4(
+						$author$project$Model$Call,
+						8,
+						_List_fromArray(
+							[
+								$author$project$Model$Output(7),
+								$author$project$Model$FunctionArg(0),
+								$author$project$Model$Output(6)
+							]),
+						'if',
+						'')
+					]))
+			]),
+		model,
+		true);
+};
+var $author$project$Docs$Tutorial$sideEffectFreeExample = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('C4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('0'),
+						$author$project$Model$Text('E4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
+};
 var $author$project$Docs$Tutorial$simpleNoteBlock = function (model) {
 	return A3(
 		$author$project$Docs$Tutorial$makeExampleCalls,
@@ -15398,14 +15966,71 @@ var $author$project$Docs$Tutorial$simpleNoteBlock = function (model) {
 		model,
 		true);
 };
+var $author$project$Docs$Tutorial$twoNoteBlocks = function (model) {
+	return A3(
+		$author$project$Docs$Tutorial$makeExampleCalls,
+		_List_fromArray(
+			[
+				A4(
+				$author$project$Model$Call,
+				2,
+				_List_fromArray(
+					[
+						$author$project$Model$Text('1'),
+						$author$project$Model$Text('A4'),
+						$author$project$Model$Text('2')
+					]),
+				'note',
+				''),
+				A4(
+				$author$project$Model$Call,
+				3,
+				_List_fromArray(
+					[
+						$author$project$Model$Output(2),
+						$author$project$Model$Text('B4'),
+						$author$project$Model$Text('1')
+					]),
+				'note',
+				'')
+			]),
+		model,
+		true);
+};
 var $author$project$Docs$Tutorial$bodyList = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Docs$Tutorial$makeMarkdown('\n## The Note Block\n'),
 			$author$project$Docs$Tutorial$emptyNoteBlock(model),
-			$author$project$Docs$Tutorial$makeMarkdown('\nThe main function above contains a block which represents a calling the `note` function.\n\nThe three black dots on top of the `note` call represent the three arguments the function requires.\n\nThe dot on the bottom of the block represents the output of the function, a song with a single\n  musical note in it.\n\nThis function call has holes where the arguments should be, so you cannot evaluate it to get a song.\n'),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe main function above contains a block which represents calling the `note` function.\n\nThe three black dots on top of the `note` call represent the three arguments the function requires,\n  information `note` needs to create a single musical note.\nThis function call has holes where the arguments should be, so you cannot evaluate it to get a song.\n\nThe dot on the bottom of the block represents the output of the function, a song with a single\n  musical note in it.\n\n'),
 			$author$project$Docs$Tutorial$simpleNoteBlock(model),
-			$author$project$Docs$Tutorial$makeMarkdown('\nThis function call has three arguments provided.\n\nThe arguments are the information `note` needs to create a single musical notes.\n\nYou can provide them when editing code by clicking a hole and typing on your keyboard.\n\nThe three arguments to `note` are the `startTime` (in seconds), `frequency` (in hertz), and `duration` (in seconds).\n\nThis call to `note` plays the note `A4` for 1 second. Alternatively, you can type the constant `A4` for 440.\n')
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe `note` call above has three arguments provided.\nYou can provide them when editing code by clicking a hole and typing on your keyboard.\n\nThe three arguments to `note` are the `startTime` (in seconds), `frequency` (in hertz), and `duration` (in seconds).\nThis call to `note` plays the note `A4` for 1 second. Alternatively, you can type the constant `A4` for 440.\n\n## Chaining Note Blocks\n'),
+			$author$project$Docs$Tutorial$twoNoteBlocks(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThis example uses the output of the first note as the input for the `startTime` of the second note.\nThe `startTime` of the second note becomes the ending time for the first note, so it plays just after.\n\nWhen editing your programs, do this by left-clicking the output of the first block\n  and right clicking the input of a second block. (Alternatively, you can left-click an input and right-click\nan output).\n\n\nNotice that you can provide either a song or a literal number for the start time.\nIn fact, all literal numbers, such as `2`, represent silent songs with a start time of `0` and a duration\nwhich is the same as the literal number. The start time `1` sequences the first note after a silent period of\n1 second, then the second note is played after as it has a start time of `3`.\n\n## Computing With Songs\n\nAll literal values instantiate songs, and all calls to the `note` function result in songs. Operations like\n`+` also compute using songs, but require the definition of a song `anchor`.\n\nThe `anchor` of a song is the attachment point for future songs. This anchor is initialized\nto the duration of a song when the song is a literal. The anchor is upated when songs are chained.\n\nMathematical operations like `+` operate\non the anchors of multiple songs, returning the first argument with a modified anchor, similar to how\n`note` extends a song with another note.\nConsider the following example.\n'),
+			$author$project$Docs$Tutorial$ex1Addition(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nNotice that the second note plays one second after the first.\nThe second note starts at the modified anchor of the first note, which is 2.\n\nHowever, something different happens when we reverse the order of the arguments to `+`.\n'),
+			$author$project$Docs$Tutorial$ex2Addition(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe first note does not play! This is because the result of the `+` computation is\na silent song of duration `2` with the anchor `3`. The other argument, the first note,\nis used to update the anchor of the literal `2`.\n\n\n## Join and Append\n'),
+			$author$project$Docs$Tutorial$sideEffectFreeExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nNotice that, in the example above, only the second note plays.\nSonic Onion is a functional, reactice programming language without side-effects. In other words,\neach call produces a new song, and the result of the program is a single song.\nEach function returns the result of the last call in the body of the function, and last block of the `main`\nfunction should be the entire desired song.\n\nChaining two notes creates a song with both notes in them, but what if two songs must be played in parallel?\nCombining two separate songs can be achieved with the `join` function.\n\n'),
+			$author$project$Docs$Tutorial$joinExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nActually, it is possible to get away with never using the `join` function.\nThis is because there are no contraints on the `anchor` of a song- the anchor can even be negative!\nIf we set the anchor of the first note to zero, the second note will be added at time zero and\nachieve the same effect as the `join` call.\n'),
+			$author$project$Docs$Tutorial$joinExampleZero(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe above example subtracts the song from the first note from itself.\nThe anchor of the output then becomes `0`, the result of `1-1`.\nThis anchor is used in adding the second note, resulting in the same song as in the first example.\n\nSometimes, it is convenient to sequence two separate songs, one after another.\nThe `append` function sequences songs together, adding the anchor of each song to the `startTime` of the next.\nHere is an example that plays two notes, waits a second, then plays another two notes.\n'),
+			$author$project$Docs$Tutorial$appendExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\n\n## Signals\n\nSo far, we have been writing programs that generate a static song.\nHowever, Sonic Onion is a reactive programing language- a song can be thought of\nas a continuous signal over time, which is a function of other signals.\n\nSignals can be anything that changes over time. In the next example, we use the mouse\nX coordinate, which can be refered to using the `mouseX` variable.\n'),
+			$author$project$Docs$Tutorial$mouseXExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe output of the program changes over time, with a frequency that matches the mouse\nposition. In reality, the continuous nature of your program is simulated by running many times\nper second. This is why we display a `fps` or frames per second counter, to get an idea of fine\nthe simulation is.\n\nSome other useful signals are `mouseY`, the Y coordinate of the mouse, and `time`, the current time\nin seconds since the program started playing.\n'),
+			$author$project$Docs$Tutorial$makeMarkdown('\n## If Statements\n\nIt is useful sometimes to select between two songs\ndepending on a condition. Condition operators like `<` return\na boolean value, which is either true or false.\nThe `<` operator returns `true` if the first argument is less than the second argument.\n\n\nTo check conditions, we use the `if` function.\nThe first argument to `if` is the boolean value. If the value\nis `true`, the result of the `if` is the second argument.\nOtherwise, `if` returns the third argument.\n\n'),
+			$author$project$Docs$Tutorial$ifExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nIn the example above, we use `if` to detect if the mouse is far enough down\nthe screen, and change the note if it is.\nThe condition is that the mouse is greater than 200 pixels down the screen, and the\nchoices are two notes, either `A4` or `B4`. Using `if`, we can pick between entire songs!\n'),
+			$author$project$Docs$Tutorial$makeMarkdown('\n## Functions\nWriting little songs in the `main` functions is fun and all, but it\'s time to make things more interesting\nwith functions.\nDragging a new function block allows you to define a new function, which you can give a name in the text box.\nI called my new function `coolBeeps`.\n'),
+			$author$project$Docs$Tutorial$coolBeepsSimple(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nNotice that this program calls the `coolBeeps` function in `main`. `coolBeeps` returns\na little two-note song, which `main` provides as the main song.\n\nYour functions can also take arguments, allowing them to change their behavior\nin response to signals from outside the function.\n\n\nTo do this, connect the dots on the top of the function to inputs inside the body\nof the function.\nThen, when calling the function, provide arguments which are substituted for the outputs\nat the top of the function when it is called.\n'),
+			$author$project$Docs$Tutorial$coolBeepsWithArgument(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\nThe example above provides `5` for the argument to the coolBeeps function.\nThis value is used for the duration of the first note, so the resulting song\nhas a first note of duration `5`.\n\n## Recursive Functions\n\nIf a function contains a call to itself in the body of the function, it is called \na `recursive` function. Recursive functions provide a powerful way to describe songs\nconcisely.\n'),
+			$author$project$Docs$Tutorial$recursiveExample(model),
+			$author$project$Docs$Tutorial$makeMarkdown('\n\nThis example recusrively calls the `beep` method to play notes\nseparated by 0.2 seconds. The input to the function is the song to\nadd on to, and the output is a completed song.\n\nWhen the function is called, it importantly checks that the song is\nnot too long. Without this check, the function would run forever, continuously\nadding to the song.\n\nIf you are familiar with other programming languages, you may notice Sonic Onion currently has no syntax to support loops. However, all loops can be written as recursive functions.\n\n\n## Sonic Onion To Do List\n\nSonic Onion is in an early stage of development, and lacks many features\nthat make programming languages usable and scalable.\n\nYou can contribute new ideas (as a github issue) or contribute at\n[https://github.com/oflatt/soniconion](https://github.com/oflatt/soniconion).\n\nIdeas:\n- infinite-length songs\n- saving programs\n- better toolbar\n- structs\n- state that persists over time- ontick loop\n- iterating over songs\n- synthesizers\n- effects\n- modules\n- performance improvement with Tone library\n- virtual reality inputs\n')
 		]);
 };
 var $author$project$Docs$Tutorial$tutorialBody = function (model) {
