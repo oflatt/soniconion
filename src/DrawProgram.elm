@@ -34,9 +34,9 @@ maxYOfStructures positioned =
 
                                
 -- function for drawing the onion
-drawOnion: Onion -> MouseState -> Int -> Int -> Int -> Int -> (Int, List (Svg Msg)) -- funcs and max height
-drawOnion onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset =
-    let viewStructures = getViewStructures onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset
+drawOnion: Onion -> MouseState -> Int -> Int -> Int -> Int -> Bool -> (Int, List (Svg Msg)) -- funcs and max height
+drawOnion onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset usedMoveInfo =
+    let viewStructures = getViewStructures onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset usedMoveInfo
     in
         ((maxYOfStructures viewStructures)
         ,(List.map drawFuncWithConnections viewStructures))
@@ -50,8 +50,8 @@ drawProgram program mouseState svgWindowWidth svgWindowHeight shouldDrawToolbar 
         drawnToolbar =
             if shouldDrawToolbar
             then (DrawToolbar.drawToolbar program mouseState svgWindowWidth svgWindowHeight)
-            else (DrawToolbar.ToolResult 0 0  (Svg.g [] []))
-        drawnOnion = (drawOnion program mouseState svgWindowWidth svgWindowHeight drawnToolbar.width 0)
+            else (DrawToolbar.ToolResult 0 0  (Svg.g [] []) False)
+        drawnOnion = (drawOnion program mouseState svgWindowWidth svgWindowHeight drawnToolbar.width 0 drawnToolbar.usedMoveInfo)
         actualViewportHeight = Basics.max (Tuple.first drawnOnion) drawnToolbar.height
         actualWindowHeight = floor ((toFloat svgWindowHeight) * ((toFloat actualViewportHeight) / (toFloat viewportHeight)))
     in

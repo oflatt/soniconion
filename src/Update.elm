@@ -254,7 +254,7 @@ programDropped model =
     let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
         svgH = ViewVariables.toSvgWindowHeight model.windowHeight
         toolbar = (DrawToolbar.drawToolbar model.program model.mouseState svgW svgH)
-        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH toolbar.width 0
+        viewStructures = ViewPositions.getViewStructures model.program model.mouseState svgW svgH toolbar.width 0 toolbar.usedMoveInfo
     in
         List.map .sortedFunc viewStructures
         

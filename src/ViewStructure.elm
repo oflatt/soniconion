@@ -138,8 +138,8 @@ movedInfoBlockPos moveInfo =
          moveInfo.movedCall False False)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> (List Call, BlockPositions)
-getAllBlockPositions maybeMoveInfo func currentY =
+getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> Bool -> (List Call, BlockPositions)
+getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
     case func of
         [] -> case maybeMoveInfo of
                   Nothing -> ([], Dict.empty)
@@ -159,10 +159,12 @@ getAllBlockPositions maybeMoveInfo func currentY =
                 restCall = if isMoved then func else rest
                 newY = if isMoved then
                            (case maybeMoveInfo of
-                                Just moveInfo -> (currentY + ViewVariables.blockSpace + (callLinesSpace moveInfo.movedCall))
+                                Just moveInfo -> (if isSpaceForMovedBlock
+                                                  then (currentY + ViewVariables.blockSpace + (callLinesSpace moveInfo.movedCall))
+                                                  else currentY)
                                 Nothing -> 0)
                        else currentY + ViewVariables.blockSpace + (callLinesSpace call)-- should not happen!
-                iteration = getAllBlockPositions newMoveInfo restCall newY
+                iteration = getAllBlockPositions newMoveInfo restCall newY isSpaceForMovedBlock
 
                 blockPos = if isMoved then
                                (case maybeMoveInfo of
@@ -185,10 +187,10 @@ fixMoveInfo xoffset yoffset maybeMove =
             in
                 Just {moveInfo | movedPos = (newx, newy)}
         
-getBlockPositions: Function -> MouseState -> Int -> Int -> Maybe MovedBlockInfo -> (Function, BlockPositions)
-getBlockPositions func mouseState xoffset yoffset maybeMove =
+getBlockPositions: Function -> MouseState -> Int -> Int -> Maybe MovedBlockInfo -> Bool -> (Function, BlockPositions)
+getBlockPositions func mouseState xoffset yoffset maybeMove isSpaceForMovedBlock =
     let fixedMoveInfo = fixMoveInfo xoffset yoffset maybeMove
-        allPositions = getAllBlockPositions fixedMoveInfo func.calls (getFuncHeaderHeight func)
+        allPositions = getAllBlockPositions fixedMoveInfo func.calls (getFuncHeaderHeight func) isSpaceForMovedBlock
     in
         ({func | calls=(Tuple.first allPositions)}, (Tuple.second allPositions))
 
@@ -219,7 +221,7 @@ fixLeftForMoveInfo withoutLeft maybeMove leftW =
                 Nothing -> withoutLeft
              
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =
-    let blockTuple = (getBlockPositions func mouseState xoffset yoffset maybeMoveInfo)
+    let blockTuple = (getBlockPositions func mouseState xoffset yoffset maybeMoveInfo (not isToolbar))
         sortedFunc = Tuple.first blockTuple
         blockPositionsWithoutLeftWidth = Tuple.second blockTuple
         

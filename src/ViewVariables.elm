@@ -1,8 +1,14 @@
 module ViewVariables exposing (..)
-import Css exposing (..)
+
+import Utils exposing (darken)
+
+import Css exposing (rgb)
+
+
 
 pageColor = (rgb 247 247 222)
-pageBackgroundColor = (rgb 229 229 208)
+toolbarBackgroundColor = darken 10 pageColor
+pageBackgroundColor = darken 20 pageColor
 
 
 
@@ -26,6 +32,7 @@ toolbarWidth = 100
                                            
 functionXSpacing = 25
 functionYSpacing = functionXSpacing
+toolbarPadding = functionXSpacing // 2
 funcInitialX = functionXSpacing
 funcInitialY = functionYSpacing
 

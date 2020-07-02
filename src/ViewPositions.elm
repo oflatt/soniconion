@@ -90,9 +90,11 @@ recursivePosition xpos ypos maybeSelected maybeMoved mouseState svgWindowWidth s
                 else newStructure :: recurrance
 
 
-getViewStructures onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset =
+getViewStructures onion mouseState svgWindowWidth svgWindowHeight xoffset yoffset usedMoveInfo =
     let selected = (getSelected mouseState svgWindowWidth svgWindowHeight)
-        moved = maybeMovedInfo mouseState svgWindowWidth svgWindowHeight
+        moved = if usedMoveInfo
+                then Nothing
+                else (maybeMovedInfo mouseState svgWindowWidth svgWindowHeight)
     in
         recursivePosition (ViewVariables.funcInitialX+xoffset) (ViewVariables.funcInitialY+yoffset)
              selected moved mouseState svgWindowWidth svgWindowHeight onion

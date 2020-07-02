@@ -9,6 +9,9 @@ darkenInt amount int =
 darken amount color =
     (rgba (darkenInt amount color.red) (darkenInt amount color.green) (darkenInt amount color.blue) color.alpha)
 
+rgbToCss rgb =
+    "rgb(" ++ (String.join "," (List.map String.fromInt [rgb.red, rgb.green, rgb.blue])) ++ ")"
+
 splitLast : List t -> Maybe (List t, t)
 splitLast func =
     case func of
