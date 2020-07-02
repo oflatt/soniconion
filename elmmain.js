@@ -7966,9 +7966,9 @@ var $author$project$Update$keyboardUpdate = F2(
 		}
 	});
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $author$project$DrawToolbar$ToolResult = F3(
-	function (width, height, svg) {
-		return {height: height, svg: svg, width: width};
+var $author$project$DrawToolbar$ToolResult = F4(
+	function (width, height, svg, usedMoveInfo) {
+		return {height: height, svg: svg, usedMoveInfo: usedMoveInfo, width: width};
 	});
 var $author$project$BuiltIn$callFromSpec = F2(
 	function (spec, id) {
@@ -7992,6 +7992,54 @@ var $author$project$BuiltIn$allBuiltInAsFunction = A3(
 	-1,
 	A2($author$project$BuiltIn$makeAllFunction, $author$project$BuiltIn$builtInFunctionList, -100),
 	'function');
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Utils$darkenInt = F2(
+	function (amount, _int) {
+		return A2(
+			$elm$core$Basics$min,
+			A2($elm$core$Basics$max, 0, _int - amount),
+			255);
+	});
+var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
+var $rtfeldman$elm_css$Css$cssFunction = F2(
+	function (funcName, args) {
+		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
+	});
+var $rtfeldman$elm_css$Css$rgba = F4(
+	function (r, g, b, alpha) {
+		return {
+			alpha: alpha,
+			blue: b,
+			color: $rtfeldman$elm_css$Css$Structure$Compatible,
+			green: g,
+			red: r,
+			value: A2(
+				$rtfeldman$elm_css$Css$cssFunction,
+				'rgba',
+				_Utils_ap(
+					A2(
+						$elm$core$List$map,
+						$elm$core$String$fromInt,
+						_List_fromArray(
+							[r, g, b])),
+					_List_fromArray(
+						[
+							$elm$core$String$fromFloat(alpha)
+						])))
+		};
+	});
+var $author$project$Utils$darken = F2(
+	function (amount, color) {
+		return A4(
+			$rtfeldman$elm_css$Css$rgba,
+			A2($author$project$Utils$darkenInt, amount, color.red),
+			A2($author$project$Utils$darkenInt, amount, color.green),
+			A2($author$project$Utils$darkenInt, amount, color.blue),
+			color.alpha);
+	});
 var $author$project$Model$BlockClick = F3(
 	function (a, b, c) {
 		return {$: 'BlockClick', a: a, b: b, c: c};
@@ -8481,7 +8529,6 @@ var $author$project$ViewVariables$charOverestimatePercent = 0.6;
 var $author$project$ViewVariables$inputFontSizePercent = 0.80;
 var $author$project$ViewVariables$blockCharacterOverestimate = ($author$project$ViewVariables$blockTextInputHeight * $author$project$ViewVariables$inputFontSizePercent) * $author$project$ViewVariables$charOverestimatePercent;
 var $author$project$ViewVariables$blockTextXPadding = $elm$core$Basics$floor($author$project$ViewVariables$blockCharacterOverestimate);
-var $rtfeldman$elm_css$Css$Structure$Compatible = {$: 'Compatible'};
 var $rtfeldman$elm_css$Css$absolute = {position: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'absolute'};
 var $rtfeldman$elm_css$Css$Preprocess$AppendProperty = function (a) {
 	return {$: 'AppendProperty', a: a};
@@ -11677,10 +11724,6 @@ var $author$project$BuiltIn$builtInVariables = $elm$core$Dict$fromList(
 		A2($elm$core$List$map, $author$project$BuiltIn$makeBuiltInNumber, $author$project$MusicTheory$namedFrequencies),
 		A2($elm$core$List$map, $author$project$BuiltIn$makeJavascriptBuiltIn, $author$project$Compiler$CompModel$systemValues)));
 var $author$project$ViewVariables$inputHeight = $author$project$ViewVariables$nodeRadius * 2;
-var $rtfeldman$elm_css$Css$cssFunction = F2(
-	function (funcName, args) {
-		return funcName + ('(' + (A2($elm$core$String$join, ', ', args) + ')'));
-	});
 var $rtfeldman$elm_css$Css$rgb = F3(
 	function (r, g, b) {
 		return {
@@ -12303,8 +12346,8 @@ var $author$project$ViewStructure$makeBlockPosition = F5(
 var $author$project$ViewStructure$movedInfoBlockPos = function (moveInfo) {
 	return A5($author$project$ViewStructure$makeBlockPosition, moveInfo.movedPos.a, moveInfo.movedPos.b, moveInfo.movedCall, false, false);
 };
-var $author$project$ViewStructure$getAllBlockPositions = F3(
-	function (maybeMoveInfo, func, currentY) {
+var $author$project$ViewStructure$getAllBlockPositions = F4(
+	function (maybeMoveInfo, func, currentY, isSpaceForMovedBlock) {
 		if (!func.b) {
 			if (maybeMoveInfo.$ === 'Nothing') {
 				return _Utils_Tuple2(_List_Nil, $elm$core$Dict$empty);
@@ -12335,7 +12378,7 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 				if (isMoved) {
 					if (maybeMoveInfo.$ === 'Just') {
 						var moveInfo = maybeMoveInfo.a;
-						return (currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall);
+						return isSpaceForMovedBlock ? ((currentY + $author$project$ViewVariables$blockSpace) + $author$project$ViewStructure$callLinesSpace(moveInfo.movedCall)) : currentY;
 					} else {
 						return 0;
 					}
@@ -12344,7 +12387,7 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 				}
 			}();
 			var restCall = isMoved ? func : rest;
-			var iteration = A3($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY);
+			var iteration = A4($author$project$ViewStructure$getAllBlockPositions, newMoveInfo, restCall, newY, isSpaceForMovedBlock);
 			var topCall = isMoved ? A2(
 				$elm$core$Maybe$withDefault,
 				call,
@@ -12380,14 +12423,15 @@ var $author$project$ViewStructure$getAllBlockPositions = F3(
 var $author$project$ViewStructure$getFuncHeaderHeight = function (func) {
 	return ($author$project$ViewVariables$functionHeaderHeight + ($author$project$ViewStructure$countOutputs(func.args) * $author$project$ViewVariables$lineSpaceBeforeBlock)) + $author$project$ViewVariables$blockSpacing;
 };
-var $author$project$ViewStructure$getBlockPositions = F5(
-	function (func, mouseState, xoffset, yoffset, maybeMove) {
+var $author$project$ViewStructure$getBlockPositions = F6(
+	function (func, mouseState, xoffset, yoffset, maybeMove, isSpaceForMovedBlock) {
 		var fixedMoveInfo = A3($author$project$ViewStructure$fixMoveInfo, xoffset, yoffset, maybeMove);
-		var allPositions = A3(
+		var allPositions = A4(
 			$author$project$ViewStructure$getAllBlockPositions,
 			fixedMoveInfo,
 			func.calls,
-			$author$project$ViewStructure$getFuncHeaderHeight(func));
+			$author$project$ViewStructure$getFuncHeaderHeight(func),
+			isSpaceForMovedBlock);
 		return _Utils_Tuple2(
 			_Utils_update(
 				func,
@@ -12827,10 +12871,6 @@ var $author$project$LineRouting$getMaxLine = function (routing) {
 					$author$project$LineRouting$maybeMax,
 					$elm$core$Dict$values(routing)))));
 };
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
 var $elm$core$List$minimum = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -12866,7 +12906,7 @@ var $author$project$LineRouting$getMinLine = function (routing) {
 };
 var $author$project$ViewStructure$getViewStructure = F8(
 	function (func, mouseState, svgScreenWidth, svgScreenHeight, xoffset, yoffset, maybeMoveInfo, isToolbar) {
-		var blockTuple = A5($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo);
+		var blockTuple = A6($author$project$ViewStructure$getBlockPositions, func, mouseState, xoffset, yoffset, maybeMoveInfo, !isToolbar);
 		var sortedFunc = blockTuple.a;
 		var lineRouting = $author$project$LineRouting$getLineRouting(sortedFunc);
 		var leftWidth = (-$author$project$LineRouting$getMinLine(lineRouting)) * $author$project$ViewVariables$lineXSpace;
@@ -12879,16 +12919,81 @@ var $author$project$ViewStructure$getViewStructure = F8(
 		var totalWidth = (leftWidth + rightWidth) + maxWidth;
 		return $author$project$ViewStructure$ViewStructure(blockPositions)(lineRouting)(sortedFunc)(sortedFunc.id)(topBlockPosition)(maxWidth)(totalWidth)(funcHeight)(mouseState)(svgScreenWidth)(svgScreenHeight)(isToolbar);
 	});
-var $author$project$DrawToolbar$drawToolbar = F4(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight) {
-		var viewStructure = A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgWindowWidth, svgWindowHeight, 0, 0, $elm$core$Maybe$Nothing, true);
-		return A3(
-			$author$project$DrawToolbar$ToolResult,
-			viewStructure.funcWidth,
-			viewStructure.funcHeight,
-			$author$project$DrawFunc$drawFuncWithConnections(viewStructure));
+var $author$project$ViewStructure$MovedBlockInfo = F2(
+	function (movedCall, movedPos) {
+		return {movedCall: movedCall, movedPos: movedPos};
 	});
+var $author$project$ViewStructure$maybeMovedInfo = F3(
+	function (mouseState, svgScreenWidth, svgScreenHeight) {
+		var _v0 = mouseState.mouseSelection;
+		if (_v0.$ === 'BlockSelected') {
+			var funcId = _v0.a;
+			var call = _v0.b;
+			var mouseOffset = _v0.c;
+			return $elm$core$Maybe$Just(
+				A2(
+					$author$project$ViewStructure$MovedBlockInfo,
+					call,
+					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Utils$rgbToCss = function (rgb) {
+	return 'rgb(' + (A2(
+		$elm$core$String$join,
+		',',
+		A2(
+			$elm$core$List$map,
+			$elm$core$String$fromInt,
+			_List_fromArray(
+				[rgb.red, rgb.green, rgb.blue]))) + ')');
+};
+var $author$project$ViewVariables$pageColor = A3($rtfeldman$elm_css$Css$rgb, 247, 247, 222);
+var $author$project$ViewVariables$toolbarBackgroundColor = A2($author$project$Utils$darken, 10, $author$project$ViewVariables$pageColor);
 var $author$project$ViewVariables$functionXSpacing = 25;
+var $author$project$ViewVariables$toolbarPadding = ($author$project$ViewVariables$functionXSpacing / 2) | 0;
+var $author$project$DrawToolbar$drawToolbar = F4(
+	function (onion, mouseState, svgScreenWidth, svgScreenHeight) {
+		var structureBeforeMoveInfo = A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgScreenWidth, svgScreenHeight, $author$project$ViewVariables$toolbarPadding, $author$project$ViewVariables$toolbarPadding, $elm$core$Maybe$Nothing, true);
+		var toolHeight = structureBeforeMoveInfo.funcHeight + $author$project$ViewVariables$toolbarPadding;
+		var toolWidth = structureBeforeMoveInfo.funcWidth + $author$project$ViewVariables$toolbarPadding;
+		var maybeMoved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgScreenWidth, svgScreenHeight);
+		var useMoveInfo = function () {
+			if (maybeMoved.$ === 'Nothing') {
+				return false;
+			} else {
+				var moveInfo = maybeMoved.a;
+				return _Utils_cmp(moveInfo.movedPos.a, toolWidth) < 0;
+			}
+		}();
+		var viewStructure = useMoveInfo ? A8($author$project$ViewStructure$getViewStructure, $author$project$BuiltIn$allBuiltInAsFunction, mouseState, svgScreenWidth, svgScreenHeight, $author$project$ViewVariables$toolbarPadding, $author$project$ViewVariables$toolbarPadding, maybeMoved, true) : structureBeforeMoveInfo;
+		return A4(
+			$author$project$DrawToolbar$ToolResult,
+			toolWidth,
+			toolHeight,
+			A2(
+				$elm$svg$Svg$g,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$svg$Svg$rect,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$width(
+								$elm$core$String$fromInt(viewStructure.funcWidth + (2 * $author$project$ViewVariables$toolbarPadding))),
+								$elm$svg$Svg$Attributes$height(
+								$elm$core$String$fromInt(viewStructure.funcHeight)),
+								$elm$svg$Svg$Attributes$fill(
+								useMoveInfo ? $author$project$Utils$rgbToCss(
+									A2($author$project$Utils$darken, 20, $author$project$ViewVariables$toolbarBackgroundColor)) : $author$project$Utils$rgbToCss($author$project$ViewVariables$toolbarBackgroundColor))
+							]),
+						_List_Nil),
+						$author$project$DrawFunc$drawFuncWithConnections(viewStructure)
+					])),
+			useMoveInfo);
+	});
 var $author$project$ViewVariables$funcInitialX = $author$project$ViewVariables$functionXSpacing;
 var $author$project$ViewVariables$functionYSpacing = $author$project$ViewVariables$functionXSpacing;
 var $author$project$ViewVariables$funcInitialY = $author$project$ViewVariables$functionYSpacing;
@@ -12914,26 +13019,6 @@ var $author$project$ViewPositions$getSelected = F3(
 			var mouseOffset = _v0.b;
 			return $elm$core$Maybe$Just(
 				A5($author$project$ViewPositions$selectedFunc, mouseState, func, svgWindowWidth, svgWindowHeight, mouseOffset));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$ViewStructure$MovedBlockInfo = F2(
-	function (movedCall, movedPos) {
-		return {movedCall: movedCall, movedPos: movedPos};
-	});
-var $author$project$ViewStructure$maybeMovedInfo = F3(
-	function (mouseState, svgScreenWidth, svgScreenHeight) {
-		var _v0 = mouseState.mouseSelection;
-		if (_v0.$ === 'BlockSelected') {
-			var funcId = _v0.a;
-			var call = _v0.b;
-			var mouseOffset = _v0.c;
-			return $elm$core$Maybe$Just(
-				A2(
-					$author$project$ViewStructure$MovedBlockInfo,
-					call,
-					A5($author$project$ViewStructure$mouseToSvgCoordinates, mouseState, svgScreenWidth, svgScreenHeight, mouseOffset.a, mouseOffset.b)));
 		} else {
 			return $elm$core$Maybe$Nothing;
 		}
@@ -13019,10 +13104,10 @@ var $author$project$ViewPositions$recursivePosition = F8(
 			}
 		}
 	});
-var $author$project$ViewPositions$getViewStructures = F6(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
+var $author$project$ViewPositions$getViewStructures = F7(
+	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset, usedMoveInfo) {
 		var selected = A3($author$project$ViewPositions$getSelected, mouseState, svgWindowWidth, svgWindowHeight);
-		var moved = A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
+		var moved = usedMoveInfo ? $elm$core$Maybe$Nothing : A3($author$project$ViewStructure$maybeMovedInfo, mouseState, svgWindowWidth, svgWindowHeight);
 		return A8($author$project$ViewPositions$recursivePosition, $author$project$ViewVariables$funcInitialX + xoffset, $author$project$ViewVariables$funcInitialY + yoffset, selected, moved, mouseState, svgWindowWidth, svgWindowHeight, onion);
 	});
 var $author$project$ViewVariables$toSvgWindowHeight = function (windowHeight) {
@@ -13036,7 +13121,7 @@ var $author$project$Update$programDropped = function (model) {
 	var svgW = $author$project$ViewVariables$toSvgWindowWidth(model.windowWidth);
 	var svgH = $author$project$ViewVariables$toSvgWindowHeight(model.windowHeight);
 	var toolbar = A4($author$project$DrawToolbar$drawToolbar, model.program, model.mouseState, svgW, svgH);
-	var viewStructures = A6($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, toolbar.width, 0);
+	var viewStructures = A7($author$project$ViewPositions$getViewStructures, model.program, model.mouseState, svgW, svgH, toolbar.width, 0, toolbar.usedMoveInfo);
 	return A2(
 		$elm$core$List$map,
 		function ($) {
@@ -14746,45 +14831,6 @@ var $author$project$Model$MouseOver = function (a) {
 };
 var $rtfeldman$elm_css$Css$borderRadius = $rtfeldman$elm_css$Css$prop1('border-radius');
 var $rtfeldman$elm_css$Html$Styled$button = $rtfeldman$elm_css$Html$Styled$node('button');
-var $author$project$Utils$darkenInt = F2(
-	function (amount, _int) {
-		return A2(
-			$elm$core$Basics$min,
-			A2($elm$core$Basics$max, 0, _int - amount),
-			255);
-	});
-var $rtfeldman$elm_css$Css$rgba = F4(
-	function (r, g, b, alpha) {
-		return {
-			alpha: alpha,
-			blue: b,
-			color: $rtfeldman$elm_css$Css$Structure$Compatible,
-			green: g,
-			red: r,
-			value: A2(
-				$rtfeldman$elm_css$Css$cssFunction,
-				'rgba',
-				_Utils_ap(
-					A2(
-						$elm$core$List$map,
-						$elm$core$String$fromInt,
-						_List_fromArray(
-							[r, g, b])),
-					_List_fromArray(
-						[
-							$elm$core$String$fromFloat(alpha)
-						])))
-		};
-	});
-var $author$project$Utils$darken = F2(
-	function (amount, color) {
-		return A4(
-			$rtfeldman$elm_css$Css$rgba,
-			A2($author$project$Utils$darkenInt, amount, color.red),
-			A2($author$project$Utils$darkenInt, amount, color.green),
-			A2($author$project$Utils$darkenInt, amount, color.blue),
-			color.alpha);
-	});
 var $rtfeldman$elm_css$Css$Preprocess$ExtendSelector = F2(
 	function (a, b) {
 		return {$: 'ExtendSelector', a: a, b: b};
@@ -15025,7 +15071,6 @@ var $author$project$TitleBar$makeTitle = function (model) {
 				A3($rtfeldman$elm_css$Css$rgb, 212, 214, 67))
 			]));
 };
-var $author$project$ViewVariables$pageColor = A3($rtfeldman$elm_css$Css$rgb, 247, 247, 222);
 var $rtfeldman$elm_css$Css$borderBottomColor = function (c) {
 	return A2($rtfeldman$elm_css$Css$property, 'border-bottom-color', c.value);
 };
@@ -15038,7 +15083,7 @@ var $rtfeldman$elm_css$Css$borderTopRightRadius = $rtfeldman$elm_css$Css$prop1('
 var $rtfeldman$elm_css$Css$marginTop = $rtfeldman$elm_css$Css$prop1('margin-top');
 var $rtfeldman$elm_css$Css$none = {backgroundImage: $rtfeldman$elm_css$Css$Structure$Compatible, blockAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, cursor: $rtfeldman$elm_css$Css$Structure$Compatible, display: $rtfeldman$elm_css$Css$Structure$Compatible, hoverCapability: $rtfeldman$elm_css$Css$Structure$Compatible, inlineAxisOverflow: $rtfeldman$elm_css$Css$Structure$Compatible, keyframes: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNone: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNoneOrMinMaxDimension: $rtfeldman$elm_css$Css$Structure$Compatible, lengthOrNumberOrAutoOrNoneOrContent: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleType: $rtfeldman$elm_css$Css$Structure$Compatible, listStyleTypeOrPositionOrImage: $rtfeldman$elm_css$Css$Structure$Compatible, none: $rtfeldman$elm_css$Css$Structure$Compatible, outline: $rtfeldman$elm_css$Css$Structure$Compatible, pointerDevice: $rtfeldman$elm_css$Css$Structure$Compatible, pointerEvents: $rtfeldman$elm_css$Css$Structure$Compatible, resize: $rtfeldman$elm_css$Css$Structure$Compatible, scriptingSupport: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationLine: $rtfeldman$elm_css$Css$Structure$Compatible, textTransform: $rtfeldman$elm_css$Css$Structure$Compatible, touchAction: $rtfeldman$elm_css$Css$Structure$Compatible, transform: $rtfeldman$elm_css$Css$Structure$Compatible, updateFrequency: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'none'};
 var $rtfeldman$elm_css$Css$outline = $rtfeldman$elm_css$Css$prop1('outline');
-var $author$project$ViewVariables$pageBackgroundColor = A3($rtfeldman$elm_css$Css$rgb, 229, 229, 208);
+var $author$project$ViewVariables$pageBackgroundColor = A2($author$project$Utils$darken, 20, $author$project$ViewVariables$pageColor);
 var $rtfeldman$elm_css$Css$solid = {borderStyle: $rtfeldman$elm_css$Css$Structure$Compatible, textDecorationStyle: $rtfeldman$elm_css$Css$Structure$Compatible, value: 'solid'};
 var $author$project$View$pagebutton = F2(
 	function (pageName, model) {
@@ -15217,9 +15262,9 @@ var $author$project$DrawProgram$maxYOfStructures = function (positioned) {
 				},
 				positioned)));
 };
-var $author$project$DrawProgram$drawOnion = F6(
-	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset) {
-		var viewStructures = A6($author$project$ViewPositions$getViewStructures, onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset);
+var $author$project$DrawProgram$drawOnion = F7(
+	function (onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset, usedMoveInfo) {
+		var viewStructures = A7($author$project$ViewPositions$getViewStructures, onion, mouseState, svgWindowWidth, svgWindowHeight, xoffset, yoffset, usedMoveInfo);
 		return _Utils_Tuple2(
 			$author$project$DrawProgram$maxYOfStructures(viewStructures),
 			A2($elm$core$List$map, $author$project$DrawFunc$drawFuncWithConnections, viewStructures));
@@ -15229,12 +15274,13 @@ var $author$project$DrawProgram$drawProgram = F5(
 	function (program, mouseState, svgWindowWidth, svgWindowHeight, shouldDrawToolbar) {
 		var viewportWidth = A2($author$project$ViewVariables$viewportWidth, svgWindowWidth, svgWindowHeight);
 		var viewportHeight = $author$project$ViewVariables$viewportHeight;
-		var drawnToolbar = shouldDrawToolbar ? A4($author$project$DrawToolbar$drawToolbar, program, mouseState, svgWindowWidth, svgWindowHeight) : A3(
+		var drawnToolbar = shouldDrawToolbar ? A4($author$project$DrawToolbar$drawToolbar, program, mouseState, svgWindowWidth, svgWindowHeight) : A4(
 			$author$project$DrawToolbar$ToolResult,
 			0,
 			0,
-			A2($elm$svg$Svg$g, _List_Nil, _List_Nil));
-		var drawnOnion = A6($author$project$DrawProgram$drawOnion, program, mouseState, svgWindowWidth, svgWindowHeight, drawnToolbar.width, 0);
+			A2($elm$svg$Svg$g, _List_Nil, _List_Nil),
+			false);
+		var drawnOnion = A7($author$project$DrawProgram$drawOnion, program, mouseState, svgWindowWidth, svgWindowHeight, drawnToolbar.width, 0, drawnToolbar.usedMoveInfo);
 		var actualViewportHeight = A2($elm$core$Basics$max, drawnOnion.a, drawnToolbar.height);
 		var actualWindowHeight = $elm$core$Basics$floor(svgWindowHeight * (actualViewportHeight / viewportHeight));
 		return $rtfeldman$elm_css$Html$Styled$fromUnstyled(
