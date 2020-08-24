@@ -65,15 +65,20 @@ function update(state, song, time) {
     for(var i = 0; i < notes.length; i++) {
 	if (state.synths.length <= i) {
 	    var newSynth = new Tone.Synth().toMaster();
-	    newSynth.triggerAttack(notes[i].frequency);
+	    newSynth.triggerAttack(notes[i].frequency, Tone.immediate());
 	    state.synths.push(newSynth);
 	} else {
 	    state.synths[i].setNote(notes[i].frequency);
 	}
     }
+    
     if(state.synths.length > notes.length) {
 	for(var i = notes.length; i < state.synths.length; i++) {
-	    state.synths[i].dispose();
+	    const synthToDispose = state.synths[i];
+	    synthToDispose.triggerRelease(Tone.immediate());
+	    setTimeout(() => {
+		synthToDispose.dispose();
+	    }, 2000); // eventually dispose of the synth
 	}
 	state.synths = state.synths.slice(0, notes.length);
     }
