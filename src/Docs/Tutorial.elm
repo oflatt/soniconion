@@ -100,21 +100,27 @@ is updated to be `duration` greater.
 Mathematical operations like `+` operate
 on the anchors of multiple songs, returning the first argument with a modified anchor, 
 in a similar way to how `note` extends a song with another note.
-Consider the following example.
+This may be confusing at first, so consider the following example.
+
 """
    ,ex1Addition model
    ,makeMarkdown """
-Notice that the second note plays one second after the first.
-The second note starts at the modified anchor of the first note, which is 2.
+Notice that the second note plays two seconds after the first.
+This is because the `anchor` of the first note is changed from 1 to 3 by the addition of 2.
+The song with the modified anchor of 3 is the input of the second note, so it begins at time 3.
+The resulting song with two notes in it has an anchor of 4.
 
 However, something different happens when we reverse the order of the arguments to `+`.
 """
    ,ex2Addition model
    ,makeMarkdown """
 The first note does not play! This is because the result of the `+` computation is
-a silent song of duration `2` with the anchor `3`. The other argument, the first note,
-is used to update the anchor of the literal `2`.
+a silent song with the anchor `3`.
+Operations on songs only inherit the notes from the first operand.
+The other songs are only used to update the anchor of the result.
 
+In this case, the `+` operator is only considering the anchor of the second note
+and adding it to the 2.
 
 ## Join and Append
 """
