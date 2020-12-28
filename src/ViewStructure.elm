@@ -13,10 +13,9 @@ import Debug exposing (log)
 
 
 -- skip index of -1 if 
-type alias MovedBlockInfo = {movedCall : Call
+type alias MovedBlockInfo = {movedBlock : Block
                              ,movedPos : (Int, Int)}
 
-    
 mouseToSvgCoordinates: MouseState -> Int -> Int -> Int -> Int -> (Int, Int)
 mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset =
     (((mouseState.mouseX+mouseState.scrollX) * (ViewVariables.viewportWidth svgScreenWidth svgScreenHeight)) // svgScreenWidth - xoffset
@@ -24,9 +23,9 @@ mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight xoffset yoffset 
 
 maybeMovedInfo mouseState svgScreenWidth svgScreenHeight =
     case mouseState.mouseSelection of
-        BlockSelected funcId call mouseOffset ->
+        BlockSelected funcId block mouseOffset ->
             Just (MovedBlockInfo
-                      call
+                      block
                       (mouseToSvgCoordinates mouseState svgScreenWidth svgScreenHeight
                            (Tuple.first mouseOffset) (Tuple.second mouseOffset)))
         _ -> Nothing
@@ -56,11 +55,11 @@ type alias ViewStructure = {blockPositions : BlockPositions
 blockPositionsToPositionList func blockPositions =
     case func of
         [] -> Ok []
-        (call::calls) ->
-            case Dict.get call.id blockPositions of
+        (block::blocks) ->
+            case Dict.get block.id blockPositions of
                 Nothing -> Err "block not in blockPositions"
                 Just pos ->
-                    case blockPositionsToPositionList calls blockPositions of
+                    case blockPositionsToPositionList blocks blockPositions of
                         Err e -> Err e
                         Ok positions ->
                             Ok (pos :: positions)
@@ -82,8 +81,8 @@ countOutputsBefore inputs threshhold =
 countOutputs inputs =
     (countOutputsBefore inputs (List.length inputs))
 
-callLinesSpace call =
-    (countOutputs call.inputs) * ViewVariables.lineSpaceBeforeBlock
+blockLinesSpace block =
+    (countOutputs (getInputs block) * ViewVariables.lineSpaceBeforeBlock
 
 getInputWidth input =
     case input of
@@ -103,21 +102,23 @@ inputPositionList inputs counter currentX shouldAddTail=
                 (counter, (currentX, width)) ::
                     (inputPositionList rest (counter+1) (currentX+width+ViewVariables.inputSpacing) shouldAddTail)
         
-makeInputPositions call shouldAddTail =
-    Dict.fromList (inputPositionList call.inputs 0 ViewVariables.inputPadding shouldAddTail)
+makeInputPositions block shouldAddTail =
+    Dict.fromList (inputPositionList (getInputs block) 0 ViewVariables.inputPadding shouldAddTail)
 
 inputPositionsMax inputPositions =
     case Dict.get ((Dict.size inputPositions)-1) inputPositions of
         Just lastPos -> (Tuple.first lastPos)+(Tuple.second lastPos) + ViewVariables.blockTextXPadding
         Nothing -> 0
 
+getBlockWidth block inputPositions =
+    case block of
+       CallBlock call -> max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
+       StaffBlock staff -> (ViewVariables.callTextBlockSize "placeholder")
+    
         
-getBlockWidth call inputPositions =
-    max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
-        
-makeBlockPosition xpos ypos call shouldCenter shouldAddTail =
-    let inputPositions = (makeInputPositions call shouldAddTail)
-        blockW = getBlockWidth call inputPositions
+makeBlockPosition xpos ypos block shouldCenter shouldAddTail =
+    let inputPositions = (makeInputPositions block shouldAddTail)
+        blockW = getBlockWidth block inputPositions
         blockXpos =
             if shouldCenter then
                 xpos - (blockW//2)
@@ -131,23 +132,23 @@ makeBlockPosition xpos ypos call shouldCenter shouldAddTail =
         (BlockPosition blockXpos blockYpos blockW inputPositions)
 
 getHeaderBlockPos func xoffset yoffset =
-    makeBlockPosition xoffset yoffset (Call 0 func.args func.name "") False True
+    makeBlockPosition xoffset yoffset (CallBlock (Call 0 func.args func.name "")) False True
 
 movedInfoBlockPos moveInfo =
     (makeBlockPosition (Tuple.first moveInfo.movedPos) (Tuple.second moveInfo.movedPos)
-         moveInfo.movedCall False False)
+         moveInfo.movedBlock False False)
         
 -- index is the index in the list but indexPos is where to draw (used for skipping positions)
-getAllBlockPositions: Maybe MovedBlockInfo -> List Call -> Int -> Bool -> (List Call, BlockPositions)
+getAllBlockPositions: Maybe MovedBlockInfo -> List Block -> Int -> Bool -> (List Block, BlockPositions)
 getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
     case func of
         [] -> case maybeMoveInfo of
                   Nothing -> ([], Dict.empty)
-                  Just moveInfo -> ([moveInfo.movedCall],
-                                        (Dict.insert moveInfo.movedCall.id
+                  Just moveInfo -> ([moveInfo.movedBlock],
+                                        (Dict.insert moveInfo.movedBlock.id
                                              (movedInfoBlockPos moveInfo)
                                              Dict.empty))
-        (call::rest) ->
+        (block::rest) ->
             let isMoved =
                     (case maybeMoveInfo of
                          Nothing -> False
@@ -155,25 +156,25 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
                 newMoveInfo =
                     if isMoved then Nothing
                     else maybeMoveInfo
-                topCall = if isMoved then Maybe.withDefault call (Maybe.map .movedCall maybeMoveInfo) else call -- default should not happen
-                restCall = if isMoved then func else rest
+                topBlock = if isMoved then Maybe.withDefault block (Maybe.map .movedBlock maybeMoveInfo) else block -- default should not happen
+                restBlock = if isMoved then func else rest
                 newY = if isMoved then
                            (case maybeMoveInfo of
                                 Just moveInfo -> (if isSpaceForMovedBlock
-                                                  then (currentY + ViewVariables.blockSpace + (callLinesSpace moveInfo.movedCall))
+                                                  then (currentY + ViewVariables.blockSpace + (blockLinesSpace moveInfo.movedBlock))
                                                   else currentY)
                                 Nothing -> 0)
-                       else currentY + ViewVariables.blockSpace + (callLinesSpace call)-- should not happen!
-                iteration = getAllBlockPositions newMoveInfo restCall newY isSpaceForMovedBlock
+                       else currentY + ViewVariables.blockSpace + (blockLinesSpace block)-- should not happen!
+                iteration = getAllBlockPositions newMoveInfo restBlock newY isSpaceForMovedBlock
 
                 blockPos = if isMoved then
                                (case maybeMoveInfo of
                                     Just moveInfo -> (movedInfoBlockPos moveInfo)
-                                    Nothing -> (makeBlockPosition 0 0 call False False)) -- should not happen
-                           else (makeBlockPosition 0 (currentY + (callLinesSpace call)) call False False)
+                                    Nothing -> (makeBlockPosition 0 0 block False False)) -- should not happen
+                           else (makeBlockPosition 0 (currentY + (blockLinesSpace block)) block False False)
             in
-                (topCall :: (Tuple.first iteration)
-                ,(Dict.insert topCall.id blockPos (Tuple.second iteration)))
+                (topBlock :: (Tuple.first iteration)
+                ,(Dict.insert topBlock.id blockPos (Tuple.second iteration)))
 
 getFuncHeaderHeight func =
     ViewVariables.functionHeaderHeight + (countOutputs func.args)*ViewVariables.lineSpaceBeforeBlock + ViewVariables.blockSpacing
@@ -190,9 +191,9 @@ fixMoveInfo xoffset yoffset maybeMove =
 getBlockPositions: Function -> MouseState -> Int -> Int -> Maybe MovedBlockInfo -> Bool -> (Function, BlockPositions)
 getBlockPositions func mouseState xoffset yoffset maybeMove isSpaceForMovedBlock =
     let fixedMoveInfo = fixMoveInfo xoffset yoffset maybeMove
-        allPositions = getAllBlockPositions fixedMoveInfo func.calls (getFuncHeaderHeight func) isSpaceForMovedBlock
+        allPositions = getAllBlockPositions fixedMoveInfo func.blocks (getFuncHeaderHeight func) isSpaceForMovedBlock
     in
-        ({func | calls=(Tuple.first allPositions)}, (Tuple.second allPositions))
+        ({func | blocks=(Tuple.first allPositions)}, (Tuple.second allPositions))
 
             
 getMaxBlockWidth blockPositions topBlock =
@@ -213,11 +214,11 @@ fixLeftForMoveInfo withoutLeft maybeMove leftW =
     case maybeMove of
         Nothing -> withoutLeft
         Just moveInfo ->
-            case Dict.get moveInfo.movedCall.id withoutLeft of
+            case Dict.get moveInfo.movedBlock.id withoutLeft of
                 Just blockPos ->
                     let newx = blockPos.xpos-leftW
                     in
-                        Dict.insert moveInfo.movedCall.id {blockPos | xpos = newx} withoutLeft
+                        Dict.insert moveInfo.movedBlock.id {blockPos | xpos = newx} withoutLeft
                 Nothing -> withoutLeft
              
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =

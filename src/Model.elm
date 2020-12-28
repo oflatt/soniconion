@@ -82,7 +82,7 @@ type Msg = MouseOver String
          | HeaderAddOutputRightClick Id Int
          
            
-         | BlockClick Call Id (Int, Int)
+         | BlockClick Block Id (Int, Int)
          | BlockNameClick Call Id (Int, Int)
          | InputClick Id Int
          | OutputClick Id
@@ -133,14 +133,14 @@ type alias Onion = List Function
 type alias Function = { name: String
                       , id: Id
                       , args: List Input
-                      , calls: List Call}
+                      , blocks: List Block}
 
-nodeInputId callid inputindex =
-    "i" ++ (String.fromInt callid) ++ "-" ++ (String.fromInt inputindex)
-nodeOutputId callid =
-    "o" ++ (String.fromInt callid)
-nodeNameId callid =
-    "n" ++ (String.fromInt callid)
+nodeInputId blockid inputindex =
+    "i" ++ (String.fromInt blockid) ++ "-" ++ (String.fromInt inputindex)
+nodeOutputId blockid =
+    "o" ++ (String.fromInt blockid)
+nodeNameId blockid =
+    "n" ++ (String.fromInt blockid)
 
 headerNodeId functionid index =
     "h" ++ (String.fromInt functionid) ++ "-" ++ (String.fromInt index)
@@ -148,29 +148,45 @@ headerNameId functionid =
     "hn" ++ (String.fromInt functionid)
 
     
-makeMain id calls =
-    makeFunc id calls "main"
+makeMain id blocks =
+    makeFunc id blocks "main"
 
-makeFunc id calls name =
-    (constructFunction id name calls)
+makeFunc id blocks name =
+    (constructFunction id name blocks)
 
-constructFunction id name calls =
-    (Function name id [] calls)
+constructFunction id name blocks =
+    (Function name id [] blocks)
         
-getCallById id func =
+getInputs : Block -> List Input
+getInputs block =
+    case block of
+        CallBlock c -> c.inputs
+        _ -> []
+
+getBlockById id func =
     case func of
         [] -> Nothing
-        (call::calls) ->
-            if call.id == id
-            then Just call
-            else getCallById id calls
+        (block::blocks) ->
+            if block.id == id
+            then Just block
+            else getBlockById id blocks
                
 type alias Call = {id: Id
                   ,inputs: List Input
                   ,functionName: String
                   ,outputText: String}
 
-type MouseSelection = BlockSelected Id Call (Int, Int) -- id of function it came from,
+type alias Note = {offset: Int
+                  ,duration: Float}
+
+type alias Staff = {id: Id
+                   ,notes: List Note
+                   ,outputText: String}
+
+type Block = CallBlock Call
+           | StaffBlock Staff
+
+type MouseSelection = BlockSelected Id Block (Int, Int) -- id of function it came from,
                                 -- the svg offset on the block of the mouse cursor when it clicked the block
                     | FunctionSelected Function (Int, Int)-- the function in hand and the svg offset of cursor when clicked
                     | InputSelected Id Int -- id of block and index of input
