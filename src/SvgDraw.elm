@@ -1,4 +1,4 @@
-module SvgDraw exposing (drawBuiltIn, errorSvgNode, drawConnector, drawNode, drawTextInput,
+module SvgDraw exposing (drawCall, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
                              headerEvents, drawHeaderNameInput, headerEventsFinal, blockMouseOffset)
@@ -48,15 +48,6 @@ errorSvgNode errorMsg=
              ,Svg.Attributes.cursor "default"]
              [Svg.text errorMsg]
         ]
-        
-
-
-    
-        
-drawBuiltIn: Call -> Int -> ViewStructure -> (Svg Msg)
-drawBuiltIn call index viewStructure =
-    drawBlock call viewStructure
-
 
 svgText xpos ypos textIn fontSizeIn fillIn =
     text_
@@ -103,17 +94,17 @@ svgTextInput str xpos ypos w h onFocusEvent onInputEvent backgroundColor events 
                        ,Css.position Css.absolute]]
                   [])]
         
-drawTextInput : Call -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String ->
+drawTextInput : Block -> String -> List (Svg.Attribute Msg) -> Int -> InputPosition -> Int -> Int -> String ->
               ViewStructure -> (Svg Msg)
-drawTextInput call str events xpos inputPos ypos index domId viewStructure =
+drawTextInput block str events xpos inputPos ypos index domId viewStructure =
     svgTextInput
         str
         ((Tuple.first inputPos)+xpos)
         (ypos - (ViewVariables.inputHeight//2))
         (Tuple.second inputPos)
         ViewVariables.inputHeight
-        (InputHighlight call.id index)
-        (InputUpdate call.id index)
+        (InputHighlight (getId block) index)
+        (InputUpdate (getId block) index)
         (case Dict.get str BuiltIn.builtInVariables of
              Just val -> ViewVariables.textInputColorVariable
              Nothing -> ViewVariables.textInputColor)
@@ -209,10 +200,10 @@ svgClickWithDefault leftClickEvent rightClickEvent =
 viewStructureToMouse viewStructure =
     mouseToSvgCoordinates viewStructure.mouseState viewStructure.svgWidth viewStructure.svgHeight 0 0
     
-blockMouseOffset call viewStructure =
+blockMouseOffset block viewStructure =
     let coordinates = viewStructureToMouse viewStructure
     in
-        case Dict.get call.id viewStructure.blockPositions of
+        case Dict.get (getId block) viewStructure.blockPositions of
             Just blockPos -> ((Tuple.first coordinates)-blockPos.xpos-viewStructure.headerPos.xpos,
                                   ((Tuple.second coordinates)-blockPos.ypos-viewStructure.headerPos.ypos))
             Nothing -> (0, 0) -- should not happen
@@ -225,15 +216,15 @@ functionMouseOffset function viewStructure =
         
 
                        
-blockNameEvents call viewStructure =
-    let coordinates = blockMouseOffset call viewStructure
+blockNameEvents block viewStructure =
+    let coordinates = blockMouseOffset block viewStructure
     in
         (if viewStructure.isToolbar
          then
-             svgClickEvents (SpawnBlock call.functionName coordinates) (SpawnBlock call.functionName coordinates)
+             svgClickEvents (SpawnBlock block coordinates) (SpawnBlock block coordinates)
          else
-             svgClickWithDefault (BlockNameClick call viewStructure.id coordinates)
-                 (BlockNameClick call viewStructure.id coordinates))
+             svgClickWithDefault (BlockNameClick block viewStructure.id coordinates)
+                 (BlockNameClick block viewStructure.id coordinates))
 
 headerNameEvents function viewStructure =
     if viewStructure.isToolbar
@@ -248,12 +239,12 @@ headerBlockEvents function viewStructure =
     else
         svgClickEvents (HeaderClick function (functionMouseOffset function viewStructure)) (HeaderClick function (functionMouseOffset function viewStructure))
             
-nodeEvents call viewStructure inputCounter =
+nodeEvents block viewStructure inputCounter =
     if viewStructure.isToolbar
     then
         []
     else
-        svgClickEvents (InputClick call.id inputCounter) (InputRightClick call.id inputCounter)
+        svgClickEvents (InputClick (getId block) inputCounter) (InputRightClick (getId block) inputCounter)
 
 headerEvents inputCounter viewStructure =
     if viewStructure.isToolbar
@@ -269,10 +260,8 @@ headerEventsFinal inputCounter viewStructure =
     else
         svgClickEvents (HeaderAddOutput viewStructure.id inputCounter) (HeaderAddOutputRightClick viewStructure.id inputCounter)
             
-        
--- shape for functionName objects
-drawBlock: Call -> ViewStructure -> (Svg Msg)
-drawBlock call viewStructure =
+
+drawCall call index viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             (rect
@@ -321,8 +310,13 @@ drawFuncHeader function viewStructure =
                ,fill ViewVariables.blockColor
                ,stroke ViewVariables.blockColor]
                [])]
-                
-drawBlockNameInput call viewStructure blockPos =
+
+drawBlockNameInput block viewStructure blockPos =
+    case block of
+        CallBlock call -> drawCallNameInput block viewStructure blockPos
+        _ -> Svg.g [] []
+
+drawCallNameInput call viewStructure blockPos =
     (svgTextInput call.functionName
          (blockPos.xpos + ViewVariables.blockTextXPadding)
          ((ViewVariables.blockTextInputYpos) + blockPos.ypos)
@@ -350,8 +344,8 @@ drawHeaderNameInput function viewStructure =
 
         
                 
-drawConnector : Call -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Int -> Svg Msg
-drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted routeOffset viewStructure topOffset =
+drawConnector : Block -> BlockPosition -> Int -> (Int, Int) -> List (Svg.Attribute Msg) -> Bool -> Int -> ViewStructure -> Int -> Svg Msg
+drawConnector block blockPos inputCounter otherBlockPos events isLineHighlighted routeOffset viewStructure topOffset =
     let otherBlockOutputX = (Tuple.first otherBlockPos)
         topY = (Tuple.second otherBlockPos) + ViewVariables.lineSpaceBeforeBlock * topOffset
         lineX =
@@ -363,7 +357,7 @@ drawConnector call blockPos inputCounter otherBlockPos events isLineHighlighted 
                  else otherBlockOutputX)
         lastY =
             (blockPos.ypos + ViewVariables.nodeRadius)
-            - (ViewVariables.lineSpaceBeforeBlock * (1 + (countOutputsBefore call.inputs inputCounter)))
+            - (ViewVariables.lineSpaceBeforeBlock * (1 + (countOutputsBefore (getInputs block) inputCounter)))
         nodeX =
             (case (Dict.get inputCounter blockPos.inputPositions ) of
                  Just inputPos -> (Tuple.first inputPos) + ViewVariables.nodeRadius + blockPos.xpos

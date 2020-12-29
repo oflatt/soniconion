@@ -5,8 +5,9 @@ import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
                                              buildUnaryWithSingleLead, buildIf, buildJoin, buildAppend)
 import Dict exposing (Dict)
-import Model exposing (Function, Call, Input(..), Id, makeMain, makeFunc)
+import Model exposing (Function, Block(..), Call, Input(..), Id, makeMain, makeFunc)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
+import Model exposing (Staff)
 
 -- infinite has a min number of args with the names of the args
 -- then the name of the rest of the args
@@ -89,11 +90,11 @@ callFromSpec spec id =
     constructCall id spec.functionName
 
 -- a function containing calls to all the functions for use in drawing
-makeAllFunction : BuiltInList -> Int -> List Call
+makeAllFunction : BuiltInList -> Int -> List Block
 makeAllFunction builtInList counter =
     case builtInList of
-        [] -> []
-        (spec::specs) -> (callFromSpec spec counter) :: (makeAllFunction specs (counter-1))
+        [] -> [(StaffBlock (constructStaff counter))]
+        (spec::specs) -> (CallBlock (callFromSpec spec counter)) :: (makeAllFunction specs (counter-1))
 
 allBuiltInAsFunction = (makeFunc -1 (makeAllFunction builtInFunctionList -100) "function")
 
@@ -110,4 +111,6 @@ constructCall id functionName =
                 Finite args -> callWithHoles id functionName (List.length args)
         Nothing -> callWithHoles id functionName 0
                    
-                    
+constructStaff : Id -> Staff
+constructStaff id =
+    (Staff id [] "")

@@ -56,7 +56,7 @@ blockPositionsToPositionList func blockPositions =
     case func of
         [] -> Ok []
         (block::blocks) ->
-            case Dict.get block.id blockPositions of
+            case Dict.get (getId block) blockPositions of
                 Nothing -> Err "block not in blockPositions"
                 Just pos ->
                     case blockPositionsToPositionList blocks blockPositions of
@@ -82,7 +82,7 @@ countOutputs inputs =
     (countOutputsBefore inputs (List.length inputs))
 
 blockLinesSpace block =
-    (countOutputs (getInputs block) * ViewVariables.lineSpaceBeforeBlock
+    (countOutputs (getInputs block) * ViewVariables.lineSpaceBeforeBlock)
 
 getInputWidth input =
     case input of
@@ -145,7 +145,7 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
         [] -> case maybeMoveInfo of
                   Nothing -> ([], Dict.empty)
                   Just moveInfo -> ([moveInfo.movedBlock],
-                                        (Dict.insert moveInfo.movedBlock.id
+                                        (Dict.insert moveInfo.moved(getId block)
                                              (movedInfoBlockPos moveInfo)
                                              Dict.empty))
         (block::rest) ->
@@ -174,7 +174,7 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
                            else (makeBlockPosition 0 (currentY + (blockLinesSpace block)) block False False)
             in
                 (topBlock :: (Tuple.first iteration)
-                ,(Dict.insert topBlock.id blockPos (Tuple.second iteration)))
+                ,(Dict.insert top(getId block) blockPos (Tuple.second iteration)))
 
 getFuncHeaderHeight func =
     ViewVariables.functionHeaderHeight + (countOutputs func.args)*ViewVariables.lineSpaceBeforeBlock + ViewVariables.blockSpacing
@@ -214,11 +214,11 @@ fixLeftForMoveInfo withoutLeft maybeMove leftW =
     case maybeMove of
         Nothing -> withoutLeft
         Just moveInfo ->
-            case Dict.get moveInfo.movedBlock.id withoutLeft of
+            case Dict.get moveInfo.moved(getId block) withoutLeft of
                 Just blockPos ->
                     let newx = blockPos.xpos-leftW
                     in
-                        Dict.insert moveInfo.movedBlock.id {blockPos | xpos = newx} withoutLeft
+                        Dict.insert moveInfo.moved(getId block) {blockPos | xpos = newx} withoutLeft
                 Nothing -> withoutLeft
              
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =

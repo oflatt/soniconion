@@ -1,5 +1,5 @@
-module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateCall, IdToPos, updateInputOn
-                             ,updateInputAtIndex, updateFunc, removeCall, removeFunc, removeCallUnsafe
+module ModelHelpers exposing (updateInput, fixInvalidInputs, idToPosition, updateBlock, IdToPos, updateInputOn
+                             ,updateInputAtIndex, updateFunc, removeBlock, removeFunc, removeBlockUnsafe
                              ,fixAllInvalidInputs, getFunc, isStandInInfinite, OnionMap, makeOnionMap
                              ,funcToArgList)
 
@@ -16,18 +16,19 @@ type alias OnionMap = Dict String Function -- name of func to function
 addFuncPos func idToPos =
     Dict.insert func.id -1 idToPos
     
+idToPosition : Function -> IdToPos -> Int -> IdToPos
 idToPosition func dict pos =
-    (addFuncPos func (idToPositionCalls func.calls dict pos))
+    (addFuncPos func (idToPositionBlocks func.blocks dict pos))
 
-idToPositionCalls func dict pos =
+idToPositionBlocks func dict pos =
     case func of
         [] -> dict
-        (e::es) -> (idToPositionCalls es
-                        (Dict.insert e.id pos dict)
-                        (pos + 1))
+        (block::blocks) -> (idToPositionBlocks blocks
+                                               (Dict.insert (getId block) pos dict)
+                                               (pos + 1))
 
-isStandInInfinite call input index =
-    case Dict.get call.functionName builtInFunctions of
+isStandInInfinite block input index =
+    case Dict.get (getFunctionName block) builtInFunctions of
         Nothing -> False
         Just builtInSpec ->
             case builtInSpec.argList of
@@ -60,9 +61,9 @@ fitInputsTo inputs mandatoryLength =
              
                     
 
-fixInputsForInfiniteArguments : List Input -> Call -> List Input
-fixInputsForInfiniteArguments inputs call =
-    case Dict.get call.functionName builtInFunctions of
+fixInputsForInfiniteArguments : List Input -> Block -> List Input
+fixInputsForInfiniteArguments inputs block =
+    case Dict.get (getFunctionName block) builtInFunctions of
         Nothing -> inputs
         Just builtInSpec ->
             case builtInSpec.argList of
@@ -82,21 +83,21 @@ updateInputAtIndex inputs index inputFunc =
 
                     
                      
-updateInputInputs : List Input -> Int -> (Input -> Input) -> Call -> List Input
-updateInputInputs inputs index inputFunc call =
-    fixInputsForInfiniteArguments (updateInputAtIndex inputs index inputFunc) call
+updateInputInputs : List Input -> Int -> (Input -> Input) -> Block -> List Input
+updateInputInputs inputs index inputFunc block =
+    fixInputsForInfiniteArguments (updateInputAtIndex inputs index inputFunc) block
 
-updateInputCall call id index inputFunc =
-    if id == call.id
+updateInputBlock block id index inputFunc =
+    if id == (getId block)
     then
-        {call | inputs = updateInputInputs call.inputs index inputFunc call}
+        (setInputs block (updateInputInputs (getInputs block) index inputFunc block))
     else
-        call
+        block
                         
 updateInputFunc func id index inputFunc =
     case func of
         [] -> []
-        (call::calls) -> updateInputCall call id index inputFunc :: updateInputFunc calls id index inputFunc
+        (block::blocks) -> updateInputBlock block id index inputFunc :: updateInputFunc blocks id index inputFunc
 
 updateInputOnion : Onion -> Id -> Int -> Maybe Id -> (Input -> Input) -> Onion
 updateInputOnion onion id index funcIdMaybe inputFunc =
@@ -107,10 +108,10 @@ updateInputOnion onion id index funcIdMaybe inputFunc =
                 Just fId ->
                     if fId == func.id
                     then
-                        (fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} :: funcs)
+                        (fixInvalidInputs {func | blocks=(updateInputFunc func.blocks id index inputFunc)} :: funcs)
                     else
                         func :: (updateInputOnion funcs id index funcIdMaybe inputFunc)
-                Nothing -> (fixInvalidInputs {func | calls=(updateInputFunc func.calls id index inputFunc)} ::
+                Nothing -> (fixInvalidInputs {func | blocks=(updateInputFunc func.blocks id index inputFunc)} ::
                                 updateInputOnion funcs id index funcIdMaybe inputFunc)
     
                         
@@ -129,54 +130,54 @@ updateInput model id index inputFunc =
     updateInputOn model id index Nothing inputFunc
         
         
-updateCallIfMatchesId : Call -> (Call -> Call) -> Id -> Onion -> Call
-updateCallIfMatchesId call callFunc id onion =
-    if call.id == id
-    then fixInputsForFunc onion (callFunc call)
-    else call
+updateBlockIfMatchesId : Block -> (Block -> Block) -> Id -> Onion -> Block
+updateBlockIfMatchesId block blockFunc id onion =
+    if (getId block) == id
+    then fixInputsForFunc onion (blockFunc block)
+    else block
         
-updateCallFunc : List Call -> Id -> (Call -> Call) -> Onion -> List Call
-updateCallFunc func id callFunc onion =
+updateBlockFunc : List Block -> Id -> (Block -> Block) -> Onion -> List Block
+updateBlockFunc func id blockFunc onion =
     case func of
         [] -> []
-        (call::calls) -> (updateCallIfMatchesId call callFunc id onion) :: updateCallFunc calls id callFunc onion
+        (block::blocks) -> (updateBlockIfMatchesId block blockFunc id onion) :: updateBlockFunc blocks id blockFunc onion
         
-updateCallOnion : Onion -> Id -> (Call -> Call) -> Onion
-updateCallOnion onion id callFunc =
+updateBlockOnion : Onion -> Id -> (Block -> Block) -> Onion
+updateBlockOnion onion id blockFunc =
     case onion of
         [] -> []
-        (func::funcs) -> {func | calls=(updateCallFunc func.calls id callFunc onion)} :: (updateCallOnion funcs id callFunc)
+        (func::funcs) -> {func | blocks=(updateBlockFunc func.blocks id blockFunc onion)} :: (updateBlockOnion funcs id blockFunc)
                
 
-updateCall : Model -> Id -> (Call -> Call) -> (Model, Cmd Msg)
-updateCall model id callFunc =
+updateBlock : Model -> Id -> (Block -> Block) -> (Model, Cmd Msg)
+updateBlock model id blockFunc =
     let oldMouse = model.mouseState
         newMouse =
             {oldMouse | mouseSelection = NoneSelected}
-        newOnion = updateCallOnion model.program id callFunc
+        newOnion = updateBlockOnion model.program id blockFunc
     in
         ({model |
               mouseState = newMouse
               ,program = newOnion}
         ,Cmd.none)
 
-removeCallsR calls id =
-    case calls of
+removeBlocksR blocks id =
+    case blocks of
         [] -> []
-        (call ::rest) ->
-            if call.id == id
+        (block ::rest) ->
+            if (getId block) == id
             then
                 rest
             else
-                call :: removeCallsR rest id
+                block :: removeBlocksR rest id
         
-removeCall func id =
-    fixInvalidInputs {func | calls = removeCallsR func.calls id}
+removeBlock func id =
+    fixInvalidInputs {func | blocks = removeBlocksR func.blocks id}
 
 -- unsafe because it doesn't fix invalid inputs
 -- after placing a block, fixInvalidInputs needs to be called on the func
-removeCallUnsafe func id =
-    {func | calls = removeCallsR func.calls id}
+removeBlockUnsafe func id =
+    {func | blocks = removeBlocksR func.blocks id}
         
 updateFuncOnion onion funcId update =
     case onion of
@@ -227,14 +228,14 @@ fixInputs inputs idToPos currentIndex validF =
                     else (Hole) :: fixInputs rest idToPos currentIndex validF
                 _ -> input :: fixInputs rest idToPos currentIndex validF
                        
-fixCallInputs call idToPos currentIndex validF =
-    {call | inputs = fixInputs call.inputs idToPos currentIndex validF}
+fixBlockInputs block idToPos currentIndex validF =
+    (setInputs block (fixInputs (getInputs block) idToPos currentIndex validF))
                        
 fixInvalidInputsHelper func idToPos currentIndex validF =
     case func of
         [] -> []
-        (call::calls) ->
-            (fixCallInputs call idToPos currentIndex validF) :: fixInvalidInputsHelper calls idToPos (currentIndex + 1 ) validF
+        (block::blocks) ->
+            (fixBlockInputs block idToPos currentIndex validF) :: fixInvalidInputsHelper blocks idToPos (currentIndex + 1 ) validF
 
 validFunctionArg header pos =
     case header of
@@ -268,31 +269,31 @@ fixInvalidInputs func =
     let idToPos = idToPosition func Dict.empty 0
         validF = validFunctionArg func.args
     in
-        {func | calls = (fixInvalidInputsHelper func.calls idToPos 0 validF)}
+        {func | blocks = (fixInvalidInputsHelper func.blocks idToPos 0 validF)}
 
-fixForArgList call argList =
-    let inputs = call.inputs
+fixForArgList block argList =
+    let inputs = (getInputs block)
     in
         (case argList of
-             Infinite finite _ -> {call | inputs = (fixInfiniteInputs inputs (List.length finite))}
+             Infinite finite _ -> (setInputs block (fixInfiniteInputs inputs (List.length finite)))
              Finite finite ->
-                 {call | inputs = (fitInputsTo inputs (List.length finite))})
+                 (setInputs block (fitInputsTo inputs (List.length finite))))
         
 funcToArgList func =
     (Finite (List.repeat (List.length func.args) ""))
 
-fixInputsForFunc onion call =
-    case Dict.get call.functionName builtInFunctions of
-        Just builtInSpec -> fixForArgList call builtInSpec.argList
+fixInputsForFunc onion block =
+    case Dict.get (getFunctionName block) builtInFunctions of
+        Just builtInSpec -> fixForArgList block builtInSpec.argList
         _ ->
-            (case (Utils.findBy onion (\func -> func.name == call.functionName)) of
-                 Just func -> fixForArgList call (funcToArgList func)
-                 Nothing -> call)
+            (case (Utils.findBy onion (\func -> func.name == (getFunctionName block))) of
+                 Just func -> fixForArgList block (funcToArgList func)
+                 Nothing -> block)
 
 fixAllForFunc onion func =
-    let calls = func.calls
+    let blocks = func.blocks
     in
-        {func | calls=(List.map (fixInputsForFunc onion) calls)}
+        {func | blocks=(List.map (fixInputsForFunc onion) blocks)}
                 
 fixAllInvalidInputs : Onion -> Onion
 fixAllInvalidInputs onion =

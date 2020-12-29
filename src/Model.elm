@@ -83,7 +83,7 @@ type Msg = MouseOver String
          
            
          | BlockClick Block Id (Int, Int)
-         | BlockNameClick Call Id (Int, Int)
+         | BlockNameClick Block Id (Int, Int)
          | InputClick Id Int
          | OutputClick Id
          | InputHighlight Id Int
@@ -94,7 +94,7 @@ type Msg = MouseOver String
          | InputUpdate Id Int String
          | BlockNameUpdate Id String
            
-         | SpawnBlock String (Int, Int)-- when you click a block in the toolbar put it in hand
+         | SpawnBlock Block (Int, Int)-- when you click a block in the toolbar put it in hand
          | SpawnFunction String (Int, Int)
          | SetError String
          | SilentDomError (Result Dom.Error ())
@@ -157,17 +157,38 @@ makeFunc id blocks name =
 constructFunction id name blocks =
     (Function name id [] blocks)
         
+getId block =
+    case block of
+        CallBlock c -> c.id
+        StaffBlock s -> s.id
+
 getInputs : Block -> List Input
 getInputs block =
     case block of
         CallBlock c -> c.inputs
         _ -> []
 
+getFunctionName block =
+    case block of
+        CallBlock c -> c.functionName
+        _ -> ""
+
+setFunctionName block name =
+    case block of
+        CallBlock c -> CallBlock {c | functionName = name}
+        other -> other
+
+setInputs : Block -> List Input -> Block
+setInputs block inputs =
+    case block of
+        CallBlock c -> CallBlock {c | inputs = inputs}
+        other -> other
+
 getBlockById id func =
     case func of
         [] -> Nothing
         (block::blocks) ->
-            if block.id == id
+            if (getId block) == id
             then Just block
             else getBlockById id blocks
                
