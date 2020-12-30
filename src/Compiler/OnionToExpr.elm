@@ -21,13 +21,13 @@ import Result exposing (andThen)
 
 type alias IdToIndex = Dict Id Int
 
-makeIdToIndex : List Call -> Dict Id Int -> Int -> Dict Id Int
+makeIdToIndex : List Block -> Dict Id Int -> Int -> Dict Id Int
 makeIdToIndex func dict index =
     case func of
         [] -> dict
-        (e::es) -> makeIdToIndex es 
-                   (Dict.insert e.id index dict)
-                   (index + 1)
+        (block::blocks) -> makeIdToIndex blocks
+                                        (Dict.insert (getId block) index dict)
+                                        (index + 1)
 
 inputToValue input idToIndex =
     case input of
@@ -101,9 +101,14 @@ callToExpr call idToIndex onionMap =
                 _ -> Err "Not a function name"
 
 
-callsToExprs : List Call -> OnionMap -> IdToIndex -> Result Error (List Expr)
-callsToExprs calls onionMap idToIndex =
-    Result.map (returnContinuation onionMap) (resultMap (\call -> (callToExpr call idToIndex onionMap)) calls)
+blockToExpr block idToIndex onionMap =
+    case block of
+        CallBlock call -> callToExpr call idToIndex onionMap
+        _ -> Err "Unimplemented block type"
+
+blocksToExprs : List Block -> OnionMap -> IdToIndex -> Result Error (List Expr)
+blocksToExprs blocks onionMap idToIndex =
+    Result.map (returnContinuation onionMap) (resultMap (\block -> (blockToExpr block idToIndex onionMap)) blocks)
 
 checkName func =
     if String.isEmpty func.name
@@ -119,12 +124,12 @@ checkName func =
         
 functionToMethod : OnionMap -> Function -> Result Error (String, Method)
 functionToMethod onionMap func =
-    let idToPos = makeIdToIndex func.calls Dict.empty 0
+    let idToPos = makeIdToIndex func.blocks Dict.empty 0
         funcName = checkName func
     in
         Result.map2
             (\exprs name -> (name, (Method (List.length func.args) exprs)))
-            (callsToExprs func.calls onionMap idToPos)
+            (blocksToExprs func.blocks onionMap idToPos)
             funcName
                 
 

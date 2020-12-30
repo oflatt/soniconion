@@ -1,5 +1,5 @@
 module BuiltIn exposing (allBuiltInAsFunction, callFromSpec, constructCall, builtInFunctions, builtInFunctionList
-                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler
+                        ,ArgList(..) , builtInVariables, BuiltInVariableValue(..), waveCompiler, constructBlock
                         )
 import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
@@ -114,3 +114,9 @@ constructCall id functionName =
 constructStaff : Id -> Staff
 constructStaff id =
     (Staff id [] "")
+
+constructBlock : Id -> Block -> Block
+constructBlock id block =
+    case block of
+       CallBlock call -> CallBlock (constructCall id call.functionName)
+       StaffBlock staff -> StaffBlock (constructStaff id)

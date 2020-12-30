@@ -243,12 +243,12 @@ modelNoneSelected model =
 finishBlockAtPos func blockId =
     case func of
         [] -> []
-        (currentBlock::blocks) ->
-            if current(getId block) == blockId
+        (block::blocks) ->
+            if (getId block) == blockId
             then
                 blocks
             else
-                currentBlock :: finishBlockAtPos blocks blockId
+                block :: finishBlockAtPos blocks blockId
 
 programDropped model =
     let svgW = ViewVariables.toSvgWindowWidth model.windowWidth
@@ -342,17 +342,17 @@ firstOrSpawn onion =
         [] -> (0, [(makeMainFromCalls 0 [])])
         (func::rest) -> (func.id, onion)                         
                          
-spawnBlockModel : Model -> String -> (Int, Int) -> (Model, Cmd Msg)
-spawnBlockModel model name mouseOffset =
+spawnBlockModel : Model -> Block -> (Int, Int) -> (Model, Cmd Msg)
+spawnBlockModel model block mouseOffset =
     let oldMouse = model.mouseState
-        newBlock = constructBlock model.idCounter name
+        newBlock = constructBlock model.idCounter block
         funcTuple = firstOrSpawn model.program
         funcId = (Tuple.first funcTuple)
         newProgram = (Tuple.second funcTuple)
         newMouse = {oldMouse | mouseSelection = (BlockSelected funcId newBlock mouseOffset)}
     in
         ({model |
-              idCounter = new(getId block)+1
+              idCounter = (getId newBlock)+1
               ,mouseState = newMouse
               ,program = newProgram}
         ,Cmd.none)
@@ -516,8 +516,8 @@ updateProgram msg model =
         BlockNameUpdate id str ->
             blockNameUpdateModel model id str
                 
-        SpawnBlock name mouseOffset ->
-            spawnBlockModel model name mouseOffset
+        SpawnBlock block mouseOffset ->
+            spawnBlockModel model block mouseOffset
 
         SpawnFunction name mouseOffset ->
             spawnFuncModel model name mouseOffset
