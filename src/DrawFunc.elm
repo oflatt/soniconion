@@ -31,7 +31,7 @@ import Debug exposing (log)
 drawBlock block counter viewStructure =
     case block of
        CallBlock call -> drawCall call counter viewStructure
-       StaffBlock staff -> drawCall (Call staff.id "placeholder" staff.outputText) counter viewStructure
+       StaffBlock staff -> drawCall (Call staff.id [] "placeholder" staff.outputText) counter viewStructure
 
 getInputRouting : Block -> Int -> ViewStructure -> Maybe Int
 getInputRouting block inputCounter viewStructure =
@@ -254,7 +254,7 @@ drawAllInputs func viewStructure =
             let blockToDraw =
                     (case viewStructure.mouseState.mouseSelection of
                          BlockSelected funcId movedBlock _ ->
-                             (if funcId /= viewStructure.id && moved(getId block) == (getId block) then
+                             (if funcId /= viewStructure.id && (getId movedBlock) == (getId block) then
                                   let newInputs = List.map (\_ -> Hole) (getInputs block)
                                   in
                                       (setInputs block newInputs)

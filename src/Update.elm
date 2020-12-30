@@ -339,7 +339,7 @@ keyboardUpdate model keyevent =
 
 firstOrSpawn onion =
     case onion of
-        [] -> (0, [(makeMain 0 [])])
+        [] -> (0, [(makeMainFromCalls 0 [])])
         (func::rest) -> (func.id, onion)                         
                          
 spawnBlockModel : Model -> String -> (Int, Int) -> (Model, Cmd Msg)

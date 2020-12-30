@@ -151,6 +151,11 @@ headerNameId functionid =
 makeMain id blocks =
     makeFunc id blocks "main"
 
+makeMainFromCalls id calls =
+    makeFunc id (List.map CallBlock calls) "main"
+
+makeFuncFromCalls id calls name =
+    makeFunc id (List.map CallBlock calls) name
 makeFunc id blocks name =
     (constructFunction id name blocks)
 

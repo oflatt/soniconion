@@ -5,7 +5,7 @@ import MusicTheory
 import Compiler.CompileBuiltIn exposing (buildWave, buildUnary, buildJavascriptCall, buildUnaryWithDefault,
                                              buildUnaryWithSingleLead, buildIf, buildJoin, buildAppend)
 import Dict exposing (Dict)
-import Model exposing (Function, Block(..), Call, Input(..), Id, makeMain, makeFunc)
+import Model exposing (Function, Block(..), Call, Input(..), Id, makeMain, makeMainFromCalls, makeFunc)
 import Compiler.CompModel exposing (systemValues, CompileExprFunction(..))
 import Model exposing (Staff)
 

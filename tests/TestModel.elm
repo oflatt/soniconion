@@ -15,13 +15,13 @@ plus = (Call 1092392 [Output 85] "+" "")
 plusWithHole = (Call 1092392 [Hole] "+" "")
 
 testFunction : Function
-testFunction = (makeMain 0 [sine, sine2, join, plus])
+testFunction = (makeMainFromCalls 0 [sine, sine2, join, plus])
       
 testInvalidFunction : Function
-testInvalidFunction = (makeMain 0 [sine, sine2, plus, join])
+testInvalidFunction = (makeMainFromCalls 0 [sine, sine2, plus, join])
 
 testFunctionHoles : Function
-testFunctionHoles = (makeMain 0
+testFunctionHoles = (makeMainFromCalls 0
                          [(Call 80 [Text "1", Hole] "sine" "")
                          ,(Call 89 [Text "2", Text "640"] "sine" "")
                          ,(Call 85 [Hole, Hole] "+" "")
@@ -35,7 +35,7 @@ complex3 = (Call 23 [Output 98, Output 98] "sine" "")
 complex4 = (Call 12 [Output 80, Output 23] "sine" "")
 complexRoutingFunc : Function    
 complexRoutingFunc =
-    (makeMain 0
+    (makeMainFromCalls 0
          [complex0
          ,complex1
          ,complex2
@@ -51,7 +51,7 @@ argCall id funcArgs =
     
 threeLeftRoutingFunc : Function
 threeLeftRoutingFunc =
-    (makeMain 0
+    (makeMainFromCalls 0
          [(plusCall 0 [])
          ,(plusCall 1 [])
          ,(plusCall 2 [])
@@ -63,7 +63,7 @@ threeLeftRoutingFunc =
 
 argumentsRoutingFunc : Function
 argumentsRoutingFunc =
-    (makeMain 0
+    (makeMainFromCalls 0
          [(argCall 1 [])
          ,(argCall 2 [0])
          ,(argCall 3 [1])
@@ -71,7 +71,7 @@ argumentsRoutingFunc =
 
 argumentsRoutingFunc2 : Function
 argumentsRoutingFunc2 =
-    (makeMain 0
+    (makeMainFromCalls 0
          [(argCall 1 [])
          ,(argCall 2 [2])
          ,(argCall 3 [3])

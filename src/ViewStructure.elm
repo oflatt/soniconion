@@ -145,7 +145,7 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
         [] -> case maybeMoveInfo of
                   Nothing -> ([], Dict.empty)
                   Just moveInfo -> ([moveInfo.movedBlock],
-                                        (Dict.insert moveInfo.moved(getId block)
+                                        (Dict.insert (getId moveInfo.movedBlock)
                                              (movedInfoBlockPos moveInfo)
                                              Dict.empty))
         (block::rest) ->
@@ -174,7 +174,7 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
                            else (makeBlockPosition 0 (currentY + (blockLinesSpace block)) block False False)
             in
                 (topBlock :: (Tuple.first iteration)
-                ,(Dict.insert top(getId block) blockPos (Tuple.second iteration)))
+                ,(Dict.insert (getId topBlock) blockPos (Tuple.second iteration)))
 
 getFuncHeaderHeight func =
     ViewVariables.functionHeaderHeight + (countOutputs func.args)*ViewVariables.lineSpaceBeforeBlock + ViewVariables.blockSpacing
@@ -214,11 +214,11 @@ fixLeftForMoveInfo withoutLeft maybeMove leftW =
     case maybeMove of
         Nothing -> withoutLeft
         Just moveInfo ->
-            case Dict.get moveInfo.moved(getId block) withoutLeft of
+            case Dict.get (getId moveInfo.movedBlock) withoutLeft of
                 Just blockPos ->
                     let newx = blockPos.xpos-leftW
                     in
-                        Dict.insert moveInfo.moved(getId block) {blockPos | xpos = newx} withoutLeft
+                        Dict.insert (getId moveInfo.movedBlock) {blockPos | xpos = newx} withoutLeft
                 Nothing -> withoutLeft
              
 getViewStructure func mouseState svgScreenWidth svgScreenHeight xoffset yoffset maybeMoveInfo isToolbar =

@@ -3,7 +3,8 @@ module Docs.Tutorial exposing (makeTutorialPage)
 import ViewVariables
 import DrawProgram exposing (drawProgram)
 import BuiltIn exposing (constructCall)
-import Model exposing (Function, Call, initialModel, makeMain, Model, Input(..), makeFunc)
+import Model exposing (Function, Call, initialModel, makeMainFromCalls,
+                       Model, Input(..), makeFunc, makeFuncFromCalls, Block(..))
 import TitleBar exposing (playButton, stopButton)
 
 import Svg
@@ -273,20 +274,21 @@ Ideas:
 
 recursiveExample model =
     makeExampleProgram
-        [(makeMain 1 [(Call 2 [Text "0"] "beeps" "")])
+        [(makeMainFromCalls 1 [(Call 2 [Text "0"] "beeps" "")])
         ,(Function "beeps" 3 [Hole]
-              [(Call 4 [FunctionArg 0, Text "0.2"] "+" "")
-              ,(Call 5 [Output 4, Text "A4", Text "0.2"] "note" "")
-              ,(Call 6 [Output 5] "beeps" "")
-              ,(Call 7 [FunctionArg 0, Text "5"] ">" "")
-              ,(Call 8 [Output 7, FunctionArg 0, Output 6] "if" "")])]
+              (List.map CallBlock
+                  [(Call 4 [FunctionArg 0, Text "0.2"] "+" "")
+                  ,(Call 5 [Output 4, Text "A4", Text "0.2"] "note" "")
+                  ,(Call 6 [Output 5] "beeps" "")
+                  ,(Call 7 [FunctionArg 0, Text "5"] ">" "")
+                  ,(Call 8 [Output 7, FunctionArg 0, Output 6] "if" "")]))]
         model
         True
 
    
 ifExample model =
     makeExampleProgram
-        [(makeMain 1 [(Call 2 [Text "mouseY", Text "200"] ">" "")
+        [(makeMainFromCalls 1 [(Call 2 [Text "mouseY", Text "200"] ">" "")
                      ,(Call 4 [Text "0", Text "A4", Text "10"] "note" "")
                      ,(Call 5 [Text "0", Text "B4", Text "10"] "note" "")
                      ,(Call 3 [Output 2, Output 4, Output 5] "if" "")])]
@@ -295,19 +297,20 @@ ifExample model =
    
 coolBeepsSimple model =
     makeExampleProgram
-        [(makeMain 1 [(Call 2 [] "coolBeeps" "")])
-        ,(makeFunc 3 [(Call 4 [Text "0", Text "A4", Text "1"] "note" "")
-                     ,(Call 5 [Output 4, Text "B4", Text "1"] "note" "")] "coolBeeps")]
+        [(makeMainFromCalls 1 [(Call 2 [] "coolBeeps" "")])
+        ,(makeFuncFromCalls 3 [(Call 4 [Text "0", Text "A4", Text "1"] "note" "")
+                              ,(Call 5 [Output 4, Text "B4", Text "1"] "note" "")] "coolBeeps")]
         model
         True
 
 coolBeepsWithArgument model =
     makeExampleProgram
-        [(makeMain 1 [(Call 2 [Text "5"] "coolBeeps" "")])
+        [(makeMainFromCalls 1 [(Call 2 [Text "5"] "coolBeeps" "")])
         ,(Function "coolBeeps"
               3 [Hole]
-              [(Call 4 [Text "0", Text "A4", FunctionArg 0] "note" "")
-              ,(Call 5 [Output 4, Text "B4", Text "1"] "note" "")])]
+              (List.map CallBlock
+               [(Call 4 [Text "0", Text "A4", FunctionArg 0] "note" "")
+               ,(Call 5 [Output 4, Text "B4", Text "1"] "note" "")]))]
         model
         True
 
@@ -370,7 +373,7 @@ makeExampleProgram onion model shouldAddPlayButton =
                 else []))])
     
 makeExampleCalls calls model addPlayButton =
-    makeExampleProgram [(makeMain 1 calls)] model addPlayButton
+    makeExampleProgram [(makeMainFromCalls 1 calls)] model addPlayButton
         
    
                         

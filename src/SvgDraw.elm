@@ -261,17 +261,18 @@ headerEventsFinal inputCounter viewStructure =
         svgClickEvents (HeaderAddOutput viewStructure.id inputCounter) (HeaderAddOutputRightClick viewStructure.id inputCounter)
             
 
+drawCall: Call -> Int -> ViewStructure -> (Svg Msg)
 drawCall call index viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
         Just blockPos ->
             (rect
                  ((if viewStructure.isToolbar
                    then
-                       (svgClickEvents (SpawnBlock call.functionName (blockMouseOffset call viewStructure))
-                            (SpawnBlock call.functionName (blockMouseOffset call viewStructure)))
+                       (svgClickEvents (SpawnBlock (CallBlock call) (blockMouseOffset (CallBlock call) viewStructure))
+                            (SpawnBlock (CallBlock call) (blockMouseOffset (CallBlock call) viewStructure)))
                    else
-                       svgClickEvents (BlockClick call viewStructure.id (blockMouseOffset call viewStructure))
-                           (BlockClick call viewStructure.id (blockMouseOffset call viewStructure)))
+                       svgClickEvents (BlockClick (CallBlock call) viewStructure.id (blockMouseOffset (CallBlock call) viewStructure))
+                           (BlockClick (CallBlock call) viewStructure.id (blockMouseOffset (CallBlock call) viewStructure)))
                       ++
                       [(svgTranslate blockPos.xpos blockPos.ypos)
                       ,x "0"
@@ -313,7 +314,7 @@ drawFuncHeader function viewStructure =
 
 drawBlockNameInput block viewStructure blockPos =
     case block of
-        CallBlock call -> drawCallNameInput block viewStructure blockPos
+        CallBlock call -> drawCallNameInput call viewStructure blockPos
         _ -> Svg.g [] []
 
 drawCallNameInput call viewStructure blockPos =
@@ -325,7 +326,7 @@ drawCallNameInput call viewStructure blockPos =
          (BlockNameHighlight call.id)
          (BlockNameUpdate call.id)
          Css.transparent
-         (blockNameEvents call viewStructure)
+         (blockNameEvents (CallBlock call) viewStructure)
          (nodeNameId call.id)
          viewStructure)
 
