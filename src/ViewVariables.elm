@@ -39,8 +39,6 @@ funcInitialY = functionYSpacing
 blockHeight = 50
 functionHeaderHeight = blockHeight
 blockSpacing = blockHeight // 6
--- this does not factor in the space for the lines, but is acurate for a block without lines
-blockSpace = blockHeight + blockSpacing
 
 staffBlockHeight = (blockHeight * 8) // 5
 

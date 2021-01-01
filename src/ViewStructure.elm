@@ -36,6 +36,7 @@ type alias InputPosition = (Int, Int)
 type alias BlockPosition = {xpos: Int
                            ,ypos: Int
                            ,width: Int
+                           ,height: Int
                            ,inputPositions: Dict Int InputPosition}
     
 type alias BlockPositions = Dict Id BlockPosition
@@ -115,6 +116,14 @@ getBlockWidth block inputPositions =
        CallBlock call -> max (inputPositionsMax inputPositions) (ViewVariables.callTextBlockSize call.functionName)
        StaffBlock staff -> (ViewVariables.callTextBlockSize "placeholder")
     
+getBlockHeight block =
+    case block of
+        CallBlock call -> ViewVariables.blockHeight
+        StaffBlock staff -> ViewVariables.staffBlockHeight
+
+getBlockSpace block =
+    (getBlockHeight block) + ViewVariables.blockSpacing + (blockLinesSpace block)
+
         
 makeBlockPosition xpos ypos block shouldCenter shouldAddTail =
     let inputPositions = (makeInputPositions block shouldAddTail)
@@ -126,10 +135,10 @@ makeBlockPosition xpos ypos block shouldCenter shouldAddTail =
                 xpos
         blockYpos =
             if shouldCenter then
-                ypos - ViewVariables.blockHeight//2
+                ypos - (getBlockHeight block)//2
             else ypos
     in
-        (BlockPosition blockXpos blockYpos blockW inputPositions)
+        (BlockPosition blockXpos blockYpos blockW (getBlockHeight block) inputPositions)
 
 getHeaderBlockPos func xoffset yoffset =
     makeBlockPosition xoffset yoffset (CallBlock (Call 0 func.args func.name "")) False True
@@ -152,7 +161,7 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
             let isMoved =
                     (case maybeMoveInfo of
                          Nothing -> False
-                         Just moveInfo -> (Tuple.second moveInfo.movedPos) < currentY + ViewVariables.blockHeight)
+                         Just moveInfo -> (Tuple.second moveInfo.movedPos) < currentY + (getBlockHeight block))
                 newMoveInfo =
                     if isMoved then Nothing
                     else maybeMoveInfo
@@ -161,10 +170,10 @@ getAllBlockPositions maybeMoveInfo func currentY isSpaceForMovedBlock =
                 newY = if isMoved then
                            (case maybeMoveInfo of
                                 Just moveInfo -> (if isSpaceForMovedBlock
-                                                  then (currentY + ViewVariables.blockSpace + (blockLinesSpace moveInfo.movedBlock))
+                                                  then (currentY + (getBlockSpace moveInfo.movedBlock))
                                                   else currentY)
-                                Nothing -> 0)
-                       else currentY + ViewVariables.blockSpace + (blockLinesSpace block)-- should not happen!
+                                Nothing -> 0) -- should not happen!
+                       else currentY + (getBlockSpace block)
                 iteration = getAllBlockPositions newMoveInfo restBlock newY isSpaceForMovedBlock
 
                 blockPos = if isMoved then
@@ -206,7 +215,7 @@ getMaxBlockWidth blockPositions topBlock =
 getMaxBlockBottom blockPositions =
     Dict.foldr
         (\key blockpos acc ->
-             max (blockpos.ypos+ViewVariables.blockHeight) acc)
+             max (blockpos.ypos+blockpos.height) acc)
         0
         blockPositions
 
