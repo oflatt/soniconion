@@ -1,6 +1,7 @@
 module SvgDraw exposing (drawCall, errorSvgNode, drawConnector, drawNode, drawTextInput,
                              nodeEvent, drawNodeWithEvent, svgTranslate, svgClickEvents,
                              nodeEvents, drawBlockNameInput, drawFuncHeader, svgTextInput,
+                             drawStaff,
                              headerEvents, drawHeaderNameInput, headerEventsFinal, blockMouseOffset)
 
 import Model exposing (..)
@@ -261,6 +262,29 @@ headerEventsFinal inputCounter viewStructure =
         svgClickEvents (HeaderAddOutput viewStructure.id inputCounter) (HeaderAddOutputRightClick viewStructure.id inputCounter)
             
 
+drawStaff : Staff -> Int -> ViewStructure -> (Svg Msg)
+drawStaff staff index viewStructure =
+    case Dict.get staff.id viewStructure.blockPositions of
+        Just blockPos ->
+            drawStaffLines blockPos.xpos (blockPos.ypos + ((ViewVariables.staffBlockHeight * 3) // 10)) blockPos.width (ViewVariables.staffBlockHeight // 10)
+        Nothing -> errorSvgNode "staff without block pos"
+
+drawStaffLines xpos ypos width spacing =
+    Svg.g []
+        (drawHorizLines xpos ypos width spacing 5)
+
+drawHorizLines xpos ypos width spacing numLeft =
+    case numLeft of
+        0 -> []
+        num ->
+            ((Svg.line [x1 (String.fromInt xpos)
+                  ,y1 (String.fromInt ypos)
+                  ,x2 (String.fromInt (xpos+width)) 
+                  ,y2 (String.fromInt ypos)
+                  ,stroke "black"
+                  ,strokeWidth (String.fromInt (ViewVariables.lineWidth // 2))] [])
+                  :: (drawHorizLines xpos (ypos+spacing) width spacing (numLeft-1)))
+
 drawCall: Call -> Int -> ViewStructure -> (Svg Msg)
 drawCall call index viewStructure =
     case Dict.get call.id viewStructure.blockPositions of
@@ -401,7 +425,7 @@ taxiLine posList events isLineHighlighted =
                  ,strokeLinejoin "round"
                  ,stroke color
                  ,fill "none"
-                 ,strokeWidth ViewVariables.lineWidth
+                 ,strokeWidth (String.fromInt ViewVariables.lineWidth)
                  ,strokeLinecap "round"])
             []
     

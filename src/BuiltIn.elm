@@ -93,10 +93,12 @@ callFromSpec spec id =
 makeAllFunction : BuiltInList -> Int -> List Block
 makeAllFunction builtInList counter =
     case builtInList of
-        [] -> [(StaffBlock (constructStaff counter))]
+        [] -> []
         (spec::specs) -> (CallBlock (callFromSpec spec counter)) :: (makeAllFunction specs (counter-1))
 
-allBuiltInAsFunction = (makeFunc -1 (makeAllFunction builtInFunctionList -100) "function")
+makeBuiltInList builtInList counter =
+    (StaffBlock (constructStaff counter)) :: (makeAllFunction builtInList counter)
+allBuiltInAsFunction = (makeFunc -1 (makeBuiltInList builtInFunctionList -100) "function")
 
 callWithHoles id name numHoles =
     Call id (List.repeat numHoles Hole) name ""

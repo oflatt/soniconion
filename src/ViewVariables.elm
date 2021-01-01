@@ -42,8 +42,11 @@ blockSpacing = blockHeight // 6
 -- this does not factor in the space for the lines, but is acurate for a block without lines
 blockSpace = blockHeight + blockSpacing
 
+staffBlockHeight = (blockHeight * 8) // 5
+
+
 lineXSpace = blockHeight // 2
-lineWidth = "4"
+lineWidth = 4
 lineSpaceBeforeBlock = blockSpacing*3 // 2
                
 nodeRadius = blockHeight // 7

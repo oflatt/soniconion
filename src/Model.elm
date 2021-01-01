@@ -202,8 +202,9 @@ type alias Call = {id: Id
                   ,functionName: String
                   ,outputText: String}
 
-type alias Note = {offset: Int
-                  ,duration: Float}
+type alias Note = {middleCOffset: Int
+                  ,timeOffset: Int -- in sixteenth notes
+                  ,noteDuration: Int} -- 0 is sixteeth note, 1 is eighth, ect
 
 type alias Staff = {id: Id
                    ,notes: List Note

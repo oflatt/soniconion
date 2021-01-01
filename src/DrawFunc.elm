@@ -3,7 +3,7 @@ import Model exposing (..)
 import ModelHelpers exposing (isStandInInfinite)
 import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, InputPosition)
 import ViewVariables
-import SvgDraw exposing (blockMouseOffset, drawCall)
+import SvgDraw exposing (blockMouseOffset, drawCall, drawStaff)
 
 
 import Browser
@@ -31,7 +31,7 @@ import Debug exposing (log)
 drawBlock block counter viewStructure =
     case block of
        CallBlock call -> drawCall call counter viewStructure
-       StaffBlock staff -> drawCall (Call staff.id [] "placeholder" staff.outputText) counter viewStructure
+       StaffBlock staff -> drawStaff staff counter viewStructure
 
 getInputRouting : Block -> Int -> ViewStructure -> Maybe Int
 getInputRouting block inputCounter viewStructure =
