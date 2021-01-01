@@ -7,7 +7,7 @@ module SvgDraw exposing (drawCall, errorSvgNode, drawConnector, drawNode, drawTe
 import Model exposing (..)
 import BuiltIn exposing (builtInFunctions, ArgList)
 import ViewVariables exposing (blockHeight, blockSpacing)
-import Utils
+import Utils exposing (rgbToCss)
 
 import ViewStructure exposing (BlockPositions, ViewStructure, InputPosition, BlockPosition, countOutputsBefore
                               ,mouseToSvgCoordinates)
@@ -266,12 +266,32 @@ drawStaff : Staff -> Int -> ViewStructure -> (Svg Msg)
 drawStaff staff index viewStructure =
     case Dict.get staff.id viewStructure.blockPositions of
         Just blockPos ->
-            drawStaffLines blockPos.xpos (blockPos.ypos + ((ViewVariables.staffBlockHeight * 3) // 10)) blockPos.width (ViewVariables.staffBlockHeight // 10)
+            (drawStaffAt viewStructure staff blockPos)
         Nothing -> errorSvgNode "staff without block pos"
 
-drawStaffLines xpos ypos width spacing =
+drawStaffAt viewStructure staff blockPos =
     Svg.g []
-        (drawHorizLines xpos ypos width spacing 5)
+          ((rect
+                 ((if viewStructure.isToolbar
+                   then
+                       (svgClickEvents (SpawnBlock (StaffBlock staff) (blockMouseOffset (StaffBlock staff) viewStructure))
+                            (SpawnBlock (StaffBlock staff) (blockMouseOffset (StaffBlock staff) viewStructure)))
+                   else
+                       svgClickEvents (BlockClick (StaffBlock staff) viewStructure.id (blockMouseOffset (StaffBlock staff) viewStructure))
+                           (BlockClick (StaffBlock staff) viewStructure.id (blockMouseOffset (StaffBlock staff) viewStructure)))
+                      ++
+                      [(svgTranslate blockPos.xpos blockPos.ypos)
+                      ,x "0"
+                      , y "0"
+                      , width (String.fromInt blockPos.width)
+                      , height (String.fromInt (blockPos.height-(ViewVariables.nodeRadius))) -- room for dots
+                      , fill (rgbToCss ViewVariables.staffBackgroundColor)
+                      , stroke (rgbToCss ViewVariables.staffBackgroundColor)
+                      , rx (String.fromInt ViewVariables.nodeRadius)
+                      , ry (String.fromInt ViewVariables.nodeRadius)
+                      ])
+                 [])
+            :: (drawHorizLines blockPos.xpos (blockPos.ypos + (((blockPos.height - ViewVariables.nodeRadius*2) * 3) // 10)) blockPos.width ((blockPos.height - ViewVariables.nodeRadius*2) // 10) 5))
 
 drawHorizLines xpos ypos width spacing numLeft =
     case numLeft of
@@ -282,7 +302,7 @@ drawHorizLines xpos ypos width spacing numLeft =
                   ,x2 (String.fromInt (xpos+width)) 
                   ,y2 (String.fromInt ypos)
                   ,stroke "black"
-                  ,strokeWidth (String.fromInt (ViewVariables.lineWidth // 2))] [])
+                  ,strokeWidth (String.fromInt (ViewVariables.lineWidth // 4))] [])
                   :: (drawHorizLines xpos (ypos+spacing) width spacing (numLeft-1)))
 
 drawCall: Call -> Int -> ViewStructure -> (Svg Msg)
@@ -302,7 +322,7 @@ drawCall call index viewStructure =
                       ,x "0"
                       , y (String.fromInt ViewVariables.nodeRadius)
                       , width (String.fromInt blockPos.width)
-                      , height (String.fromInt (blockHeight-(ViewVariables.nodeRadius*2))) -- room for dots
+                      , height (String.fromInt (blockPos.height-(ViewVariables.nodeRadius*2))) -- room for dots
                       , fill ViewVariables.blockColor
                       , stroke ViewVariables.blockColor
                       , rx (String.fromInt ViewVariables.nodeRadius)

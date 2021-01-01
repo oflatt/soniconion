@@ -52,10 +52,6 @@ hollowNodeOutlineProportion = 0.25
 inputPadding = nodeRadius * 3
 inputSpacing = nodeRadius * 1
 
-
-
-outputNodeY = blockHeight - nodeRadius
-
 inputHeight = nodeRadius * 2
 
 inputFontSizePercent = 0.80
@@ -74,6 +70,7 @@ callTextBlockSize text =
                     
 toolbarProportion = 0.25
 
+staffBackgroundColor = (rgb 255 210 143)
 blockColor = "rgb(50, 214, 232)"
 textInputColor = (rgb 186 232 188)
 textInputColorVariable = (rgb 108 230 113)

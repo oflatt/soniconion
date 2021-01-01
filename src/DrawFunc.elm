@@ -2,7 +2,7 @@ module DrawFunc exposing (drawFuncWithConnections)
 import Model exposing (..)
 import ModelHelpers exposing (isStandInInfinite)
 import ViewStructure exposing (BlockPositions, BlockPosition, ViewStructure, InputPosition)
-import ViewVariables
+import ViewVariables exposing (nodeRadius)
 import SvgDraw exposing (blockMouseOffset, drawCall, drawStaff)
 
 
@@ -46,13 +46,13 @@ getOutputPos outputId viewStructure outputIndex =
         Maybe.map
             (\inputPos ->
                  ((Tuple.first inputPos)+((Tuple.second inputPos)//2)
-                 ,(ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)))
+                 ,(ViewVariables.functionHeaderHeight - nodeRadius)))
             (Dict.get outputIndex viewStructure.headerPos.inputPositions)
     else
         Maybe.map
             (\otherPos ->
                  ((otherPos.xpos + (otherPos.width//2))
-                 ,otherPos.ypos + ViewVariables.outputNodeY))
+                 ,otherPos.ypos + otherPos.height - nodeRadius))
             (Dict.get outputId viewStructure.blockPositions)
 
 funcLineYOffset viewStructure outputIndex =
@@ -80,7 +80,7 @@ drawHeaderFinalOutput viewStructure inputCounter =
         events = SvgDraw.headerEventsFinal inputCounter viewStructure
         isInputHighlighted = False
     in
-        (SvgDraw.drawNodeWithEvent 0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
+        (SvgDraw.drawNodeWithEvent 0 nodePos (ViewVariables.functionHeaderHeight - nodeRadius)
              events (HeaderAddOutput viewStructure.id inputCounter) domId isInputHighlighted viewStructure True)
         
 drawHeaderOutput : Input -> ViewStructure -> Int -> Svg.Svg Msg
@@ -109,7 +109,7 @@ drawHeaderOutput input viewStructure inputCounter =
                              domId
                              viewStructure)
             _ -> (SvgDraw.drawNodeWithEvent
-                      0 nodePos (ViewVariables.functionHeaderHeight - ViewVariables.nodeRadius)
+                      0 nodePos (ViewVariables.functionHeaderHeight - nodeRadius)
                       events (HeaderOutputHighlight viewStructure.id inputCounter) domId isInputHighlighted
                       viewStructure False)
                          
@@ -133,7 +133,7 @@ drawInput block input blockPos inputCounter viewStructure =
                  (SvgDraw.drawNodeWithEvent
                       blockPos.xpos
                       nodePosition
-                      (blockPos.ypos + ViewVariables.nodeRadius)
+                      (blockPos.ypos + nodeRadius)
                       nodeEvents
                       highlightEvent
                       inputStringId
@@ -179,7 +179,7 @@ drawInput block input blockPos inputCounter viewStructure =
                      nodeEvents
                      blockPos.xpos
                      nodePosition
-                     (blockPos.ypos + ViewVariables.nodeRadius)
+                     (blockPos.ypos + nodeRadius)
                      inputCounter
                      inputStringId
                      viewStructure)
@@ -192,7 +192,7 @@ drawInput block input blockPos inputCounter viewStructure =
 drawInputLines block inputs blockPos inputCounter viewStructure =
     case inputs of
         [] -> [SvgDraw.drawBlockNameInput block viewStructure blockPos
-              ,SvgDraw.nodeEvent blockPos.xpos (0, 0) (blockPos.ypos+ViewVariables.outputNodeY)
+              ,SvgDraw.nodeEvent blockPos.xpos (0, 0) (blockPos.ypos+blockPos.height - nodeRadius)
                   (OutputHighlight (getId block)) (nodeOutputId (getId block)) viewStructure True]
         (input::rest) ->
             (drawInput block input blockPos inputCounter viewStructure) ::
@@ -239,8 +239,8 @@ drawBlockEnding block viewStructure =
             in
                 (SvgDraw.drawNode
                      blockPos.xpos
-                     (((blockPos.width//2)-ViewVariables.nodeRadius), ViewVariables.nodeRadius*2)
-                     (ViewVariables.outputNodeY + blockPos.ypos)
+                     (((blockPos.width//2)-nodeRadius), nodeRadius*2)
+                     (blockPos.height - nodeRadius + blockPos.ypos)
                      events
                      isOutputHighlighted
                      False)
